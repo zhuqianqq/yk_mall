@@ -1,0 +1,71 @@
+{extend name="base" /}
+{block name="js"}
+<script src="__ADMIN__/uservalidates/uservalidate.js?v={$v}" type="text/javascript"></script>
+{/block}
+{block name="main"}
+<form autocomplete='off'>
+    <input type='hidden' id='validateId' class='ipt' value="{$object['validateId']}"/>
+    <input type='hidden' id='img-positvie' class='id-positive' value="{$object['id_card_positive']}"/>
+    <input type='hidden' id='img-back' class='id-back' value="{$object['id_card_back']}"/>
+    <div id="window-img" style="display: none"></div>
+    <table class='wst-form wst-box-top'>
+        <tr>
+           <th width='150'>主播ID：</th>
+           <td>
+               {$object['user_id']}
+           </td>
+        </tr>
+        <tr>
+           <th width='150'>真实姓名：</th>
+           <td>
+           {$object['true_name']}
+           </td>
+        </tr>
+        <tr>
+            <th width='150'>身份证号：</th>
+            <td>
+                {$object['id_card']}
+            </td>
+        </tr>
+        <tr>
+            <th width='150'>性别：</th>
+            <td>
+                {if $object['sex']==1}男{else}女{/if}
+            </td>
+        </tr>
+        <tr>
+            <th>身份证正面照：</th>
+            <td><img onclick=showImg(1) src="{$object['id_card_positive']}" style='height:50px;width:50px;' /></td>
+        </tr>
+        <tr>
+            <th>身份证反面照：</th>
+            <td><img onclick=showImg(2) src="{$object['id_card_back']}" style='height:50px;width:50px;' /></td>
+        </tr>
+        <tr>
+           <th width='150'>手机号：</th>
+           <td>
+           {$object['phone']}
+           </td>
+        </tr>
+        <tr>
+           <th>认证时间：</th>
+           <td>{$object['create_time']}</td>
+        </tr>
+        <tr>
+            <th>状态：</th>
+            <td>{if $object['status']==2}成功{elseif $object['status']==3}失败{else}待处理{/if}</td>
+        </tr>
+        <tr >
+           <th valign='top'>备注：<br/>(用户可见)&nbsp;&nbsp;</th>
+           <td>
+             {$object['remark']}
+           </td>
+        </tr>
+        <tr>
+           <td colspan='2' align='center'>
+           	<button type="button" class="btn" onclick="javascript:location.href='{:Url(\'admin/uservalidates/index\',\'p=\'.$p)}'"><i class="fa fa-angle-double-left"></i>返回</button>
+           </td>
+        </tr>
+    </table>
+</form>
+{/block}

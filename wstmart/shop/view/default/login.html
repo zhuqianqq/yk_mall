@@ -1,0 +1,81 @@
+<!DOCTYpE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-Ua-Compatible" content="IE=edge">
+<meta name="Keywords" content=""/>
+<meta name="Description" content=""/> 
+<link rel="stylesheet" href="__STATIC__/plugins/layui/css/layui.css" type="text/css" />
+<link href="__STATIC__/plugins/validator/jquery.validator.css?v={$v}" rel="stylesheet">
+<link href="__SHOP__/css/login.css?v=20200316" rel="stylesheet" type="text/css" />
+<title>卖家中心登录 - {:WSTConf('CONF.mallName')}</title>
+</head>
+<body id="loginFrame">
+<div class="wst-lo-top">
+  <div class='login_logo'>
+      <img src="/static/images/logo.png" height="80">
+  </div>
+</div>
+<?php  $adsRs = WSTAds('ads-login-shop',1,31536000);?>
+<div class="wst-lo-center">
+  <div class="wst-lo">
+    <div class="login-wrapper">
+      <div class="boxbg2"></div>
+      <div class="box">
+          <form method="post" autocomplete="off" onsubmit="return false;">
+          <div class="content-wrap">
+            <div class='login-title'>卖家中心登录</div>
+            <div class="login-box">
+              <div>
+                 <div class="login-icon1"></div>
+                 <input id='loginName' type="text" class="layui-input ipt" placeholder="请输入手机号">
+              </div>
+              <!--<div>
+                 <div class="login-icon2"></div>
+                 <input id='loginPwd' type="password" class="layui-input ipt" placeholder="登录密码">
+              </div>
+              <div class="frame">
+                <div class="login-icon3"></div>
+                <input type='text' id='verifyCode' class='layui-input  ipt text2' placeholder="验证码">
+                <img id='verifyImg' src="{:url('admin/index/getVerify')}" onclick='javascript:getVerify(this)'>
+              </div>
+              -->
+
+                <div class="frame">
+                    <div class="login-icon3"></div>
+                    <input type='text' id='verifyCode' class='layui-input ipt text2' placeholder="短信验证码" maxlength="6">
+                    <button class="layui-btn layui-btn-primary btn-vcode" id="btnGetVcode" type="button">获取验证码</button>
+                </div>
+            </div>
+            <div>
+            <button id="loginbtn" type="button" onclick='loginByPhone()' class="layui-btn layui-btn-big layui-btn-normal" style="width: 100%;">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
+            </div>
+          </div>
+          </form>
+        </div>
+    </div>
+</div>
+</div>
+<div class="login-footer">
+      <div class="wst-footer-flink">
+      <div class="wst-footer" >
+      </div>
+    </div>
+     <div>
+        Copyright @copy 2020
+     </div>
+</div>
+<input type='hidden' id='token' value='{:WSTConf("CONF.pwdModulusKey")}'/>
+<script type='text/javascript' src='__STATIC__/js/jquery.min.js'></script>
+<script>
+window.conf = {"DOMAIN":"{:str_replace('index.php','',$Request.root.true)}","ROOT":"__ROOT__","APP":"__APP__","STATIC":"__STATIC__","SUFFIX":"{:config('url_html_suffix')}","IS_CRYPT":"{:WSTConf('CONF.isCryptPwd')}"}
+</script>
+<script language="javascript" type="text/javascript" src="__STATIC__/plugins/layui/layui.all.js"></script>
+<script type='text/javascript' src='__STATIC__/js/common.js?v={$v}'></script>
+<script type='text/javascript' src='__STATIC__/js/site.js?v={$v}'></script>
+<script type="text/javascript" src="__STATIC__/js/rsa.js"></script>
+<script type='text/javascript' src='__SHOP__/js/common.js?v={$v}'></script>
+<script type="text/javascript" src="__STATIC__/plugins/lazyload/jquery.lazyload.min.js?v={$v}"></script>
+<script src="__SHOP__/js/login.js?v=20200316b" type="text/javascript"></script>
+</body>
+</html>

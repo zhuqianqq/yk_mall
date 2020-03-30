@@ -1,0 +1,6 @@
+{
+    "require": {
+        "5ini99/think-addons": "1.2.0",
+        "qcloud/cos-sdk-v5": "^2.0"
+    }
+}

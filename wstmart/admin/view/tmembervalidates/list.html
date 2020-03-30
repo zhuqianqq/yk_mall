@@ -1,0 +1,36 @@
+{extend name="base" /}
+{block name="css"}
+<link rel="stylesheet" type="text/css" href="__STATIC__/plugins/mmgrid/mmGrid.css?v={$v}" />
+{/block}
+{block name="js"}
+<script src="__STATIC__/plugins/mmgrid/mmGrid.js" type="text/javascript"></script>
+<script src="__ADMIN__/tmembervalidates/tmembervalidate.js?v={$v}" type="text/javascript"></script>
+{/block}
+{block name="main"}
+<style type="text/css">
+    #mmg td:nth-child(8){color: red}
+</style>
+<div id='alertTips' class='alert alert-success alert-tips fade in'>
+  <div id='headTip' class='head'><i class='fa fa-lightbulb-o'></i>操作说明</div>
+  <ul class='body'>
+    <li>本功能主要用于处理来自于主播的认证请求。</li>
+  </ul>
+</div>
+<div class="wst-toolbar">
+    <input type="text" name="id_card"  placeholder='身份证号' id="id_card" class='j-ipt'/>
+    <input type="text" name="user_id"  placeholder='主播ID' id="user_id" class='j-ipt'/>
+    <button class="btn btn-primary" onclick='javascript:loadGrid(0)'><i class="fa fa-search"></i>查询</button>
+    <div style='clear:both'></div>
+</div>
+<div class='wst-grid'>
+<div id="mmg" class="mmg"></div>
+<div id="pg" style="text-align: right;"></div>
+<div id="window-img" style="display: none"></div>
+
+</div>
+<script>
+$(function(){
+	initGrid({$p});
+})
+</script>
+{/block}

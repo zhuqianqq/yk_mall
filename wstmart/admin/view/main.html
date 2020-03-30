@@ -1,0 +1,210 @@
+{extend name="base" /}
+{block name="js"}
+<script src="__STATIC__/plugins/echarts/echarts.min.js?v={$v}" type="text/javascript"></script>
+<script src="__ADMIN__/js/main.js?v={$v}" type="text/javascript"></script>
+<script>
+function enterLicense(){
+	location.href='{:Url("admin/index/enterLicense")}';
+}
+</script>
+{/block}
+{block name="main"}
+<style>
+body{ background: #f5f5f5; margin-left: 10px;}
+.small-box{margin-right: 5%;border-radius: 2px;position: relative;display: block; margin-bottom: 20px;box-shadow: 0 1px 1px rgba(0,0,0,0.1);}
+.small-box>.inner {padding: 10px;color: #fff !important;}
+.small-box h3, .small-box p {z-index: 5;}
+.small-box h3 {font-size: 38px; font-weight: bold;margin: 0 0 10px 0;white-space: nowrap;padding: 0;}
+.small-box h3, .small-box p {z-index: 5;}
+.small-box p {font-size: 15px;}
+.small-box .icon {-webkit-transition: all .3s linear;-o-transition: all .3s linear;transition: all .3s linear;position: absolute;top: 10px;right: 20px;z-index: 0;font-size: 60px;color: rgba(0,0,0,0.15);}
+.small-box:hover .icon {font-size: 70px;}
+.wst-strip .progress{height:25px;width:70%;float:left}
+.alert-dismissable .close, .alert-dismissible .close{right: 1px;}
+</style>
+
+	<div class="wst-total wst-summary layui-col-md12">
+		{if WSTGrant('DDLB_00')}
+		<div class='inner'>
+			 	<div class="inner_left"><img src="__ADMIN__/img/main/001.png"></div>
+			 	<div class="inner_right"><span>{$object['sale']['today']}</span>&nbsp;昨日：{$object['sale']['yesterday']}<br/>
+			 		今日销量(元)</div>
+		</div>
+        <div class='inner'>
+        	    <div class="inner_left"><img src="__ADMIN__/img/main/002.png"></div>
+			 	<div class="inner_right">
+			 		<span>{$object['order']['today']}</span>&nbsp;昨日：{$object['order']['yesterday']}<br/>
+			 		今日订单(笔)</div>
+	    </div>
+	    {/if}
+	    {if WSTGrant('DPGL_00')}
+	    <div class='inner'>
+	    	    <div class="inner_left"><img src="__ADMIN__/img/main/003.png"></div>
+			 	<div class="inner_right">
+			 		<span>{$object['shop']['today']}</span>&nbsp;昨日：{$object['shop']['yesterday']}<br/>
+			 		新增店铺(个)</div>
+		</div>
+		{/if}
+		{if WSTGrant('HYGL_00')}
+		<div class='inner'>
+			    <div class="inner_left"><img src="__ADMIN__/img/main/004.png"></div>
+			 	<div class="inner_right">
+			 		<span>{$object['user']['today']}</span>&nbsp;昨日：{$object['user']['yesterday']}<br/>
+			 		新增会员(个)</div>
+		</div>
+		{/if}
+		{if WSTGrant('TKDD_00')}
+		<div class='inner'>
+			    <div class="inner_left"><img src="__ADMIN__/img/main/005.png"></div>
+			 	<div class="inner_right">
+			 		<span>{$object['refund']['today']}</span>&nbsp;昨日：{$object['refund']['yesterday']}<br/>
+			 		退款订单(个)</div>
+		</div>
+		{/if}
+	</div>
+<div class='layui-col-md12'>
+    <div class='layui-col-md7'>
+		<div class="wst-total wst-summary zytx">
+			<div class='wst-summary-head'>
+				<i class="yuan"></i>
+				<span class="content">重要提醒</span>
+			</div>
+			<ul class="wst-total-ul">
+				{if WSTGrant('DPSQ_00')}
+				<li>
+					<div class='icon'>
+				 		<span><a href="{:Url('admin/shops/apply')}" id="menuItem45" dataid="45">{$object['tips']['shopAudit']}</a></span>
+				 	</div>
+				 	<div class="txt"><a href="{:Url('admin/shops/apply')}" id="menuItem45" dataid="45">
+				 		<p>店铺审核</p>
+				 	</a></div>
+				</li>
+				{/if}
+				{if WSTGrant('DSHSP_00')}
+				<li>
+					<div class='icon'>
+				 		<span><a id="menuItem54" class="menuItem" href="{:Url('admin/goods/auditindex')}" dataid="54">{$object['tips']['goodsAudit']}</a></span>
+				 	</div>
+				 	<div class="txt">
+				 		<a id="menuItem54" class="menuItem" href="{:Url('admin/goods/auditindex')}" dataid="54">
+				 			<p>商品审核</p>
+				 		</a>
+				 	</div>
+				</li>
+				{/if}
+				{if WSTGrant('TXSQ_00')}
+				<li>
+					<div class='icon'>
+				 		<span><a id="menuItem63" class="menuItem" href="{:Url('admin/cashdraws/index')}" dataid="63">{$object['tips']['cashDraw']}</a></span>
+				 	</div>
+				 	<div class="txt">
+				 		<a id="menuItem63" class="menuItem" href="{:Url('admin/cashdraws/index')}" dataid="63">
+				 			<p>提现审核</p>
+				 		</a>
+				 		
+				 	</div>
+			    </li>
+			    {/if}
+			    {if WSTGrant('TKDD_00')}
+			    <li>
+					<div class='icon'>
+				 		<span><a id="menuItem63" class="menuItem" href="{:Url('admin/orderrefunds/refund')}" >{$object['tips']['refund']}</a></span>
+				 	</div>
+				 	<div class="txt">
+				 		<a id="menuItem52" class="menuItem" href="{:Url('admin/orderrefunds/refund')}">
+				 			<p>退款审核</p>
+				 		</a>
+				 		
+				 	</div>
+				</li>
+				{/if}
+				{if WSTGrant('TSDD_00')}
+			    <li>
+					<div class='icon'>
+				 		<span><a id="menuItem63" class="menuItem" href="{:Url('admin/ordercomplains/index')}" dataid="63">{$object['tips']['complains']}</a></span>
+				 	</div>
+				 	<div class="txt">
+				 		<a id="menuItem51" class="menuItem" href="{:Url('admin/ordercomplains/index')}" dataid="51">
+				 			<p>订单投诉</p>
+				 		</a>
+				 		
+				 	</div>
+				</li>
+				{/if}
+				{if WSTGrant('JBSP_00')}
+			    <li>
+					<div class='icon'>
+				 		<span><a id="menuItem63" class="menuItem" href="{:Url('admin/informs/index')}" dataid="63">{$object['tips']['informs']}</a></span>
+				 	</div>
+				 	<div class="txt">
+				 		<a id="menuItem188" class="menuItem" href="{:Url('admin/informs/index')}" dataid="188">
+				 			<p>商品举报</p>
+				 		</a>
+				 	</div>
+			    </li>
+			    {/if}
+			</ul>
+		</div>
+		<div class="wst-total wst-summary zytx" >
+			<div class='wst-summary-head'>
+				<span class="content"><i class="yuan"></i>活动审核</span>
+			</div>
+			<ul class="wst-total-ul">
+				{:hook('adminDocumentHookSummary')}
+			</ul>
+		</div>
+    </div>
+    {if WSTGrant('REPORTS_01')}
+	<div class="wst-total wst-summary paihang">
+		<div class='wst-summary-head'>
+			<span class="content"><i class="yuan"></i>最近30天商品销售排行</span>
+		</div>
+		<script id="goodsjs" type="text/html">
+        {{# for(var i = 0; i < d.length; i++){ if(i>5){break;}  }}
+        <tr>
+         <td style="text-align: center;" class="th0{{i+1}}">{{i+1}}</td>
+         <td><p class="thname"><a target='_blank' href='{{WST.U('home/goods/detail','goodsId='+d[i]['goodsId'])}}'>{{d[i]['goodsName']}}</a></p></td>
+         <td class="th0{{i+1}}">{{d[i]['goodsNum']}}</td>
+        </tr>
+        {{# } }}
+        </script>
+		<table>
+          <tr style="background: #1890ff1a;"><td width='15%' style="text-align: center;">排行</td><td width='70%'>商品</td><td width='15%'>销量</td></tr>
+          <tbody id='goodsList'></tbody>
+		</table>
+	</div>
+	<script>$(function(){loadGoodsStat();})</script>
+	{/if}
+</div>
+{if WSTGrant('REPORTS_04')}
+<div class="wst-total wst-summary zytx" style="width: 59.3%;float: left;height: 400px;">
+  <div class='wst-summary-head layui-col-md12'>
+   <span class="content"><i class="yuan"></i>最近1个月订单数</span>
+   <div id="main1" style='width:100%;height:350px;'></div>
+  </div>
+</div>
+<script>$(function(){loadStat1();})</script>
+{/if}
+{if WSTGrant('REPORTS_05')}
+<div class="wst-total wst-summary zytx" style="width: 39.5%;float: left; height: 400px;margin-left: 10px;">
+ <div class='wst-summary-head layui-col-md12'>
+   <span class="content"><i class="yuan"></i>最近1个月新增会员</span>
+   <div id="main" style='width:100%;height:350px;'></div>
+ </div>
+</div>
+<script>$(function(){loadStat();})</script>
+{/if}
+<div class="wst-total wst-summary zytx" style="width: 59.3%;float: left; min-height: 180px;">
+	<div class='wst-summary-head layui-col-md12'>
+				<span class="content"><i class="yuan"></i>商城管理</span>
+	</div>
+	<div class="sclx">
+		 <p>商城首页：<a href="{:WSTDomain()}" target="_blank">{:WSTDomain()}</a></p>
+		 <p>平台后台：<a href=" {:WSTDomain()}/admin" target="_blank">{:WSTDomain()}/admin</a></p>
+		 <p>商家后台：<a href="{:WSTDomain()}/shop" target="_blank">{:WSTDomain()}/shop</a></p>
+		 <p>WAP首页：<a href="{:WSTDomain()}/mobile" target="_blank">{:WSTDomain()}/mobile</a></p>
+	</div>
+</div>
+
+
+{/block}
