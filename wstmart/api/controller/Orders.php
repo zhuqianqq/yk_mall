@@ -175,9 +175,7 @@ class Orders extends Base{
         foreach($rs['goods'] as $k=>$v){
             $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
         }
-
-        $api_m = new TMember();
-
+        
         //1为买家  2为卖家
         if ($role == 1) {
             $userInfo = Db::name('users')->where("userId = {$rs['shopUserId']}")->field("userName, userPhoto")->find();
