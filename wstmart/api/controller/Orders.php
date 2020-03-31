@@ -82,8 +82,10 @@ class Orders extends Base{
 		$flag = -1;
 		$type = input('param.type','all');
 		$userId = input('param.user_id');
+		if (empty($userId)) {
+            return $this->outJson(100, "缺少参数");
+        }
 
-		$status = [];
 		switch ($type) {
 			case 'waitPay':
 				$status=[-2];
@@ -94,32 +96,22 @@ class Orders extends Base{
 			case 'waitReceive':
 				$status=[1,0];
 				break;
-			// case 'waitAppraise':
-			// 	$status=[2];
-			// 	$flag=0;
-			// 	break;
 			case 'finish': 
 				$status=[2];
 				break;
-			// case 'abnormal': // 退款/拒收 与取消合并
-			// 	$status=[-1,-3];
-			// 	break;
 			default:
 				$status=[-2,0,1,2,6];
 				break;
 		}
 		$m = new M();
 		$rs = $m->userOrdersByPage($status,$flag,$userId);
-		foreach($rs['data'] as $k=>$v){
-			if(!empty($v['list'])){
-				foreach($v['list'] as $k1=>$v1){
-					$rs['data'][$k]['list'][$k1]['goodsImg'] = WSTImg($v1['goodsImg'],3);
-				}
-			}
+		foreach ($rs['data'] as $k=>$v) {
+		    if (empty($v['list'])) continue;
+            foreach($v['list'] as $k1=>$v1){
+                $rs['data'][$k]['list'][$k1]['goodsImg'] = WSTImg($v1['goodsImg'],3);
+            }
 		}
-
 		return $this->outJson(0, "success", $rs);
-
 	}
 
 	/**
