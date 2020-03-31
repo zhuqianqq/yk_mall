@@ -1605,7 +1605,7 @@ class Orders extends Base{
 	/**
 	 * 获取订单详情
 	 */
-	public function getByView($orderId, $uId=0, $shopId = 0){
+	public function getByView($orderId, $uId = 0, $shopId = 0){
 		$userId = ($uId==0)?(int)session('WST_USER.userId'):$uId;
 		$shopId = ($shopId==0)?(int)session('WST_USER.shopId'):$shopId;
 		$orders = Db::name('orders')->alias('o')
@@ -1624,7 +1624,7 @@ class Orders extends Base{
 		$orders['log'] = [];
 		$logFilter = [];
 		foreach ($log as $key => $v) {
-			if(in_array($orders['orderStatus'],[-2,0,1,2]) && in_array($v['orderStatus'],$logFilter))continue;
+			if(in_array($orders['orderStatus'], [-2,0,1,2]) && in_array($v['orderStatus'],$logFilter)) continue;
 			$orders['log'][] = $v; 
 			$logFilter[] = $v['orderStatus'];
 		}
@@ -1633,12 +1633,12 @@ class Orders extends Base{
 		foreach ($orders['goods'] as $key => $v) {
 		 	$orders['goods'][$key]['goodsName'] = WSTStripTags($v['goodsName']);
 			//如果是虚拟商品
-			if($orders['orderType']==1){
+			if ($orders['orderType'] == 1) {
 				$orders['goods'][$key]['extraJson'] = json_decode($v['extraJson'],true);
 			}
 			$shotGoodsSpecNames = [];
             $goodsSpecNamesReplace = '';
-		 	if($v['goodsSpecNames']!=""){
+		 	if ($v['goodsSpecNames'] != "") {
 		 		$v['goodsSpecNames'] = str_replace('：',':',$v['goodsSpecNames']);
 		 		$goodsSpecNames = explode('@@_@@',$v['goodsSpecNames']);
                 $goodsSpecNamesReplace = str_replace('@@_@@','、',$v['goodsSpecNames']);
@@ -1652,11 +1652,11 @@ class Orders extends Base{
 		}
 		
         // 发货时间与快递单号
-        $orderExpressNos = Db::name('order_express')->where([['orderId','=',$orderId]])->field("expressNo, expressId")->find();
+        $orderExpressNos = Db::name('order_express')->where([['orderId', '=', $orderId]])->field("expressNo, expressId")->find();
 		$expressId = '';
 		$expressNo = '';
 		$expressName = '';
-        if(!empty($orderExpressNos)){
+        if (!empty($orderExpressNos)) {
             $expressId = $orderExpressNos['expressId'];
             $expressNo = $orderExpressNos['expressNo'];
             $expressInfo = Db::name('express')->where("expressId = {$expressId}")->find();
@@ -1668,15 +1668,15 @@ class Orders extends Base{
         $orders["expressNo"] = $expressNo;
         $orders["expressName"] = $expressName;
         //格式化发票信息
-		if($orders['isInvoice']==1){
+		if ($orders['isInvoice'] == 1) {
 			$orders['invoice'] = json_decode($orders['invoiceJson'],true);
 		}
 		$orders['isComplain'] = 1;
-		if(($orders['complainId']=='') && ($orders['payType']==0 || ($orders['payType']==1 && $orders['orderStatus']!=-2))){
+		if (($orders['complainId'] == '') && ($orders['payType'] == 0 || ($orders['payType'] == 1 && $orders['orderStatus'] != -2))) {
 			$orders['isComplain'] = '';
 		}
-		if($orders['deliverType']==1){
-			if($orders['storeId']){
+		if ($orders['deliverType'] ==1) {
+			if ($orders['storeId']) {
 				$store = Db::name("stores")->where(['storeId'=>$orders['storeId']])->find();
 				$areaNames = model("common/areas")->getParentNames($store['areaId']);
 				$store["areaNames"] = implode("",$areaNames);
@@ -1686,33 +1686,33 @@ class Orders extends Base{
 
 		$orders['allowRefund'] = 0;
 	 	//只要是已支付的，并且没有退款的，都可以申请退款操作
-	 	if($orders['payType']==1 && $orders['isRefund']==0 && $orders['refundId']=='' && ($orders['isPay'] ==1 || $orders['useScore']>0)){
+	 	if ($orders['payType'] == 1 && $orders['isRefund']==0 && $orders['refundId'] == '' && ($orders['isPay'] ==1 || $orders['useScore'] > 0)){
               $orders['allowRefund'] = 1;
 	 	}
 	 	//货到付款中使用了积分支付的也可以申请退款
-	 	if($orders['payType']==0 && $orders['useScore']>0 && $orders['refundId']=='' && $orders['isRefund']==0){
+	 	if ($orders['payType'] == 0 && $orders['useScore'] > 0 && $orders['refundId'] == '' && $orders['isRefund'] == 0) {
               $orders['allowRefund'] = 1;
 	 	}
 		// 是否可申请售后
 		$orders['canAfterSale'] = false;
 		// 订单已确认收货
-		if($orders['payType']==1 && $orders['orderStatus']==2){
+		if ($orders['payType'] ==1 && $orders['orderStatus'] == 2) {
 			// 判断是否已超过售后服务有效期
 			// 如果 当前时间>(确认收货时间+售后服务期限) 表示无法继续申请售后
 			$now = time();
 			// 售后结束日期
 			$endTime = strtotime($orders['afterSaleEndTime']);
-			$_rs = ($now<=$endTime);
+			$_rs = ($now <= $endTime);
 			$orders['canAfterSale'] = $_rs;
-			if($_rs){
+			if ($_rs) {
 				// 判断订单是否还能继续申请售后 【订单商品总数-售后单商品总数>0】
 				$ogNum = Db::name('order_goods')
-						 ->where(['orderId'=>$orderId])
+						 ->where(['orderId' => $orderId])
 						 ->value('sum(goodsNum) ogNum');
 				$osNum = Db::name('order_services')->alias('os')
 													 ->join('orders o','o.orderId=os.orderId','inner')
 													 ->join('service_goods sg','sg.serviceId=os.id')
-													 ->where(['o.orderId'=>$orderId,'os.isClose'=>0])
+													 ->where(['o.orderId' => $orderId, 'os.isClose'=>0])
 													 ->value('sum(sg.goodsNum) osNum');
 				$orders['canAfterSale'] = ($ogNum>$osNum);
 			}

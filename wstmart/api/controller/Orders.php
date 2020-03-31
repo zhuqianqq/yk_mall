@@ -141,14 +141,18 @@ class Orders extends Base{
      * 获取订单详情
      */
 
-    public function getOrderDetail(){
-
+    public function getOrderDetail()
+    {
         $m = new M();
         $pkey = input('pkey') ?? '';
         $role = input('role') ?? 2;
         $user_id = input('param.mall_user_id'); // 直播用户ID
         if (empty($user_id)) {
             return $this->outJson(100, "缺少参数");
+        }
+        $userInfo = Db::name('users')->where("userId = {$user_id}")->field("userName, userPhoto")->find();
+        if (empty($userInfo)) {
+            return $this->outJson(100, "没有数据");
         }
         $shop = Db::name('shops')->where("userId = {$user_id}")->field("shopId")->find();
         // if (empty($shop)) {
@@ -172,18 +176,17 @@ class Orders extends Base{
             $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
         }
 
-        $api_m= new TMember();
+        $api_m = new TMember();
 
         //1为买家  2为卖家
-        if($role == 1){
-            $user_info = $api_m->getMemberInfo($rs['shopUserId']);
+        if ($role == 1) {
+            $userInfo = Db::name('users')->where("userId = {$rs['shopUserId']}")->field("userName, userPhoto")->find();
             $express = [];
-        }else{
-            $user_info = $api_m->getMemberInfo($rs['userId']);
+        } else {
             $express = model('Express')->listQuery();
         }
         $redisKey = "SHOP:UPDATE:EXPRESS:ORDERID:" . (int)input('id');
-        $rs['userInfo'] = (object)$user_info;
+        $rs['userInfo'] = (object)$userInfo;
         $rs['express'] = (object)$express;
         $isUpdate = 1;
         if (1 == $orderStatus) {
