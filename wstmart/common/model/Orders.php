@@ -251,7 +251,7 @@ class Orders extends Base{
 	/**
 	 * 正常订单
 	 */
-	public function submit($orderSrc = 0, $uId=0)
+	public function submit($orderSrc = 0, $uId = 0)
     {
         $addressId = (int)input('post.s_addressId');
         $deliverType = ((int)input('post.deliverType') != 0) ? 1 : 0;

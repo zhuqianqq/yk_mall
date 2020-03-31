@@ -29,6 +29,9 @@ class Orders extends Base{
     {
         $m = new M();
         $rs = $m->submit(2);
+        if ($rs["status"] == -1) {
+            return $this->outJson(1, $rs["msg"]);
+        }
         if ($rs["status"] == 1) {
             $pkey = WSTBase64urlEncode($rs["data"] . "@1");
             $rs["pkey"] = $pkey;

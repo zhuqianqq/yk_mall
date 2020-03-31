@@ -176,33 +176,32 @@ class Carts extends Base{
 	/**
 	 * 获取购物车列表
 	 */
-	public function getCarts($isSettlement = false, $uId=0){
-		//$userId = ($uId==0)?(int)session('WST_USER.userId'):$uId;
+	public function getCarts($isSettlement = false, $uId = 0){
         $userId = (int)input('user_id', 0); //直播用户id
-        if($userId > 0){
+        if ($userId > 0) {
             $userId = TUserMap::getMallUserId($userId);
-        }else{
+        } else {
             $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
 		}
 		
 		$where = [];
 		$where['c.userId'] = $userId;
         $prefix = config('database.prefix');
-		if($isSettlement)$where['c.isCheck'] = 1;
+		if($isSettlement) $where['c.isCheck'] = 1;
 		$rs = Db::table($prefix.'carts')
-		           ->alias([$prefix.'carts'=>'c',$prefix.'goods' => 'g',$prefix.'shops' => 's',$prefix.'goods_specs' => 'gs'])
-		           ->join($prefix.'goods','c.goodsId=g.goodsId','inner')
-		           ->join($prefix.'shops','s.shopId=g.shopId','left')
-		           ->join($prefix.'goods_specs','c.goodsSpecId=gs.id','left')
+		           ->alias([$prefix . 'carts' => 'c', $prefix . 'goods' => 'g', $prefix . 'shops' => 's', $prefix . 'goods_specs' => 'gs'])
+		           ->join($prefix.'goods','c.goodsId = g.goodsId','inner')
+		           ->join($prefix.'shops','s.shopId = g.shopId','left')
+		           ->join($prefix.'goods_specs','c.goodsSpecId = gs.id','left')
 		           ->where($where)
 		           ->field('c.goodsSpecId,c.cartId,s.userId,s.shopId,s.shopName,g.isSale,g.goodsId,g.shippingFeeType,g.shopExpressId,s.shopQQ,shopWangWang,g.goodsName,g.shopPrice,g.shopPrice defaultShopPrice,g.goodsStock,g.goodsWeight,g.goodsVolume,g.isSpec,gs.specPrice,gs.specStock,gs.specWeight,gs.specVolume,g.goodsImg,g.gallery,c.isCheck,gs.specIds,c.cartNum,g.goodsCatId,g.isFreeShipping,s.isInvoice')
 				   ->order('cartId DESC')
-				   ->select();		
+				   ->select();
 		$carts = [];
 		$goodsIds = [];
 		$goodsTotalNum = 0;
 		$goodsTotalMoney = 0;
-		foreach ($rs as $key =>$v){
+		foreach ($rs as $key => $v) {
 			//购物车中购买时  商品已经下架  
 			// if($v['isSale']==0){
 			// 	Db::table($prefix.'carts')
@@ -212,12 +211,12 @@ class Carts extends Base{
 			// }
 
 			//如果gallery中有数据  把goodsImg换为gallery的第一张
-			if($v['gallery']){
-				$v['goodsImg'] =  explode(',',$v['gallery'])[0] ;
+			if ($v['gallery']) {
+				$v['goodsImg'] =  explode(',', $v['gallery'])[0] ;
 			}
 
-			if(!isset($carts[$v['shopId']]['goodsMoney']))$carts[$v['shopId']]['goodsMoney'] = 0;
-			if(!isset($carts[$v['shopId']]['isFreeShipping']))$carts[$v['shopId']]['isFreeShipping'] = true;
+			if (!isset($carts[$v['shopId']]['goodsMoney'])) $carts[$v['shopId']]['goodsMoney'] = 0;
+			if (!isset($carts[$v['shopId']]['isFreeShipping'])) $carts[$v['shopId']]['isFreeShipping'] = true;
             //勿删！为插件促销活动做准备接口
 			$v['promotion'] = [];//商品优惠活动
 			$carts[$v['shopId']]['promotion'] = [];//店铺优惠活动
@@ -229,9 +228,9 @@ class Carts extends Base{
 			$carts[$v['shopId']]['userId'] = $v['userId'];
 			$carts[$v['shopId']]['isInvoice'] = $v['isInvoice'];
 			//如果店铺一旦不包邮了，那么就不用去判断商品是否包邮了
-			if($v['isFreeShipping']==0 && $carts[$v['shopId']]['isFreeShipping'])$carts[$v['shopId']]['isFreeShipping'] = false;
+			if ($v['isFreeShipping'] == 0 && $carts[$v['shopId']]['isFreeShipping']) $carts[$v['shopId']]['isFreeShipping'] = false;
 			$carts[$v['shopId']]['shopWangWang'] = $v['shopWangWang'];
-			if($v['isSpec']==1){
+			if ($v['isSpec'] == 1) {
 				$v['shopPrice'] = $v['specPrice'];
 				$v['defaultShopPrice'] = $v['specPrice'];
 				$v['goodsStock'] = $v['specStock'];
@@ -240,18 +239,18 @@ class Carts extends Base{
 			}
 			//判断能否购买，预设allowBuy值为10，为将来的各种情况预留10个情况值，从0到9
 			$v['allowBuy'] = 10;
-			if($v['goodsStock']<=0){
+			if ($v['goodsStock'] <= 0) {
 				$v['allowBuy'] = 0;//库存不足
-			}else if($v['goodsStock']<$v['cartNum']){
+			} else if($v['goodsStock'] < $v['cartNum']) {
 				//$v['allowBuy'] = 1;//库存比购买数小
 				$v['cartNum'] = $v['goodsStock'];
 			}
 			//如果是结算的话，则要过滤了不符合条件的商品
-			if($isSettlement && $v['allowBuy']!=10){
+			if ($isSettlement && $v['allowBuy'] !=10) {
 				$this->disChkGoods($v['goodsId'],(int)$v['goodsSpecId'],(int)session('WST_USER.userId'));
 				continue;
 			}
-			if($v['isCheck']==1){
+			if ($v['isCheck'] == 1) {
 				$carts[$v['shopId']]['goodsMoney'] = $carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum++;
@@ -259,16 +258,16 @@ class Carts extends Base{
 			$v['specNames'] = [];
 			unset($v['shopName']);
 			// app端处理
-			if($uId>0 && isset($v['goodsName'])){
+			if ($uId > 0 && isset($v['goodsName'])) {
 				$v['goodsName'] = htmlspecialchars_decode($v['goodsName']);
 			}
 
 			$carts[$v['shopId']]['list'][] = $v;
-			if(!in_array($v['goodsId'],$goodsIds))$goodsIds[] = $v['goodsId'];
+			if (!in_array($v['goodsId'], $goodsIds)) $goodsIds[] = $v['goodsId'];
 		}
 
 		//加载规格值
-		if(count($goodsIds)>0){
+		if (count($goodsIds) > 0) {
 		    $specs = DB::name('spec_items')->alias('s')->join('__SPEC_CATS__ sc','s.catId=sc.catId','left')
 		        ->where([['s.goodsId','in',$goodsIds],['s.dataFlag','=',1]])->field('catName,itemId,itemName')->select();
 		    if(count($specs)>0){ 
@@ -296,7 +295,7 @@ class Carts extends Base{
 		}
 		$cartData = ['carts'=>$carts,'goodsTotalMoney'=>$goodsTotalMoney,'goodsTotalNum'=>$goodsTotalNum,'promotionMoney'=>0]; 
 		//店铺优惠活动监听
-		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]); 
+//		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
 	}
 	
