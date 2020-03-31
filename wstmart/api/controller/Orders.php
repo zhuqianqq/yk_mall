@@ -175,7 +175,7 @@ class Orders extends Base{
         foreach($rs['goods'] as $k=>$v){
             $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
         }
-        
+
         //1为买家  2为卖家
         if ($role == 1) {
             $userInfo = Db::name('users')->where("userId = {$rs['shopUserId']}")->field("userName, userPhoto")->find();
@@ -417,7 +417,8 @@ class Orders extends Base{
     /**
      * 获取单条订单的商品信息
      */
-    public function waitDeliverById(){
+    public function waitDeliverById()
+    {
         $m = new M();
         $rs = $m->waitDeliverById();
         return $this->outJson(1, '查询成功', $rs);

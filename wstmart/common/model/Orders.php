@@ -2567,11 +2567,12 @@ class Orders extends Base{
     /**
      * 获取单条订单的商品信息
      */
-    public function waitDeliverById(){
+    public function waitDeliverById()
+    {
         $orderId = (int)input('id');
-        $goods = Db::name('order_goods')->where('orderId','=',$orderId)->select();
-        $order = Db::name('orders')->field('deliverType,userAddress,userName,userPhone')->where('orderId','=',$orderId)->find();
-        $orderExpressGoodsIds = Db::name('order_express')->field('orderGoodsId')->where(['orderId'=>$orderId])->select();
+        $goods = Db::name('order_goods')->where('orderId','=', $orderId)->select();
+        $order = Db::name('orders')->field('deliverType,userAddress,userName,userPhone')->where('orderId','=', $orderId)->find();
+        $orderExpressGoodsIds = Db::name('order_express')->field('orderGoodsId')->where(['orderId' => $orderId])->select();
         $deliveredGoodsIds = [];
         foreach($orderExpressGoodsIds as $k => $v){
             $temp = explode(',',$v['orderGoodsId']);
@@ -2585,7 +2586,7 @@ class Orders extends Base{
         $data['deliverType'] = $order['deliverType'];
         if($goods){
             foreach($goods as $k => $v){
-                $goods[$k]['hasDeliver'] = (in_array($v['id'],$deliveredGoodsIds))?true:false;
+                $goods[$k]['hasDeliver'] = (in_array($v['id'], $deliveredGoodsIds)) ? true : false;
             }
             $data['list'] = $goods;
         }
