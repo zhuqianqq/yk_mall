@@ -29,6 +29,9 @@ class Orders extends Base{
     {
         $m = new M();
         $rs = $m->submit(2);
+        if ($rs["status"] == -1) {
+            return $this->outJson(1, $rs["msg"]);
+        }
         if ($rs["status"] == 1) {
             $pkey = WSTBase64urlEncode($rs["data"] . "@1");
             $rs["pkey"] = $pkey;
@@ -82,8 +85,10 @@ class Orders extends Base{
 		$flag = -1;
 		$type = input('param.type','all');
 		$userId = input('param.user_id');
+		if (empty($userId)) {
+            return $this->outJson(100, "缺少参数");
+        }
 
-		$status = [];
 		switch ($type) {
 			case 'waitPay':
 				$status=[-2];
@@ -94,32 +99,22 @@ class Orders extends Base{
 			case 'waitReceive':
 				$status=[1,0];
 				break;
-			// case 'waitAppraise':
-			// 	$status=[2];
-			// 	$flag=0;
-			// 	break;
 			case 'finish': 
 				$status=[2];
 				break;
-			// case 'abnormal': // 退款/拒收 与取消合并
-			// 	$status=[-1,-3];
-			// 	break;
 			default:
 				$status=[-2,0,1,2,6];
 				break;
 		}
 		$m = new M();
 		$rs = $m->userOrdersByPage($status,$flag,$userId);
-		foreach($rs['data'] as $k=>$v){
-			if(!empty($v['list'])){
-				foreach($v['list'] as $k1=>$v1){
-					$rs['data'][$k]['list'][$k1]['goodsImg'] = WSTImg($v1['goodsImg'],3);
-				}
-			}
+		foreach ($rs['data'] as $k=>$v) {
+		    if (empty($v['list'])) continue;
+            foreach($v['list'] as $k1=>$v1){
+                $rs['data'][$k]['list'][$k1]['goodsImg'] = WSTImg($v1['goodsImg'],3);
+            }
 		}
-
 		return $this->outJson(0, "success", $rs);
-
 	}
 
 	/**
@@ -146,14 +141,18 @@ class Orders extends Base{
      * 获取订单详情
      */
 
-    public function getOrderDetail(){
-
+    public function getOrderDetail()
+    {
         $m = new M();
         $pkey = input('pkey') ?? '';
         $role = input('role') ?? 2;
         $user_id = input('param.mall_user_id'); // 直播用户ID
         if (empty($user_id)) {
             return $this->outJson(100, "缺少参数");
+        }
+        $userInfo = Db::name('users')->where("userId = {$user_id}")->field("userName, userPhoto")->find();
+        if (empty($userInfo)) {
+            return $this->outJson(100, "没有数据");
         }
         $shop = Db::name('shops')->where("userId = {$user_id}")->field("shopId")->find();
         // if (empty($shop)) {
@@ -177,18 +176,17 @@ class Orders extends Base{
             $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
         }
 
-        $api_m= new TMember();
+        $api_m = new TMember();
 
         //1为买家  2为卖家
-        if($role == 1){
-            $user_info = $api_m->getMemberInfo($rs['shopUserId']);
+        if ($role == 1) {
+            $userInfo = Db::name('users')->where("userId = {$rs['shopUserId']}")->field("userName, userPhoto")->find();
             $express = [];
-        }else{
-            $user_info = $api_m->getMemberInfo($rs['userId']);
+        } else {
             $express = model('Express')->listQuery();
         }
         $redisKey = "SHOP:UPDATE:EXPRESS:ORDERID:" . (int)input('id');
-        $rs['userInfo'] = (object)$user_info;
+        $rs['userInfo'] = (object)$userInfo;
         $rs['express'] = (object)$express;
         $isUpdate = 1;
         if (1 == $orderStatus) {
