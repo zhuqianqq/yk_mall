@@ -87,6 +87,7 @@ class Goods extends CGoods{
             if ($key != '') $rs['read'] = true;
             //获取店铺信息
             $rs['shop'] = model('shops')->getShopInfo((int)$rs['shopId']);
+         
             if (empty($rs['shop'])) return [];
             $goodsCats = Db::name('cat_shops')->alias('cs')->join('__GOODS_CATS__ gc', 'cs.catId=gc.catId and gc.dataFlag=1', 'left')->join('__SHOPS__ s', 's.shopId = cs.shopId', 'left')
                 ->where('cs.shopId', $rs['shopId'])->field('cs.shopId,s.shopTel,gc.catId,gc.catName')->select();
@@ -113,22 +114,23 @@ class Goods extends CGoods{
                 ->where(['sit.goodsId' => $goodsId, 'gc.isShow' => 1, 'sit.dataFlag' => 1])
                 ->field('gc.isAllowImg,gc.catName,sit.catId,sit.itemId,sit.itemName,sit.itemImg')
                 ->order('sit.itemId asc,gc.isAllowImg desc,gc.catSort asc,gc.catId asc')->select();
+        
             $rs['spec'] = array();
             foreach ($specs as $key => $v) {
-//				$rs['spec'][$v['catId']]['name'] = $v['catName'];
-//				$rs['spec'][$v['catId']]['list'][] = $v;
-                array_push($rs['spec'], $v);
+				$rs['spec'][$v['catId']]['name'] = $v['catName'];
+				$rs['spec'][$v['catId']]['list'][] = $v;
+                //array_push($rs['spec'], $v);
             }
             //获取销售规格
             $sales = Db::name('goods_specs')->where('goodsId', $goodsId)->field('id,isDefault,productNo,specIds,marketPrice,specPrice,specStock')->select();
             if (!empty($sales)) {
                 $rs['saleSpec'] = array();
                 foreach ($sales as $key => $v) {
-//					$str = explode(':',$v['specIds']);
-//					sort($str);
-//					unset($v['specIds']);
-//					$rs['saleSpec'][implode(':',$str)] = $v;
-                    array_push($rs['saleSpec'], $v);
+					$str = explode(':',$v['specIds']);
+					sort($str);
+					unset($v['specIds']);
+					$rs['saleSpec'][implode(':',$str)] = $v;
+                    //array_push($rs['saleSpec'], $v);
                 }
             }
             //获取商品属性

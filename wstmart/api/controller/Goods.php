@@ -5,6 +5,7 @@ use wstmart\common\model\GoodsCats;
 use wstmart\common\model\Attributes as AT;
 use \wstmart\shop\model\Goods as M;
 use wstmart\common\model\TUserMap;
+use think\facade\Cache;
 
 /**
  * 商品控制器
@@ -16,42 +17,51 @@ class Goods extends Base
         'AccessCheck' => ['only' => ['changeSaleStatus','save','del']],
     ];
 
+    /**
+     * @var string key前缀
+     */
+    public $goods_detail_prefix = "goods_detail_key:";
+
 	/**
 	 * 商品详情
 	 */
 	public function detail(){
-        $root = WSTDomain();
-		$m = model('goods');
-        $goods = $m->getBySale(input('goodsId/d'));
 
-        // 找不到商品记录
-        if(empty($goods)) {
-//            $this->assign('message','商品不知道去哪里了');
-//            return $this->fetch('error_sys');
-            return $this->outJson(1, "找不到此商品！");
-        }
-        hook('mobileControllerGoodsIndex',['getParams'=>input()]);
-        // 分类信息
-        $catInfo = Db::name("goods_cats")->field("mobileDetailTheme")->where(['catId'=>$goods['goodsCatId'],'dataFlag'=>1])->find();
-        $rule = '/<img src="\/.*?(upload.*?)"/';
-        preg_match_all($rule, $goods['goodsDesc'], $images);
-        foreach($images[0] as $k=>$v){
-            $goods['goodsDesc'] = str_replace(WSTConf('CONF.resourcePath').'/'.$images[1][$k],$root.'/'.WSTConf("CONF.goodsLogo") . "\"  data-echo=\"".$root."/".WSTImg($images[1][$k],2), $goods['goodsDesc']);
-        }
-//        if(!empty($goods)){
-//            $history = cookie("wx_history_goods");
-//            $history = is_array($history)?$history:[];
-//            array_unshift($history, (string)$goods['goodsId']);
-//            $history = array_values(array_unique($history));
-//            if(!empty($history)){
-//                cookie("wx_history_goods",$history,25920000);
-//            }
-//        }
-        $goods['consult'] = model('GoodsConsult')->firstQuery($goods['goodsId']);
-        $goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
-        $goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);
+        $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
+        $goods_cache = Cache::get($goods_cache_name, null);
 
-        return $this->outJson(0,"查找成功！",$goods);
+        if(!$goods_cache){
+
+            $root = WSTDomain();
+            $m = model('goods');
+            $goods = $m->getBySale(input('goodsId/d'));
+    
+            // 找不到商品记录
+            if(empty($goods)) {
+                return $this->outJson(1, "找不到此商品！");
+            }
+    
+            //hook('mobileControllerGoodsIndex',['getParams'=>input()]);
+            // 分类信息
+            // $catInfo = Db::name("goods_cats")->field("mobileDetailTheme")->where(['catId'=>$goods['goodsCatId'],'dataFlag'=>1])->find();
+            // $rule = '/<img src="\/.*?(upload.*?)"/';
+            // preg_match_all($rule, $goods['goodsDesc'], $images);
+            // foreach($images[0] as $k=>$v){
+            //     $goods['goodsDesc'] = str_replace(WSTConf('CONF.resourcePath').'/'.$images[1][$k],$root.'/'.WSTConf("CONF.goodsLogo") . "\"  data-echo=\"".$root."/".WSTImg($images[1][$k],2), $goods['goodsDesc']);
+            // }
+            //暂不提供功能
+            //$goods['consult'] = model('GoodsConsult')->firstQuery($goods['goodsId']);
+            //$goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
+            //$goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);
+           
+            Cache::set($goods_cache_name, $goods); //永久缓存
+
+            return $this->outJson(0,"查找成功！",$goods);
+        }else{
+
+            return $this->outJson(0,"查找成功！",$goods_cache);
+        }
+       
 	}
 
 
@@ -88,8 +98,10 @@ class Goods extends Base
     {
         $m = new M();
         $ret = $m->del();
-
+        
         if($ret["status"] == 1){
+            $goods_cache_name = $this->goods_detail_prefix . input('post.id/d');;
+            Cache::delete($goods_cache_name);
             return $this->outJson(0,"删除成功");
         }
 
