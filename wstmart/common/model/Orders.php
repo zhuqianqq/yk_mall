@@ -929,25 +929,25 @@ class Orders extends Base{
 	/**
 	 * 商家发货
 	 */
-	public function deliver($uId=0, $sId=0){
+	public function deliver($uId = 0, $sId = 0){
 		$orderId = (int)input('post.id');
 		$expressId = (int)input('post.expressId');
 		$expressNo = ($expressId>0)?input('post.expressNo'):'';
         $selectOrderGoodsIds = WSTFormatIn(',',input('post.selectOrderGoodsIds'));
-        $shopId = ($sId==0)?(int)session('WST_USER.shopId'):$sId;
-        $userId = ($uId==0)?(int)session('WST_USER.userId'):$uId;
+        $shopId = $sId;
+        $userId = $uId;
         $deliverType = (int)input('post.deliverType');
-        $order = $this->where(['shopId'=>$shopId,'orderId'=>$orderId,'orderStatus'=>0])->field('orderId,orderNo,userId,deliverType')->find();
+        $order = $this->where(['shopId' => $shopId, 'orderId '=> $orderId, 'orderStatus' => 0])->field('orderId,orderNo,userId,deliverType')->find();
         if(empty($order))return WSTReturn('操作失败，请检查订单状态是否已改变');
         // 前台传过来的deliverType,deliverType==1需要物流，deliverType=0无需物流
-        $deliverType = ($deliverType==1)?1:0;
+        $deliverType = ($deliverType == 1) ? 1 : 0;
         if ($deliverType == 1) {
             if (!$expressId || empty($expressNo)) {
                 return WSTReturn('请填写物流信息');
             }
         }
         $finishDeliver = false;
-        if($order['deliverType'] == 1){//客户自提
+        if ($order['deliverType'] == 1) {//客户自提
             $finishDeliver = true;
         }else{//商家发货
             //验证前台传过来的数据

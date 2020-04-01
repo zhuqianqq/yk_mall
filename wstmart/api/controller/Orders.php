@@ -358,7 +358,8 @@ class Orders extends Base{
 	/**
 	 * 商家发货
 	 */
-	public function deliver(){
+	public function deliver()
+    {
 		$this->checkShopAuth("waitDeliver");
         $user_id = input('param.mall_user_id'); // 直播用户ID
         if (empty($user_id)) {
