@@ -24,7 +24,6 @@ class Users extends Base
     public function getUserByPhone($userPhone)
     {
         $rs = $this->where("userPhone", $userPhone)
-            ->where(["dataFlag" => 1, "userStatus" => 1])
             ->find();
 
         return $rs;

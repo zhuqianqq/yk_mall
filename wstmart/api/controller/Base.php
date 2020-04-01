@@ -1,5 +1,6 @@
 <?php
 namespace wstmart\api\controller;
+use think\App;
 use think\Controller;
 use think\Db;
 use util\Tools;
@@ -9,76 +10,92 @@ use util\Tools;
  * 基础控制器
  */
 class Base extends Controller {
-	public function __construct(){
-		parent::__construct();
-		hook('initConfigHook',['getParams'=>input()]);
-		WSTConf('CONF',WSTConfig());
-		//WSTSwitchs();
-        $this->assign("v",STATIC_VER); //静态资源版本号
-		$this->view->filter(function($content){
-            $style = WSTConf('CONF.wstmobileStyle')?WSTConf('CONF.wstmobileStyle'):'default';
-            $content = str_replace("__RESOURCE_PATH__",WSTConf('CONF.resourcePath'),$content);
-            $content = str_replace("__MOBILE__",str_replace('/index.php','',$this->request->root()).'/wstmart/mobile/view/'.$style,$content);
-            return $content;
-        });
-		if(WSTConf('CONF.seoMallSwitch')==0){
-			$this->redirect('mobile/switchs/index');
-			exit;
-		}
-	}
-    // 权限验证方法
-    protected function checkAuth(){
-       	$USER = session('WST_USER');
-        if(empty($USER)){
-        	if(request()->isAjax()){
-        		die('{"status":-999,"msg":"您还未登录"}');
-        	}else{
-        		$this->redirect('mobile/users/login');
-        		exit;
-        	}
-        }
-    }
+    /**
+     * @var int 每页记录条数
+     */
+    public static $pageSize = 20;
 
-    // 店铺权限验证方法
-    protected function checkShopAuth($opt){
-       	$shopMenus = WSTShopOrderMenus();
-       	if($opt=="list"){
-       		if(count($shopMenus)==0){
-       			session('moshoporder','对不起,您无权进行该操作');
-       			$this->redirect('mobile/error/message',['code'=>'moshoporder']);
-		    	exit;
-       		}
-       	}else{
-       		if(!array_key_exists($opt,$shopMenus)){
-	       		if(request()->isAjax()){
-		    		die('{"status":-1,"msg":"您无权进行该操作"}');
-		    	}else{
-		    		session('moshoporder','对不起,您无权进行该操作');
-		    		$this->redirect('mobile/error/message',['code'=>'moshoporder']);
-		    		exit;
-		    	}
-	       	}
-       	}
-    }
-	protected function fetch($template = '', $vars = [], $config = []){
-		$style = WSTConf('CONF.wstmobileStyle')?WSTConf('CONF.wstmobileStyle'):'default';
-		return $this->view->fetch($style."/".$template, $vars, $config);
-		
-	}
-	/**
-	 * 上传图片
-	 */
-	public function uploadPic()
+    /**
+     * @var bool 是否检测登录
+     */
+    protected $checkLogin = false;
+
+    /**
+     * Request实例
+     * @var \think\Request
+     */
+    protected $request;
+
+    /**
+     * 应用实例
+     * @var \think\App
+     */
+    protected $app;
+
+    /**
+     * 是否批量验证
+     * @var bool
+     */
+    protected $batchValidate = false;
+
+    /**
+     * 控制器中间件
+     * @var array
+     */
+    protected $middleware = [];
+
+    /**
+     * 是否开启跨域 默认开启
+     * @var bool
+     */
+    protected $cors = true;
+
+    /**
+     * @var 应用渠道
+     */
+    protected $channel;
+
+    /**
+     * @var 当前用户id
+     */
+    protected $user_id = 0;
+
+    protected $logfile = '';
+
+    /**
+     * 构造方法
+     * @access public
+     * @param App $app 应用对象
+     */
+    public function __construct(App $app)
     {
-        return UploadPicToCos();
-	}
+        $this->app = $app;
+        $this->request = $this->app->request;
 
-	/**
-	 * 获取验证码
-	 */
-	public function getVerify(){
-		WSTVerify();
-	}
+        // 控制器初始化
+        $this->initialize();
+    }
+
+    // 初始化
+    protected function initialize()
+    {
+        if ($this->cors) {
+            //header("Access-Control-Allow-Origin:*");
+//            header("Access-Control-Allow-Credentials: true");
+//            header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+//            header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With,user-id,access-key");
+//            header("Content-Type: application/json; charset=utf-8");
+        }
+
+        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == "OPTIONS") {
+            header("HTTP/1.1 204 No Content"); //跨域options请求
+            exit;
+        }
+
+        $user_id = $this->request->header('user_id') ?? $this->request->param('user_id');
+        $this->user_id = intval($user_id);
+        $this->channel = $this->request->header('channel', '');
+    }
 
 	 /**
      * 输出json数组
