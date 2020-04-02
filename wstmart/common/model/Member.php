@@ -76,7 +76,7 @@ class Member extends Base
     public static function getByOpenId($open_id, $field = "")
     {
         if (empty($field)) {
-            $field = "user_id,nick_name,sex,avatar,front_cover,openid,unionid,country,province,city";
+            $field = "id,user_id,nick_name,sex,avatar,front_cover,openid,unionid,country,province,city,display_code";
         }
         $data = self::where("openid", $open_id)->field($field)->find();
 

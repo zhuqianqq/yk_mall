@@ -5,6 +5,7 @@ use think\Exception;
 use util\AccessKeyHelper;
 use util\SmsHelper;
 use util\ValidateHelper;
+use util\WechatHelper;
 use wstmart\common\model\Member;
 use wstmart\common\model\Users;
 /**
@@ -78,7 +79,7 @@ class Login extends Base{
             $iv = $this->request->post("iv", '', "trim");
             $encryptedData = $this->request->post("encryptedData", '', "trim");
             if (empty($iv) && empty($encryptedData)) {
-                $loginInfo = WechatHelper::getOpenidByCode($code); //以code换取openid
+                $loginInfo = WechatHelper::getOpenidByCode($code); // 以code换取openid
                 $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
                 $unionId = '';
             } else {
@@ -95,43 +96,44 @@ class Login extends Base{
                 return $this->outJson(200, "获取微信openId失败！");
             }
             if (!empty($unionId)) {
-                $data = TMember::getByUnionId($unionId);
+                $data = Member::getByUnionId($unionId);
                 if (empty($data)) {
                     // 如果unionID没有找到，则找openid
-                    $data = TMember::getByOpenId($openId);
+                    $data = Member::getByOpenId($openId);
                 }
             } else {
-                $data = TMember::getByOpenId($openId);
+                $data = Member::getByOpenId($openId);
             }
 
             if (empty($data)) {
                 // 没有没有unionid存在，则新建
                 if (!empty($unionId)) {
-                    $user_id = TMember::registerByUnionId($unionId);
-                    $data = TMember::getByUnionId($unionId);
+                    $mid = Member::registerByUnionId($unionId);
+                    $data = Member::getByUnionId($unionId);
                 } else {
-                    $user_id = TMember::registerByOpenId($openId);
-                    $data = TMember::getByOpenId($openId);
+                    $mid = Member::registerByOpenId($openId);
+                    $data = Member::getByOpenId($openId);
                 }
 
-                if ($user_id <= 0) {
+                if ($mid <= 0) {
                     return $this->outJson(200, "注册失败");
                 }
 
                 $data["nick_name"] = empty($nick_name) ? $data['nick_name'] : $nick_name;
                 $data["avatar"] = empty($avatar) ? $data['avatar'] : $avatar;
                 $data["sex"] = $gender > 0 ? $gender : $data['sex'];
-                $mall_user_id = MallUser::register($data); //注册商城用户
+                $mall_user_id = \wstmart\api\model\Users::register($data); //注册商城用户
+                if (!$mall_user_id) {
+                    throw new Exception('注册失败');
+                }
+                $data["user_id"] = $mall_user_id;
             } else {
                 $mall_user_id = $data['user_id'];
+                $mid = $data['id'];
             }
 
-            if ($data["is_lock"] == 1) {
-                return $this->outJson(200, "账号已被锁定");
-            }
-
-            TMember::where([
-                "user_id" => $data["user_id"],
+            Member::where([
+                "id" => $mid,
             ])->update([
                 'nick_name' => empty($nick_name) ? $data['nick_name'] : $nick_name,
                 'avatar' => empty($avatar) ? $data['avatar'] : $avatar,
@@ -141,17 +143,24 @@ class Login extends Base{
                 'province' => empty($province) ? $data['province'] : $province,
                 'openid' => empty($openId) ? $data['openid'] : $openId,
                 'unionid' => empty($unionId) ? $data['unionid'] : $unionId,
-                "last_login_time" => date("Y-m-d H:i:s"),
+                "last_update_time" => date("Y-m-d H:i:s"),
+                'user_id' => $mall_user_id,
+                'from' => 1,
             ]);
 
             if (!empty($unionId)) {
-                $data = TMember::getByUnionId($unionId);
+                $data = Member::getByUnionId($unionId);
             } else {
-                $data = TMember::getByOpenId($openId);
+                $data = Member::getByOpenId($openId);
             }
 
             $data['mall_user_id'] = $mall_user_id;
-            TMember::setOtherInfo($data);
+            Member::setOtherInfo($data);
+            Users::where([
+                "userId" => $mall_user_id,
+            ])->update([
+                'access_key' => $data['access_key']
+            ]);
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
