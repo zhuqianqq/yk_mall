@@ -257,18 +257,17 @@ class Login extends Base{
             return $this->outJson(100, "验证码无效");
         }
 
-        $exist_user= TMember::where('phone',$phone)->find();
+        $exist_user= Users::where('userPhone', $phone)->find();
         if($exist_user != null) {
             return $this->outJson(100, "此手机号已绑定其它账号！");
         }
 
-        TMember::where([
-            "user_id" => $user_id,
+        Users::where([
+            "userId" => $user_id,
         ])->update([
-            'phone' => $phone,
+            'loginName' => $phone,
+            'userPhone' => $phone,
         ]);
-        //同步更新商城用户表手机号
-        MallUser::where(["userId"=>$user_id])->update(["userPhone" => $phone]);
 
         SmsHelper::clearCacheKey($phone,"login");
 
