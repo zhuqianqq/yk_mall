@@ -10,7 +10,7 @@ use wstmart\common\model\ApiBaseModel;
  */
 class TMemberValidates extends ApiBaseModel {
     protected $pk = 'validateId';
-    protected $table = 't_member_validate';
+    protected $table = 'mall_t_member_validate';
     /**
      * 分页
      */

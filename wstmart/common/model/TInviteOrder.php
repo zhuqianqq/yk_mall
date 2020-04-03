@@ -14,7 +14,7 @@ class TInviteOrder extends ApiBaseModel
         self::STATE_PAYED => '已支付',
     ];
 
-    protected $table = "t_invite_order";
+    protected $table = "mall_t_invite_order";
 
     public function getInviteOrderInfo($userId)
     {

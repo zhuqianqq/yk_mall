@@ -6,7 +6,7 @@ use think\Model;
 
 class TProductRecommend extends ApiBaseModel
 {
-    protected $table = "t_product_recommend";
+    protected $table = "mall_t_product_recommend";
 
     /**
      * 获取推荐商品
