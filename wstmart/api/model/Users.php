@@ -98,6 +98,18 @@ class Users extends CUsers{
         }
     }
 
+    /**
+     * 开通主播&开通店铺
+     * @param $user_id
+     */
+    public static function openBroadCast($user_id, $year = 1)
+    {
+        static::where(['userId' => $user_id])->update([
+            'userType' => static::USER_TYPE_ANCHOR,
+            'expire_time' => date("Y-m-d H:i:s", strtotime("+{$year} years")), //过期时间
+        ]);
+    }
+
 	/**
 	* 验证用户支付密码
 	*/ 
