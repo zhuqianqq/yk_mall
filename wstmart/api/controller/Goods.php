@@ -174,4 +174,5 @@ class Goods extends Base
         return $this->outJson(0, "success", $data);
 
     }
+    
 }

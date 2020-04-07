@@ -567,4 +567,27 @@ class Goods extends CGoods{
             $next = 1;
         }
     }
+
+
+    
+    /**
+	 * 首页热卖商品
+	 */
+	public function api_index_hotgoods(){
+        
+        
+        $where[] = ['g.goodsStatus','=',1];
+		$where[] =['g.dataFlag','=',1];
+		$where[] =['g.isSale','=',1];
+        $where[] =['g.isHot','=',1];
+        $where[] = ['s.shopStatus', '=', 1];
+
+		$list = Db::name('goods')->alias('g')->join("__SHOPS__ s","g.shopId = s.shopId")
+				->where($where)
+				->field('g.goodsId,goodsName,shopPrice,goodsImg,commissionFee')
+				->order('g.weight desc,g.createTime desc')
+				->limit(10)->select();
+		return $list;
+
+    }
 }
