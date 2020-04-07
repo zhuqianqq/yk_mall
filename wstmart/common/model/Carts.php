@@ -293,7 +293,7 @@ class Carts extends Base{
 		foreach($carts as $key => $v){
             if(!isset($v['list']))unset($carts[$key]);
 		}
-		$cartData = ['carts'=>$carts,'goodsTotalMoney'=>$goodsTotalMoney,'goodsTotalNum'=>$goodsTotalNum,'promotionMoney'=>0]; 
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => $goodsTotalMoney, 'goodsTotalNum' => $goodsTotalNum, 'promotionMoney' => 0];
 		//店铺优惠活动监听
 //		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
