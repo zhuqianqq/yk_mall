@@ -15,6 +15,8 @@ function initGrid(p){
             {title:'操作', name:'' ,width:150, align:'center', renderer: function(val,item,rowIndex){
                 var h = "";
 	            if(WST.GRANT.DPGL_02)h += "<a class='btn btn-blue' href=\"javascript:toEdit(" + item['shopId'] + ",\'index\')\"><i class='fa fa-pencil'></i>修改</a> ";
+	           	if(item['isIndex']==0)h += "<a class='btn btn-success' href=\"javascript:toRecomend(" + item['shopId'] + ",1)\">推荐首页</a> ";
+	           	if(item['isIndex']==1)h += "<a class='btn btn-danger' href=\"javascript:toRecomend(" + item['shopId'] + ",0)\">取消推荐</a> ";
 	            if(WST.GRANT.DPGL_03 && item['shopId']!=1)h += "<a class='btn btn-red' href='javascript:toDel(" + item['shopId'] + ",1)'><i class='fa fa-trash-o'></i>删除</a> ";
 	            h += "<a class='btn btn-blue' href='"+WST.U('admin/logmoneys/tologmoneys','id='+item['shopId']+'&src=shops&p='+WST_CURR_PAGE)+"&type=1'><i class='fa fa-search'></i>商家资金</a>";
 	            return h;
@@ -313,6 +315,29 @@ function delVO(obj){
 function toEdit(id,src){
 	location.href=WST.U('admin/shops/toEdit','id='+id+'&p='+WST_CURR_PAGE+'&src='+src);
 }
+
+function toRecomend(shopId,type){
+	//alert(shopId);return;
+	$.post(WST.U('admin/shops/recommend'),{shopId:shopId,type:type},function(data,textStatus){
+		
+		var json = WST.toAdminJson(data);
+		//console.log(json);return;
+		if(json.status=='1'){
+			  WST.msg("操作成功",{icon:1});
+			
+			  if(type==1){
+			   loadGrid(WST_CURR_PAGE);
+			  }else{
+			   loadStopGrid(WST_CURR_PAGE)
+			  }
+
+		}else{
+			  WST.msg(json.msg,{icon:2});
+		}
+  });
+		
+}
+
 function toDel(id,type){
 	var box = WST.confirm({content:"您确定要删除该店铺吗?",yes:function(){
 	           var loading = WST.msg('正在提交数据，请稍后...', {icon: 16,time:60000});

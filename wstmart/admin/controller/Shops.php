@@ -1,6 +1,7 @@
 <?php
 namespace wstmart\admin\controller;
 use wstmart\admin\model\Shops as M;
+use think\Db;
 /**
  * 店铺控制器
  */
@@ -92,6 +93,24 @@ class Shops extends Base{
     	$m = new M();
     	return $m->del();
     }
+
+    /**
+     * 推荐到首页
+     */
+    public function recommend(){
+        $m = new M();
+    	$shopId = (int)input("param.shopId");
+    	$type = (int)input("param.type"); //type : 0 取消推荐 1 推荐首页
+        if ($type==1) {
+            $recommend_nums = Db::name('shops')->where(['isIndex' => 1])->count();
+            if($recommend_nums>3) return WSTReturn('首页已超过三个推荐位', -1);
+            Db::name('shops')->where(['shopId' => $shopId])->update(['isIndex' => 1]);
+        }else{
+            Db::name('shops')->where(['shopId' => $shopId])->update(['isIndex' => 0]);
+        }
+    	return WSTReturn("操作成功", 1);
+    }
+
     
     /**
      * 检测店铺编号是否存在
