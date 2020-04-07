@@ -21,6 +21,13 @@ return [
     'prefix'         => 'mall_',
     // 驱动方式 支持redis memcache memcached
     'type'           => 'redis',
+    // 服务端口
+    'port' => 6379,
+    // 服务地址
+    'host' => env('REDIS_HOST', '127.0.0.1'),
+    'password' => env('REDIS_PASSWORD', ''),
+    // 缓存有效期 0表示永久缓存
+    'expire' => 0,
     // 是否自动开启 SESSION
     'auto_start'     => true,
 ];

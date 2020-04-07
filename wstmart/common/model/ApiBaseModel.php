@@ -9,7 +9,7 @@ abstract class ApiBaseModel extends Model
     /**
      * @var string 数据库连接
      */
-    protected $connection = 'DB_API';
+//    protected $connection = 'DB_API';
 
     /**
      * @var string 错误信息

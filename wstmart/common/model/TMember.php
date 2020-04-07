@@ -6,7 +6,7 @@ namespace wstmart\common\model;
 
 class TMember extends ApiBaseModel
 {
-    protected $table = "t_member";
+    protected $table = "mall_member";
 
     public function getMemberInfo($userId)
     {

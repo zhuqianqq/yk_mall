@@ -44,17 +44,5 @@ return [
     'break_reconnect' => true,
     // Query类
     'query' => '\think\db\Query',
-    'DB_API' => [
-        'type' => 'mysql',
-        'hostname' => env('DB_HOSTNAME', '116.62.159.239'),
-        'database' => 'live_shop',
-        'username' => env('DB_USER', 'root'),
-        'password' => env('DB_PASSWORD', '666666Xx'),
-        'hostport' => env('DB_PORT', '3306'),
-        // 开启断线重连
-        'break_reconnect' => true,
-        // 数据库编码默认采用utf8
-        'charset'  => 'utf8mb4',
-    ]
 ];
 ?>

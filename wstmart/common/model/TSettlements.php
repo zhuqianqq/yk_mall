@@ -6,7 +6,7 @@ use think\Db;
  */
 class TSettlements extends ApiBaseModel{
 	protected $pk = 'settlementId';
-    protected $table = "t_settlements";
+    protected $table = "mall_t_settlements";
 	/**
      * 即时计算
      */
