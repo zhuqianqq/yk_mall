@@ -6,7 +6,8 @@ function initGrid(p){
   var cols = [
             {title:'图标', name:'' ,width:50, align:'center', renderer: function(val,item,rowIndex){
                var adFile = item['adFile'].split(',');
-               return'<img src="'+WST.conf.RESOURCE_PATH+'/'+adFile[0]+'" style="max-width:100px; max-height:80px;"/>';
+               return'<img src="'+adFile[0]+'" style="max-width:100px; max-height:80px;"/>';
+               //return'<img src="'+WST.conf.RESOURCE_PATH+'/'+adFile[0]+'" style="max-width:100px; max-height:80px;"/>';
             }},
             {title:'标题', name:'adName', width: 100},
             {title:'广告位置', name:'positionName' ,width:80},
