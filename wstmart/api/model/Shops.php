@@ -186,4 +186,27 @@ class Shops extends CShops{
         }
         return $res;
     }
+
+
+      /**
+     * 获取app首页推荐的店铺数据 （三条）
+     * 
+     */
+    public function api_index_shops()
+    {
+       
+        $where = [];
+        $where[] = ['dataFlag', '=', 1];
+        $where[] = ['isIndex', '=', 1];
+        $where[] = ['shopStatus', '=', 1];
+        
+        $sort = input('sort');
+
+        return Db::name('shops')->where($where)
+            ->field('shopId,shopName,shopImg')
+            ->order('shopId','desc')
+            ->limit(3)
+            ->select();
+      
+    }
 }

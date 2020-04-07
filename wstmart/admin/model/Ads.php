@@ -26,6 +26,26 @@ class ads extends Base{
 		            ->order('adSort','asc')
 		            ->paginate(input('limit/d'));
 	}
+
+	/**
+	 * 获取首页广告位数据 （三条）
+	 * $positionType  1为电脑版 3为手机版
+	 */
+	public function api_index_ads($positionType=3){
+		$where = [];
+		$where['a.dataFlag'] = 1;
+		$where['a.positionType'] = (int)$positionType;
+
+		return Db::name('ads')->alias('a')
+		            ->join('ad_positions ap','a.positionType=ap.positionType AND a.adPositionId=ap.positionId AND ap.dataFlag=1','left')
+					->field('adId,adName,adPositionId,adURL,adStartDate,adEndDate,adPositionId,adFile,adClickNum,ap.positionName,a.adSort')
+		            ->where($where)
+		            ->order('adSort','desc')
+					->limit(3)
+					->select();
+	}
+
+
 	public function getById($id){
 		return $this->get(['adId'=>$id,'dataFlag'=>1]);
 	}
