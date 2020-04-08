@@ -522,7 +522,7 @@ class Goods extends CGoods{
     public function getRecommendImgs($page,$page_size){
         
         $where = ["isRecom" => 1, "isSale" => 1, 'dataFlag' => 1];
-        $order = ["createTime" => "desc"];
+        $order = ['shopId'=>'asc','createTime' => 'desc'];
 
         $query = $this->field("goodsId,goodsImg,goodsName,shopPrice")
         ->where($where)->order($order);
@@ -539,16 +539,16 @@ class Goods extends CGoods{
             self::checkHasNextPage($list, $page_size, $has_next);
         }
         //图片url处理
-        foreach($list as $k => $v){
+        // foreach($list as $k => $v){
            
-            if(!stristr($v->goodsImg,'http')){
+        //     if(!stristr($v->goodsImg,'http')){
           
-                $list[$k]->goodsImg ='http://'. $_SERVER['HTTP_HOST']. '/' . $v->goodsImg;
-            }
+        //         $list[$k]->goodsImg ='http://'. $_SERVER['HTTP_HOST']. '/' . $v->goodsImg;
+        //     }
 
-            $list[$k]->goodsDetailUrl ='http://'. $_SERVER['HTTP_HOST']. '/mgoods-' . $v->goodsId . '.html';
+        //     $list[$k]->goodsDetailUrl ='http://'. $_SERVER['HTTP_HOST']. '/mgoods-' . $v->goodsId . '.html';
 
-        }
+        // }
 
         return [$list, $total, $has_next];
     }
@@ -586,7 +586,7 @@ class Goods extends CGoods{
 				->where($where)
 				->field('g.goodsId,goodsName,shopPrice,goodsImg,commissionFee')
 				->order('g.weight desc,g.createTime desc')
-				->limit(10)->select();
+				->limit(3)->select();
 		return $list;
 
     }
