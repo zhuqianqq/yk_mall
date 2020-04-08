@@ -585,7 +585,7 @@ class Goods extends CGoods{
 
 		$list = Db::name('goods')->alias('g')->join("__SHOPS__ s","g.shopId = s.shopId")
 				->where($where)
-				->field('g.goodsId,goodsName,shopPrice,goodsImg,commissionFee')
+				->field('g.goodsId,goodsName,shopPrice,goodsImg,goodsSeoDesc,commissionFee')
 				->order('g.weight desc,g.createTime desc')
 				->limit(3)->select();
 		return $list;
