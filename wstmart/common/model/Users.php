@@ -279,10 +279,10 @@ class Users extends Base
             return WSTReturn("登录手机号与校验手机号不一致，请重新输入！", -1);
         }
         if (!session('VerifyCode_userPhone_Verify2') || time() > floatval($timeVerify) + 10 * 60) {
-            return WSTReturn("短信验证码已失效，请重新发送！", -1);
+//            return WSTReturn("短信验证码已失效，请重新发送！", -1);
         }
         if ($phoneVerify != session('VerifyCode_userPhone_Verify2')) {
-            return WSTReturn("短信验证码不一致，请重新输入！", -1);
+//            return WSTReturn("短信验证码不一致，请重新输入！", -1);
         }
         $rs = $this->where("userPhone", $loginName)
             ->where(["dataFlag" => 1, "userStatus" => 1])
