@@ -19,19 +19,18 @@ class Carts extends Base{
 	 */
 	public function index(){
 
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
 		$m = new M();
-		$carts = $m->getCarts(false,$mall_user_id);
+		$carts = $m->getCarts(false,input('param.user_id'));
 		return $this->outJson(0, "success", $carts);
+
 	}
     /**
     * 加入购物车
     */
 	public function addCart(){
 
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
 		$m = new M();
-		$rs = $m->addCart($mall_user_id);
+		$rs = $m->addCart(input('param.user_id'));
 		$rs['cartNum'] = WSTCartNum($mall_user_id);
 		return $this->outJson(0, "success", $rs);
 	}

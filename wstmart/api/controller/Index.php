@@ -90,4 +90,15 @@ class Index extends Base{
     	session('WST_MO_WlADDRESS',input('url'));
     	return WSTReturn("", 1);
     }
+
+
+     /**
+     * 清理首页缓存数据
+     */
+    public function delCache(){
+        Cache::rm('API_INDEX_ADS'); 
+        Cache::rm('API_INDEX_SHOPS'); 
+        Cache::rm('API_INDEX_HOTGOODS'); 
+    	return WSTReturn("", 1);
+    }
 }

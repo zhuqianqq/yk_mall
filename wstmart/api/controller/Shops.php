@@ -88,11 +88,23 @@ class Shops extends Base
         $shopId = (int)input('shopId', 1);
         $g = model('goods');
         $rs = $g->shopGoods($shopId);
-        foreach ($rs['data'] as $k=>$v) {
-            $rs['data'][$k]['goodsImg'] = WSTImg($v['goodsImg'], 3, 'goodsLogo');
-        }
-        return $rs;
+        return $this->outSuccess($rs);
     }
+
+    /**
+    * 获取店铺信息与精选商品
+    */
+    public function getShopRecommend()
+    {
+        $shopId = (int)input('shopId', 1);
+        $data = [];
+        $s = model('shops');
+        $data['shop'] = $s->getShopInfo($shopId);
+        $data['recom'] = $s->api_shop_recommend($shopId) ?? [];
+        
+        return $this->outSuccess($data);
+    }
+
 
     /**
      * 获取店铺商品
@@ -102,52 +114,46 @@ class Shops extends Base
         $user_id = (int)input('user_id');
         $is_sale =(int)input('is_sale', -1);
 
-        $mall_user_id = TUserMap::getMallUserId($user_id);
-
-        if (!$mall_user_id) {
-            return $this->outFail(500, 'user_id 错误');
-        }
-
-        $shops = Db::name('shops')->where(["userId"=>$mall_user_id])->find();
+        $shops = Db::name('shops')->where(["userId"=>$user_id])->find();
 
         if (!$shops) {
             return $this->outFail(500, '商城未开通');
         }
         $g = model('goods');
         $rs = $g->shopGoods($shops['shopId'], $is_sale);
+   
+        // $goodsId = TProductRecommend::getProductRec($user_id);
 
-        $goodsId = TProductRecommend::getProductRec($user_id);
 
+        // //规则排序的新数组 (推荐了后在最前面)
+        // $new_arr = $temp =[];
 
-        //规则排序的新数组 (推荐了后在最前面)
-        $new_arr = $temp =[];
+        // foreach ($rs['data'] as $k=>$v) {
+        //     //$rs['data'][$k]['goodsImg'] = $this->request->domain().'/'.WSTImg($v['goodsImg'],3,'goodsLogo');
+        //     $rs['data'][$k]['url'] = url('/mgoods-'.$v['goodsId'], '', true, true);
 
-        foreach ($rs['data'] as $k=>$v) {
-            //$rs['data'][$k]['goodsImg'] = $this->request->domain().'/'.WSTImg($v['goodsImg'],3,'goodsLogo');
-            $rs['data'][$k]['url'] = url('/mgoods-'.$v['goodsId'], '', true, true);
-
-            if ($goodsId && in_array($v['goodsId'], $goodsId)) {
-                $rs['data'][$k]['rec'] = 1;
-                array_unshift($new_arr, $rs['data'][$k]);
-            } else {
-                $rs['data'][$k]['rec'] = 0;
-                $new_arr[] = $rs['data'][$k];
-            }
-        }
-        //若推荐两个商品 谁先推荐谁排序在前
-        if(count($goodsId) == 2){
+        //     if ($goodsId && in_array($v['goodsId'], $goodsId)) {
+        //         $rs['data'][$k]['rec'] = 1;
+        //         array_unshift($new_arr, $rs['data'][$k]);
+        //     } else {
+        //         $rs['data'][$k]['rec'] = 0;
+        //         $new_arr[] = $rs['data'][$k];
+        //     }
+        // }
+        // //若推荐两个商品 谁先推荐谁排序在前
+        // if(count($goodsId) == 2){
             
-            if ($new_arr[0]['goodsId'] != $goodsId[0]) {
+        //     if ($new_arr[0]['goodsId'] != $goodsId[0]) {
 
-                $temp = $new_arr[0];
-                $new_arr[0] = $new_arr[1];
-                $new_arr[1] = $temp;
+        //         $temp = $new_arr[0];
+        //         $new_arr[0] = $new_arr[1];
+        //         $new_arr[1] = $temp;
 
-            }
-        }
+        //     }
+        // }
         
         
-        $rs['data'] = $new_arr;
+        // $rs['data'] = $new_arr;
 
         return $this->outSuccess($rs);
     }

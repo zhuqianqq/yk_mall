@@ -12,8 +12,6 @@ class Carts extends Base{
 	 */
 	public function addCart($uId = 0){
 		$userId = ($uId>0)?$uId:(int)session('WST_USER.userId');
-	
-		//echo '<pre>';var_dump($_SESSION);die();
 		$goodsId = (int)input('post.goodsId');
 		$goodsSpecId = (int)input('post.goodsSpecId');
 		$cartNum = (int)input('post.buyNum',1);
@@ -67,9 +65,9 @@ class Carts extends Base{
 		if(empty($goods))return WSTReturn("添加失败，无效的商品信息", -1);
 		$goodsStock = (int)$goods['goodsStock'];
 		//接口传来规格为负数 直接判定没有规格
-		if($goodsSpecId<0){
-			$goods['isSpec'] = $goodsSpecId;
-		}
+		// if($goodsSpecId<0){
+		// 	$goods['isSpec'] = $goodsSpecId;
+		// }
 		// 不能购买自己商铺的商品
         $shopId = (int)$goods['shopId'];
 		$shop = model('Shops')->where("shopId = {$shopId}")->field("userId")->find();
@@ -177,13 +175,8 @@ class Carts extends Base{
 	 * 获取购物车列表
 	 */
 	public function getCarts($isSettlement = false, $uId = 0){
-        $userId = (int)input('user_id', 0); //直播用户id
-        if ($userId > 0) {
-            $userId = TUserMap::getMallUserId($userId);
-        } else {
-            $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
-		}
-		
+     
+        $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
 		$where = [];
 		$where['c.userId'] = $userId;
         $prefix = config('database.prefix');
@@ -247,7 +240,7 @@ class Carts extends Base{
 			}
 			//如果是结算的话，则要过滤了不符合条件的商品
 			if ($isSettlement && $v['allowBuy'] !=10) {
-				$this->disChkGoods($v['goodsId'],(int)$v['goodsSpecId'],(int)session('WST_USER.userId'));
+				$this->disChkGoods($v['goodsId'],(int)$v['goodsSpecId'],$userId);
 				continue;
 			}
 			if ($v['isCheck'] == 1) {

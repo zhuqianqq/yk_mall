@@ -32,13 +32,14 @@ class Shops extends Base
         $order = [];
         if ($sort != '') {
             $sortArr = explode('.', $sort);
-            $order = $sortArr[0] . ' ' . $sortArr[1];
+            $order = 's.isIndex desc ,s.shopId asc ,';
+            $order .= $sortArr[0] . ' ' . $sortArr[1];
         }
         return Db::table('__SHOPS__')->alias('s')->join('__AREAS__ a2', 's.areaId=a2.areaId', 'left')
             ->join('__USERS__ u', 'u.userId=s.userId', 'left')
             ->join('__SHOP_EXTRAS__ ss', 's.shopId=ss.shopId', 'left')
             ->where($where)
-            ->field('u.loginName,s.shopId,shopSn,shopName,a2.areaName,shopkeeper,telephone,shopAddress,shopCompany,shopAtive,shopStatus')
+            ->field('u.loginName,s.shopId,shopSn,shopName,a2.areaName,shopkeeper,telephone,shopAddress,shopCompany,shopAtive,shopStatus,s.isIndex')
             ->order($order)
             ->paginate(input('limit/d'));
     }

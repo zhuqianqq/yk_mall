@@ -53,7 +53,7 @@ class Shops extends Base{
     		->find();
     		if(empty($rs))return [];
     		$shopId = $rs['shopId'];
-    	}
+        }
         //仅仅是为了获取businessLicenceImg而写的，因为businessLicenceImg不排除被删除掉了
         WSTAllow($rs,'shopNotice,shopId,shopImg,shopName,shopAddress,shopQQ,shopWangWang,shopTel,serviceStartTime,longitude,latitude,serviceEndTime,shopKeeper,mapLevel,areaId,isInvoice,freight,invoiceRemarks,businessLicenceImg');
     	//评分
@@ -91,7 +91,8 @@ class Shops extends Base{
     		}
             $rs['shopAds'] = $shopAds;
             unset($config['shopAds']);
-    	}
+        }
+  
         $rs = array_merge($rs,$config);
         //热搜关键词
         $rs['shopHotWords'] = ($rs['shopHotWords']!='')?explode(',',$rs['shopHotWords']):[];
@@ -100,6 +101,10 @@ class Shops extends Base{
     	$rs['isfollow'] = $f->checkFavorite($shopId,1,$uId);
         $followNum = $f->followNum($shopId,1);
         $rs['followNum'] = $followNum;
+        //商铺商品数量
+        $rs['goodsNum'] = Db::name('goods')
+        ->where(['shopId'=>$shopId,'dataFlag'=>1,'isSale'=>1])
+    	->count();
     	return $rs;
     }
 

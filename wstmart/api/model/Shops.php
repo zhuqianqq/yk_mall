@@ -199,14 +199,34 @@ class Shops extends CShops{
         $where[] = ['dataFlag', '=', 1];
         $where[] = ['isIndex', '=', 1];
         $where[] = ['shopStatus', '=', 1];
-        
-        $sort = input('sort');
-
+    
         return Db::name('shops')->where($where)
             ->field('shopId,shopName,shopImg')
             ->order('shopId','desc')
             ->limit(3)
             ->select();
       
+    }
+
+
+    
+     /**
+     * 获取app店铺中精选商品数据 （三条）
+     * 
+     */
+    public function api_shop_recommend($shopId)
+    {
+       
+        $where = [];
+        $where[] = ['shopId', '=', $shopId];
+        $where[] = ['dataFlag', '=', 1];
+        $where[] = ['isRecom', '=', 1];
+        $where[] = ['isSale', '=', 1];
+        
+        return Db::name('goods')->where($where)
+            ->field('goodsId,goodsName,goodsImg,shopPrice')
+            ->order('createTime','desc')
+            ->limit(3)
+            ->select();
     }
 }
