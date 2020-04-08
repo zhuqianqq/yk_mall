@@ -70,7 +70,7 @@ WST.toJson = function(str){
     }
     return json;
 }
-WST.upload = function(opts){
+WST.upload = function(opts){	
 	var _opts = {};
 	_opts = $.extend(_opts,{duplicate:true,auto: true,swf: WST.conf.STATIC +'/plugins/webuploader/Uploader.swf',server:WST.U('shop/index/uploadPic'),duplicate:true},opts);
 	var uploader = WebUploader.create(_opts);

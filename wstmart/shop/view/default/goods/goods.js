@@ -78,7 +78,7 @@ function initEdit(){
         	});
 		})
 	}});
-	WST.upload({
+	 WST.upload({
 	  	  pick:'#goodsImgPicker',
 	  	  formData: {dir:'goods',isWatermark:1,isThumb:1},
 	  	  accept: {extensions: 'gif,jpg,jpeg,png',mimeTypes: 'image/jpg,image/jpeg,image/png,image/gif'},

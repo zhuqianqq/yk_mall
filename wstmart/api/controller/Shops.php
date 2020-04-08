@@ -88,11 +88,23 @@ class Shops extends Base
         $shopId = (int)input('shopId', 1);
         $g = model('goods');
         $rs = $g->shopGoods($shopId);
-        foreach ($rs['data'] as $k=>$v) {
-            $rs['data'][$k]['goodsImg'] = WSTImg($v['goodsImg'], 3, 'goodsLogo');
-        }
-        return $rs;
+        return $this->outSuccess($rs);
     }
+
+    /**
+    * 获取店铺信息与精选商品
+    */
+    public function getShopRecommend()
+    {
+        $shopId = (int)input('shopId', 1);
+        $data = [];
+        $s = model('shops');
+        $data['shop'] = $s->getShopInfo($shopId);
+        $data['recom'] = $s->api_shop_recommend($shopId) ?? [];
+        
+        return $this->outSuccess($data);
+    }
+
 
     /**
      * 获取店铺商品

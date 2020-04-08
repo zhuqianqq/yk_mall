@@ -73,7 +73,7 @@ class Goods extends CGoods{
 	 */
 	public function getBySale($goodsId)
     {
-        $key = input('key');
+        $key = input('key',true);
         // 浏览量
         $this->where('goodsId', $goodsId)->setInc('visitNum', 1);
         $rs = Db::name('goods')->where(['goodsId' => $goodsId, 'dataFlag' => 1])->find();
@@ -82,7 +82,8 @@ class Goods extends CGoods{
             $rs['goodsDesc'] = htmlspecialchars_decode($rs['goodsDesc']);
             $rs['goodsDesc'] = str_replace('${DOMAIN}', WSTConf('CONF.resourcePath'), $rs['goodsDesc']);
             //判断是否可以公开查看
-            $viKey = WSTShopEncrypt($rs['shopId']);
+            //$viKey = WSTShopEncrypt($rs['shopId']);
+            $viKey = true;//暂时不做该判断
             if (($rs['isSale'] == 0 || $rs['goodsStatus'] == 0) && $viKey != $key) return [];
             if ($key != '') $rs['read'] = true;
             //获取店铺信息
@@ -117,20 +118,20 @@ class Goods extends CGoods{
         
             $rs['spec'] = array();
             foreach ($specs as $key => $v) {
-				$rs['spec'][$v['catId']]['name'] = $v['catName'];
-				$rs['spec'][$v['catId']]['list'][] = $v;
-                //array_push($rs['spec'], $v);
+				//$rs['spec'][$v['catId']]['name'] = $v['catName'];
+				//$rs['spec'][$v['catId']]['list'][] = $v;
+                array_push($rs['spec'], $v);
             }
             //获取销售规格
             $sales = Db::name('goods_specs')->where('goodsId', $goodsId)->field('id,isDefault,productNo,specIds,marketPrice,specPrice,specStock')->select();
             if (!empty($sales)) {
                 $rs['saleSpec'] = array();
                 foreach ($sales as $key => $v) {
-					$str = explode(':',$v['specIds']);
-					sort($str);
-					unset($v['specIds']);
-					$rs['saleSpec'][implode(':',$str)] = $v;
-                    //array_push($rs['saleSpec'], $v);
+					// $str = explode(':',$v['specIds']);
+					// sort($str);
+					// unset($v['specIds']);
+					// $rs['saleSpec'][implode(':',$str)] = $v;
+                    array_push($rs['saleSpec'], $v);
                 }
             }
             //获取商品属性

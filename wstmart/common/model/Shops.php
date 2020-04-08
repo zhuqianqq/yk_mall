@@ -100,6 +100,10 @@ class Shops extends Base{
     	$rs['isfollow'] = $f->checkFavorite($shopId,1,$uId);
         $followNum = $f->followNum($shopId,1);
         $rs['followNum'] = $followNum;
+        //商铺商品数量
+        $rs['goodsNum'] = Db::name('goods')
+        ->where(['shopId'=>$shopId,'dataFlag'=>1,'isSale'=>1])
+    	->count();
     	return $rs;
     }
 

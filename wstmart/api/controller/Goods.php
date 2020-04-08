@@ -29,39 +29,34 @@ class Goods extends Base
 
         $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
         $goods_cache = Cache::get($goods_cache_name, null);
+        if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);;
 
-        if(!$goods_cache){
+        $root = WSTDomain();
+        $m = model('goods');
+        $goods = $m->getBySale(input('goodsId/d'));
 
-            $root = WSTDomain();
-            $m = model('goods');
-            $goods = $m->getBySale(input('goodsId/d'));
-    
-            // 找不到商品记录
-            if(empty($goods)) {
-                return $this->outJson(1, "找不到此商品！");
-            }
-    
-            //hook('mobileControllerGoodsIndex',['getParams'=>input()]);
-            // 分类信息
-            // $catInfo = Db::name("goods_cats")->field("mobileDetailTheme")->where(['catId'=>$goods['goodsCatId'],'dataFlag'=>1])->find();
-            // $rule = '/<img src="\/.*?(upload.*?)"/';
-            // preg_match_all($rule, $goods['goodsDesc'], $images);
-            // foreach($images[0] as $k=>$v){
-            //     $goods['goodsDesc'] = str_replace(WSTConf('CONF.resourcePath').'/'.$images[1][$k],$root.'/'.WSTConf("CONF.goodsLogo") . "\"  data-echo=\"".$root."/".WSTImg($images[1][$k],2), $goods['goodsDesc']);
-            // }
-            //暂不提供功能
-            //$goods['consult'] = model('GoodsConsult')->firstQuery($goods['goodsId']);
-            //$goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
-            //$goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);
-           
-            Cache::set($goods_cache_name, $goods); //永久缓存
-
-            return $this->outJson(0,"查找成功！",$goods);
-        }else{
-
-            return $this->outJson(0,"查找成功！",$goods_cache);
+        // 找不到商品记录
+        if(empty($goods)) {
+            return $this->outJson(1, "找不到此商品！");
         }
-       
+
+        //hook('mobileControllerGoodsIndex',['getParams'=>input()]);
+        // 分类信息
+        // $catInfo = Db::name("goods_cats")->field("mobileDetailTheme")->where(['catId'=>$goods['goodsCatId'],'dataFlag'=>1])->find();
+        // $rule = '/<img src="\/.*?(upload.*?)"/';
+        // preg_match_all($rule, $goods['goodsDesc'], $images);
+        // foreach($images[0] as $k=>$v){
+        //     $goods['goodsDesc'] = str_replace(WSTConf('CONF.resourcePath').'/'.$images[1][$k],$root.'/'.WSTConf("CONF.goodsLogo") . "\"  data-echo=\"".$root."/".WSTImg($images[1][$k],2), $goods['goodsDesc']);
+        // }
+        //暂不提供功能
+        //$goods['consult'] = model('GoodsConsult')->firstQuery($goods['goodsId']);
+        //$goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
+        //$goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);
+        
+        Cache::set($goods_cache_name, $goods); //永久缓存
+
+        return $this->outJson(0,"查找成功！",$goods);
+      
 	}
 
 
