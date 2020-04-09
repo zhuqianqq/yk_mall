@@ -21,7 +21,7 @@ class Goods extends Base
     /**
      * @var string key前缀
      */
-    public $goods_detail_prefix = "goods_detail_key:";
+    public $goods_detail_prefix = "goods_detail_key_new:";
 
 	/**
 	 * 商品详情
