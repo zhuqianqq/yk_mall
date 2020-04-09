@@ -97,6 +97,8 @@ class Shops extends Base
     public function getShopRecommend()
     {
         $shopId = (int)input('shopId', 1);
+        $res = Db::name('shops')->where('shopId',$shopId)->count();
+        if(!$res) return $this->outSuccess();
         $data = [];
         $s = model('shops');
         $data['shop'] = $s->getShopInfo($shopId);
