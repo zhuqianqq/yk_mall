@@ -26,13 +26,18 @@ class Goods extends Base
 	/**
 	 * 商品详情
 	 */
-	public function detail(){
+	public function detail()
+    {
         $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
         $goods_cache_name_share = $this->goods_detail_prefix  . "share:" . input('goodsId/d');
         $goods_cache = Cache::get($goods_cache_name, null);
-//        if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);;
+        $goods_share_cache = Cache::get($goods_cache_name_share, 0);
+        if ($goods_cache) {
+            $goods_cache['shareNum'] = $goods_share_cache;
+            return $this->outJson(0,"查找成功！",$goods_cache);
+        }
 
-        $root = WSTDomain();
+//        $root = WSTDomain();
         $m = model('goods');
         $goods = $m->getBySale(input('goodsId/d'));
 
@@ -40,7 +45,6 @@ class Goods extends Base
         if(empty($goods)) {
             return $this->outJson(1, "找不到此商品！");
         }
-        $goods_share_cache = Cache::get($goods_cache_name_share, 0);
         $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg]))[\'|\"].*?[\/]?>/";
         preg_match_all($pattern, $goods['goodsDesc'], $match);
         $goods['descArr'] = $match[1];
@@ -218,5 +222,17 @@ class Goods extends Base
             Cache::inc($goods_cache_name);
             return $this->outJson(0, "success", $data);
         }
+    }
+
+
+      /**
+     * 清理对应商品缓存数据
+     */
+    public function delGoodsCache(){
+        $goodsId = input('goodsId/d','');
+        if(!$goodsId){ return $this->outJson(100, "缺少参数"); }
+        $goods_cache_name = $this->goods_detail_prefix . $goodsId;
+        Cache::rm($goods_cache_name); 
+    	return WSTReturn("", 1);
     }
 }
