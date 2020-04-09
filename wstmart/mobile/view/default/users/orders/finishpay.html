@@ -1,0 +1,89 @@
+{extend name="default/base" /}
+{block name="title"}完成订单{__block__}{/block}
+{block name="css"}
+<link rel="stylesheet"  href="__MOBILE__/css/orders.css?v={$v}">
+{/block}
+{block name="main"}
+<div class="ui-loading-block" id="Loadl">
+    <div class="ui-loading-cnt">
+        <i class="ui-loading-bright"></i>
+        <p id="j-Loadl">正在加载中...</p>
+    </div>
+</div>
+<section class="ui-container">
+    <input type="hidden" name="orderNo" value="{$orderNo}" id="orderNo" autocomplete="off">
+    <div style="text-align: center;padding:0 0.12rem;">
+        <img src="__STATIC__/images/finishpay.png" style="width: 60%;padding-top: 100px;">
+        <button type="button" class="wst-btn-dangerlo wst-btn-detail" style="width: 70%; margin-top: 10px; display: inline-block;">查看订单</button>
+        <button type="button" onclick="goHomePage()" class="wst-btn-dangerlo" style="width: 70%; margin-top: 10px; display: inline-block;background-color:#ccc;color: white;">确 认</button>
+    </div>
+</section>
+
+{/block}
+{block name="footer"}{/block}
+{block name="js"}
+<script type="text/javascript" src="__STATIC__/js/rsa.js"></script>
+<script type='text/javascript' src='__MOBILE__/js/jquery.min.js'></script>
+<script type='text/javascript' src='__MOBILE__/users/orders/orders_list.js?v={$v}'></script>
+
+<script>
+    // H5接收端内调用的方法
+    window.receiveMessage = msg => {
+        if (typeof msg === 'string') {
+            try {
+            const message = JSON.parse(msg)
+            const { type, data } = message
+            if (type) {
+    
+            return -1;//-1 告知app直接关闭
+                    
+            } else {
+                console.error('receiveMessage=>返回数据格式错误')
+            }
+            } catch (e) {
+                console.error(e)
+            }
+        } else {
+            throw new Error('receiveMessage=>返回数据必须string类型')
+        }
+    }
+</script>
+
+
+<script>
+    $(document).ready(function(){
+        //backPrevPage(WST.U('mobile/orders/index'));
+        var oid=$("#orderNo").val();
+        $(".wst-btn-detail").on("click", function(){ detail(oid);});
+    });
+
+    function detail(oid){
+        window.location.href="/mobile/orders/index.html?order_id="+oid;
+        // $.post(WST.U('mobile/orders/getDetail'),{id:oid},function(data){
+        //     var json = WST.toJson(data);
+        //     if(json.status!=-1){
+        //         var gettpl1 = document.getElementById('detailBox').innerHTML;
+        //         laytpl(gettpl1).render(json, function(html){
+        //             $('#content').html(html);
+        //             // 弹出层滚动条
+        //             var clientH = WST.pageHeight();// 屏幕高度
+        //             var boxheadH = $('#boxTitle').height();// 弹出层标题高度
+        //             var contentH = $('#content').height(); // 弹出层内容高度
+        //             $('#content').css('height',clientH-boxheadH+'px');
+        //             dataShow('订单详情');
+        //         });
+        //     }else{
+        //         WST.msg(json.msg,'info');
+        //     }
+        // });
+    }
+    function goHomePage(){
+        var msg = JSON.stringify({
+        type: 'close',
+        data: {}
+        })
+        window.bc.bridgeFunction(msg);
+        return;
+    }
+</script>
+{/block}

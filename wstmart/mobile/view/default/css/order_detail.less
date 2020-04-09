@@ -1,0 +1,273 @@
+body{
+  margin-bottom: 47px;
+}
+
+
+.header{
+  background-color:#1A1A1A;
+  width: 100%;
+  height: 115px;
+  position: relative;
+  overflow: hidden;
+  .info{
+    margin-top: 50px;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    .msg{
+      color: white;
+    }
+    .time_end{
+      color: yellow;
+      font-size: 0.8em;
+    }
+  }
+  img{
+    position: absolute;
+    right: 36px;
+    bottom: 9px;
+    width: 82px;
+  }
+}
+
+.content{
+  padding: 20px;
+  .row1{
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 10px;
+    .box1{
+      display: flex;
+      border-bottom: 1px dashed #F2EFF3;
+      padding-bottom: 10px;
+      .left{
+        img{
+          width: 95px;
+          height: 95px;
+          border-radius: 20px;
+        }
+      }
+      .right{
+        width: 100%;
+        margin-left: 15px;
+        .title{
+          font-size: 14px;
+          font-weight: 600;
+          color: #1a1a1a;
+        }
+        .spec{
+          font-size: 12px;
+
+          color:#777;
+        }
+        .money{
+          font-size: 14px;
+          color: #1a1a1a;
+          font-weight: 600;
+          text-align: right;
+        }
+        .num{
+          font-size: 12px;
+          color:#777;
+          text-align: right;
+
+        }
+      }
+    }
+    .box2{
+      font-size: 14px;
+      padding-top: 10px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      .sum{
+        color:#1a1a1a;
+      }
+      .sum_money{
+        color:red;
+      }
+
+    }
+  }
+  .row2{
+    margin-top: 12px;
+    position: relative;
+    background-color: white;
+    border-radius: 10px;
+    font-size: 14px;
+
+    img{
+      position: absolute;
+      left: 17px;
+      top: 10;
+    }
+    .address_warp{
+      margin-left: 35px;
+      padding: 10px;
+      .title{
+        color: #777;
+      }
+      .name{
+        margin-top: 8px;
+        color: black;
+      }
+      .address{
+        color: black;
+
+      }
+    }
+
+  }
+  .row_express{
+
+    position: relative;
+    background-color: white;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-top: 12px;
+    padding: 8px;
+
+
+    img{
+      position: absolute;
+      left: 17px;
+      top: 9;
+    }
+    span{
+      margin-left: 35px;
+      color: black;
+      font-weight: 600;
+    }
+  }
+  .row3{
+    background-color: white;
+    border-radius: 10px;
+    margin-top: 12px;
+    font-size: 14px;
+    padding: 15px;
+    line-height: 28px;
+    .row_user_info{
+      display: flex;
+      align-items:center;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #F2EFF3;
+      img{
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+      }
+      .userinfo{
+        flex:2;
+        display: flex;
+        flex-direction: column;
+        margin-left: 8px;
+        .name{
+        }
+        .uid{
+          color: black;
+          font-weight: 600;
+        }
+      }
+
+    }
+
+    .orderno{
+      width: 100%;
+      margin-bottom: 5px;
+
+      span{
+          color: black;
+          font-weight: 600;
+      }
+    }
+  }
+  
+}
+
+.btn-copy{
+  flex:1;
+  float: right;
+  font-size: .12rem;
+  color: #1A1A1A;
+  font-weight: 500;
+  background: #FEE231;
+  border-radius: 0.3rem;
+  box-sizing: border-box;
+  border: none;
+  width: 0.5rem;
+  height: 0.3rem;
+  line-height: 0.3rem;
+  margin-left: 0.1rem;
+}
+
+.btn-black{
+  background-color: #1A1A1A;
+  color:#fff;
+  width: 80px;
+  display: inline-block;
+}
+
+.row_btns{
+  width: 100%;
+  height: 45px;
+  background-color: white;
+  display: flex;
+  position: fixed;
+  flex-direction: row-reverse;
+  align-items: center;
+  bottom: 0;
+
+  .btn-cancel{
+    font-size: .12rem;
+    color: #1A1A1A;
+    font-weight: 600;
+    background: #E5E5E7;
+
+    box-sizing: border-box;
+    border: none;
+    width: 80px;
+    height: 100%;
+    
+  }
+  .btn-pay{
+    font-size: .12rem;
+    color: #1A1A1A;
+    font-weight: 600;
+    background:#FEE231;
+    box-sizing: border-box;
+    border: none;
+    width: 80px;
+    height: 100%;
+   
+  }
+
+  .btn-contact{
+    font-size: .12rem;
+    color: #FFE131;
+    font-weight: 600;
+    background: #1A1A1A;
+
+    box-sizing: border-box;
+    border: none;
+    width: 80px;
+    height: 100%;
+    
+  }
+
+  .btn-receive{
+    font-size: .12rem;
+    color: #1A1A1A;
+    font-weight: 600;
+    background: #FFE131;
+
+    box-sizing: border-box;
+    border: none;
+    width: 80px;
+    height: 100%;
+  }
+
+}
+
+

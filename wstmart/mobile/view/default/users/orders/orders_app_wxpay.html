@@ -1,0 +1,30 @@
+{extend name="default/base" /}
+{block name="title"}
+微信APP支付
+{/block}
+{block name="css"}
+
+{/block}
+{block name="header"}
+{/block}
+{block name="main"}
+	{$prepay_json}
+{/block}
+{block name="footer"}{/block}
+{block name="js"}
+
+<script type='text/javascript' src='__MOBILE__/js/bridge-yg/index.js'></script>
+
+<script type="text/javascript">
+
+	var prepay_json = {$prepay_json};
+	//将预支付参数返给APP 用来调起微信APP支付
+	$(function(){
+		$bridge.WXAppPay({
+			prepay_json:prepay_json
+		})
+	});
+
+</script>
+
+{/block}

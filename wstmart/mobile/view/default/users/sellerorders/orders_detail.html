@@ -1,0 +1,258 @@
+{extend name="default/base" /}
+{block name="title"}订单详情{__block__}{/block}
+{block name="css"}
+<link rel="stylesheet" href="__MOBILE__/css/order_detail.css?v={$v}">
+
+
+
+{/block}
+{block name="header"}
+
+{/block}
+{block name="main"}
+  <div class="warp"> 
+      <div class="header">
+          <div class="info">
+            {if($rs['orderStatus'] == -2)}
+              <div class="msg">等待买家付款 </div>
+              <div class="time_end"></div>
+              <img src="__MOBILE__/img/wait_pay.png" alt="">
+            {elseif($rs['orderStatus'] == 0)}
+              <div class="msg">等待卖家发货 </div>
+              <img src="__MOBILE__/img/wait_deli.png" alt="">
+            {elseif($rs['orderStatus'] == 1)}
+              <div class="msg">等待买家收货 </div>
+              <img src="__MOBILE__/img/wait_delivery.png" alt="">
+            {elseif($rs['orderStatus'] == -1)}
+              <div class="msg">交易失败 </div>
+              <img src="__MOBILE__/img/buy_failed.png" alt="">
+            {elseif($rs['orderStatus'] == 2)}
+              <div class="msg">交易完成 </div>
+              <img src="__MOBILE__/img/buy_finish.png" alt="">
+            {/if}
+          </div>
+      </div>
+
+
+      <div class="content">
+        <div class="row1">
+          {volist name="$rs['goods']" id="v"}
+
+            <div class="box1">
+                <div class="left">
+                  <img src="{$v['goodsImg']}" alt="">
+                </div>
+                <div class="right">
+                  <div class=title>{$v['goodsName']}</div>
+                  <div class='spec'>{$v['shotGoodsSpecNames']}</div>
+                  <div class="money">{$v['goodsPrice']}</div>
+                  <div class="num">X {$v['goodsNum']}</div>
+                </div>
+            </div>
+          {/volist}
+            <div class="box2">
+              {if($rs['orderStatus'] == -2)}
+              <span class="sum">实付款(含运费)：</span>
+              {else}
+              <span class="sum">合计：</span>
+              {/if}
+              <span class="sum_money">￥{$rs['totalMoney']}</span>
+            </div>
+      
+        
+        </div>
+        <div class="row2">
+          <img src="__MOBILE__/img/address_icon.png" alt="">
+          <div class="address_warp">
+              <div class="title">收货地址</div>
+              <div class="name">{$rs['userName']} {$rs['userPhone']}</div>
+              <div class="address">{$rs['userAddress']}</div>
+          </div>
+        </div>
+
+        {if($rs['orderStatus'] == 1 || $rs['orderStatus'] == 2)}
+
+          <div class="row_express">
+            <img src="__MOBILE__/img/wuliu.png" alt="">
+            <span>
+              申通快递：{$rs['expressNo']}
+            </span>
+          </div>
+
+        {/if}
+
+        <div class="row3">
+ 
+          {if($rs['orderStatus'] == -2)}
+            <div class="row_user_info">
+                <img src="{$api_user['avatar']}" alt="">
+                <div class="userinfo">
+                  <span class="name">{$api_user['nick_name']}</span>
+                  <span class="uid">ID：{$rs['userId']}</span>
+                </div>
+                
+                <button id="btn_uid" data-clipboard-text="{$rs['userId']}" class="btn-copy">复制</button>
+            </div>
+            <div class="orderno" style="margin-top: 6px;">
+              订单编号：<span>{$rs['orderNo']}</span>
+              <button id="btn_order_no" data-clipboard-text="{$rs['orderNo']}" class="btn-copy btn-black">复制</button>
+            </div>
+            <div class="paytime">交易时间：{$rs['createTime']}</div>
+          {elseif($rs['orderStatus'] == 0)}
+            <div class="row_user_info">
+                <img src="{$api_user['avatar']}" alt="">
+                <div class="userinfo">
+                  <span class="name">{$api_user['nick_name']}</span>
+                  <span class="uid">ID：{$rs['userId']}</span>
+                </div>
+                
+                <button id="btn_uid" data-clipboard-text="{$rs['userId']}" class="btn-copy">复制</button>
+            </div>
+            <div class="orderno" style="margin-top: 6px;">
+              订单编号：<span>{$rs['orderNo']}</span>
+              <button id="btn_order_no" data-clipboard-text="{$rs['orderNo']}" class="btn-copy btn-black">复制</button>
+            </div>
+            <div class="paytime">创建时间：{$rs['createTime']}</div>
+          {elseif($rs['orderStatus'] == 1)}
+            <div class="nickname">买家昵称：{$api_user['nick_name']}</div>
+            <div class="payway">付款方式：{$rs['payInfo']}</div>
+            <div class="orderno">
+              订单编号：<span>{$rs['orderNo']}<span>
+              <button id="btn_order_no" data-clipboard-text="{$rs['orderNo']}" class="btn-copy btn-black">复制</button>
+            </div>
+            <div class="paytime">交易时间：{$rs['createTime']}</div>
+            <div class="paytime">付款时间：{$rs['payTime']}</div>
+            <div class="sendtime">发货时间：{$rs['deliveryTime']}</div>
+            
+          {elseif($rs['orderStatus'] == -1)}
+
+          {elseif($rs['orderStatus'] == 2)}
+              <div class="row_user_info">
+                  <img src="{$api_user['avatar']}" alt="">
+                  <div class="userinfo">
+                    <span class="name">{$api_user['nick_name']}</span>
+                    <span class="uid">ID：{$rs['userId']}</span>
+                  </div>
+                  
+                  <button id="btn_uid" data-clipboard-text="{$rs['userId']}" class="btn-copy">复制</button>
+              </div>
+
+              <div class="orderno">
+                订单编号：<span>{$rs['orderNo']}<span>
+                <button id="btn_order_no" data-clipboard-text="{$rs['orderNo']}" class="btn-copy btn-black">复制</button>
+              </div>
+              <div class="paytime">创建时间：{$rs['createTime']}</div>
+              <div class="paytime">下单时间：{$rs['payTime']}</div>
+              <div class="sendtime">发货时间：{$rs['deliveryTime']}</div>
+          {/if}
+          
+        </div>
+      </div>
+
+      
+
+          <!-- {if($rs['orderStatus'] == -2)}
+            <div class="row_btns">
+
+                <button class="btn-pay" onclick="choicePay()">立即支付</button>
+                <button class="btn-cancel" onclick="cancelOrderH5()">取消订单</button>
+           </div> 
+            
+          {elseif($rs['orderStatus'] == 0)}
+             <div class="row_btns">
+                <button class="btn-pay" onclick="Deliver()">去发货</button>
+             </div>
+          
+          {elseif($rs['orderStatus'] == -1)}
+        
+          {elseif($rs['orderStatus'] == 2)}
+            <div class="row_btns">
+
+                <button class="btn-cancel" onclick="cancelOrderH5()">删除订单</button>
+            </div>
+            
+          {/if} -->
+        
+
+
+  </div>
+{/block}
+
+
+{block name="js"}
+<script type='text/javascript' src='__MOBILE__/js/jquery.min.js'></script>
+<script src="__MOBILE__/js/clipboard.min.js"></script>
+
+<script>
+
+    //var goodsInfo = '<?php echo json_encode($rs["goods"]) ?>';
+    var create_time = '{$rs["createTime"]}';
+    var oid =  '{$rs["orderId"]}';
+    var order_status =  '{$rs["orderStatus"]}';
+    $(function(){
+
+      var clipboard_uid = new ClipboardJS('#btn_uid');
+          clipboard_uid.on('success', function(e) {
+              alert('用户ID复制成功');
+          });
+
+      var clipboard_order_no = new ClipboardJS('#btn_order_no');
+          clipboard_order_no.on('success', function(e) {
+              alert('订单ID复制成功');
+          });
+      if(order_status==-2){
+          countDown();
+      }
+    })
+
+   
+
+    // H5 删除订单订单
+    function cancelOrderH5(){
+      if(confirm('您确认取消该订单吗?')){
+        var param = {}
+        param.id = oid
+        $.post(WST.U('mobile/orders/deleteOrder'), param, function (data) {
+          var json = WST.toJson(data)
+          if (json.status == 1) {
+            WST.msg(json.msg, 'success')
+            setTimeout(function () {
+              location.href = '/index.php/mobile/orders';
+            }, 1000)
+          } else {
+            WST.msg(json.msg, 'info')
+          }
+        })
+      }
+    }
+
+
+    var maxtime = 60 * 30 * 1000 // 30分钟的订单
+    var timer = null
+
+    function countDown() {
+      timer && clearInterval(timer)
+      countDownOnce()
+      timer = setInterval(countDownOnce, 1000)
+
+      function countDownOnce() {
+          var timeStamp = new Date(create_time).getTime()
+          var nowStamp = new Date().getTime()
+          var leftTime = maxtime - (nowStamp - timeStamp)  //剩余倒计时时间
+          if (leftTime < 0) {
+            timer && clearInterval(timer)
+            return
+          } else if (leftTime > 0) {
+            var minutes = Math.floor(leftTime / 1000 / 60)
+            var seconds = Math.floor(leftTime / 1000 % 60)
+            var msg = ' 订单关闭剩余：00时' + minutes + '分' + seconds + '秒'
+            //console.log(msg);
+            
+            $('.time_end').text(msg)
+          }
+      }
+    }
+     
+</script>
+
+{/block}

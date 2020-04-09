@@ -1,0 +1,18 @@
+        {/* 小加载 */}
+        <div class="ui-loading-wrap wst-Load" id="Load">
+		    <i class="ui-loading"></i>
+		</div>
+		{/* 大加载 */}
+		<div class="ui-loading-block" id="Loadl">
+		    <div class="ui-loading-cnt">
+		        <i class="ui-loading-bright"></i>
+		        <p id="j-Loadl">正在加载中...</p>
+		    </div>
+		</div>
+		{php}
+			$cartNum = WSTCartNum();
+		{/php}
+		<input type="hidden" value="0" id="pageId" autocomplete="off">
+
+		{:hook('mobileDocumentIndexFooter')}
+        {:hook('initCronHook')}
