@@ -55,6 +55,48 @@ class Goods extends Base
     }
 
     /**
+     * 商品主页
+     */
+    public function shareDetail()
+    {
+        $root = WSTDomain();
+        $m = model('goods');
+        $goods = $m->getBySale(input('goodsId/d'));
+
+        // 找不到商品记录
+        if (empty($goods)) {
+            $this->assign('message', '商品已下架');
+            return $this->fetch('error_sys');
+        }
+        hook('mobileControllerGoodsIndex', ['getParams' => input()]);
+        // 分类信息
+        $catInfo = Db::name("goods_cats")->field("mobileDetailTheme")->where(['catId' => $goods['goodsCatId'], 'dataFlag' => 1])->find();
+
+        $rule = '/<img src="\/.*?(upload.*?)"/';
+        preg_match_all($rule, $goods['goodsDesc'], $images);
+        foreach ($images[0] as $k => $v) {
+            $goods['goodsDesc'] = str_replace(WSTConf('CONF.resourcePath') . '/' . $images[1][$k], $root . '/' . WSTConf("CONF.goodsLogo") . "\"  data-echo=\"" . $root . "/" . WSTImg($images[1][$k], 2), $goods['goodsDesc']);
+        }
+        if (!empty($goods)) {
+            $history = cookie("wx_history_goods");
+            $history = is_array($history) ? $history : [];
+            array_unshift($history, (string)$goods['goodsId']);
+            $history = array_values(array_unique($history));
+            if (!empty($history)) {
+                cookie("wx_history_goods", $history, 25920000);
+            }
+        }
+        $goods['consult'] = model('GoodsConsult')->firstQuery($goods['goodsId']);
+        $goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
+        $goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);
+
+        $this->assign("info", $goods);
+        $view_name = 'goods_detail_share';
+
+        return $this->fetch($view_name);
+    }
+
+    /**
      * 搜索商品列表
      */
     public function search()

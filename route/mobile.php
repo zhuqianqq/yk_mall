@@ -15,6 +15,7 @@ Route::rules([
     'mregister'=>'mobile/users/toregister',      //用户注册  
     'mforget'=>'mobile/users/forgetpass',        //找回密码     
     'mgoods-:goodsId'=>'mobile/goods/detail',
+    'msgoods-:goodsId'=>'mobile/goods/shareDetail',
     'mshop-:shopId'=>'mobile/shops/index',
     'mshopview-:shopId'=>'mobile/shops/view',
     'mlist'=>'mobile/goods/lists',
