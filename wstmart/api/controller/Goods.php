@@ -187,6 +187,14 @@ class Goods extends Base
         if (empty($goodsId) || empty($goodsName) || empty($shopPrice)) {
             return $this->outJson(100, "缺少参数");
         }
+        $goods = Db::table("mall_goods")->get($goodsId);
+        if (empty($goods)) {
+            return $this->outJson(100, "没有数据");
+        }
+        $goodsPrice = $goods['shopPrice'];
+        if (bcsub($shopPrice, $goodsPrice) < 0) {
+            return $this->outJson(100, "价格不能低于该商品价格");
+        }
 
         $shareData = [];
         $shareData['goodsId'] = $goodsId;
