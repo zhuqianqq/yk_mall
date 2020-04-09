@@ -547,7 +547,7 @@ class Shops extends Base
 
         WSTUnset($data, 'id,shopId,userId,dataFlag,createTime,goodsCatIds,accredIds,isSelf');
         //判断经营范围
-        $goodsCatIds = input('post.goodsCatIds');
+        $goodsCatIds = input('post.goodsCatIds')??365;
         $accredIds = input('post.accredIds');
         if ($goodsCatIds == '') return WSTReturn('请选择经营范围');
         Db::startTrans();

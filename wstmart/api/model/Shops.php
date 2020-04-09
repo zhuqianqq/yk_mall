@@ -200,14 +200,18 @@ class Shops extends CShops{
         $where[] = ['isIndex', '=', 1];
         $where[] = ['shopStatus', '=', 1];
     
-        return Db::name('shops')->where($where)
+        $res = Db::name('shops')->where($where)
             ->field('shopId,shopName,shopImg')
             ->order('shopId','desc')
             ->limit(3)
             ->select();
-      
+        foreach($res as $k => $v){
+            if(!$v['shopImg']){
+                $res[$k]['shopImg'] = "https://boardcast-1257835755.cos.ap-shanghai.myqcloud.com/ygzb202003201805388225.png";
+            }
+        }
+        return $res;
     }
-
 
     
      /**

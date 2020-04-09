@@ -43,7 +43,8 @@ class Shops extends Base{
         ->join('__SHOP_EXTRAS__ ser','ser.shopId=s.shopId','inner')
         ->where(['s.shopId'=>$shopId,'s.shopStatus'=>1,'s.dataFlag'=>1])
     	->field('s.shopNotice,s.shopId,s.shopImg,s.shopName,s.shopAddress,s.shopQQ,s.shopWangWang,s.shopTel,s.serviceStartTime,s.longitude,s.latitude,s.serviceEndTime,s.shopKeeper,mapLevel,s.areaId,s.isInvoice,s.freight,s.invoiceRemarks,ser.*')
-    	->find();
+        ->find();
+
     	if(empty($rs)){
     		//如果没有传id就获取自营店铺
     		$rs = Db::name('shops')->alias('s')
@@ -52,7 +53,7 @@ class Shops extends Base{
     		->field('s.shopNotice,s.shopId,s.shopImg,s.shopName,s.shopAddress,s.shopQQ,s.shopWangWang,s.shopTel,s.serviceStartTime,s.longitude,s.latitude,s.serviceEndTime,s.shopKeeper,s.mapLevel,s.areaId,s.isInvoice,s.freight,s.invoiceRemarks,ser.*')
     		->find();
     		if(empty($rs))return [];
-    		$shopId = $rs['shopId'];
+            $shopId = $rs['shopId'];
         }
         //仅仅是为了获取businessLicenceImg而写的，因为businessLicenceImg不排除被删除掉了
         WSTAllow($rs,'shopNotice,shopId,shopImg,shopName,shopAddress,shopQQ,shopWangWang,shopTel,serviceStartTime,longitude,latitude,serviceEndTime,shopKeeper,mapLevel,areaId,isInvoice,freight,invoiceRemarks,businessLicenceImg');

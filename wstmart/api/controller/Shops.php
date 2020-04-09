@@ -102,6 +102,9 @@ class Shops extends Base
         $data = [];
         $s = model('shops');
         $data['shop'] = $s->getShopInfo($shopId);
+        if(!$data['shop']['shopImg']){
+            $data['shop']['shopImg'] = "https://boardcast-1257835755.cos.ap-shanghai.myqcloud.com/ygzb202003201805388225.png";
+        }
         $data['recom'] = $s->api_shop_recommend($shopId) ?? [];
         
         return $this->outSuccess($data);

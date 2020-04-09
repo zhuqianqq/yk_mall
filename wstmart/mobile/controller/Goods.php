@@ -19,7 +19,7 @@ class Goods extends Base
         $root = WSTDomain();
         $m = model('goods');
         $goods = $m->getBySale(input('goodsId/d'));
-
+        
         // 找不到商品记录
         if (empty($goods)) {
             $this->assign('message', '商品已下架');

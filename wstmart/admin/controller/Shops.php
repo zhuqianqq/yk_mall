@@ -104,11 +104,11 @@ class Shops extends Base{
     	$shopId = (int)input("param.shopId");
     	$type = (int)input("param.type"); //type : 0 取消推荐 1 推荐首页
         if ($type==1) {
-            $recommend_nums = Db::name('goods')->where(['isIndex' => 1])->count();
+            $recommend_nums = Db::name('shops')->where(['isIndex' => 1])->count();
             if($recommend_nums>=3) return WSTReturn('首页热销已超过三个推荐位', -1);
-            Db::name('goods')->where(['shopId' => $shopId])->update(['isIndex' => 1]);
+            Db::name('shops')->where(['shopId' => $shopId])->update(['isIndex' => 1]);
         }else{
-            Db::name('goods')->where(['shopId' => $shopId])->update(['isIndex' => 0]);
+            Db::name('shops')->where(['shopId' => $shopId])->update(['isIndex' => 0]);
         }
         Cache::rm('API_INDEX_HOTGOODS');
     	return WSTReturn("操作成功", 1);
