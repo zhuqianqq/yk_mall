@@ -60,8 +60,21 @@ class Goods extends Base
     public function shareDetail()
     {
         $root = WSTDomain();
+        $shareId = input('goodsId/d');
+        if (empty($shareId)) {
+            $this->assign('message', '参数错误');
+            return $this->fetch('error_sys');
+        }
+        $shareData = Db::table("mall_goods_share")->get($shareId);
+        // 找不到商品记录
+        if (empty($shareData)) {
+            $this->assign('message', '商品已下架');
+            return $this->fetch('error_sys');
+        }
+        $goodsId = $shareData['goodsId'];
+
         $m = model('goods');
-        $goods = $m->getBySale(input('goodsId/d'));
+        $goods = $m->getBySale($goodsId);
 
         // 找不到商品记录
         if (empty($goods)) {
@@ -90,6 +103,8 @@ class Goods extends Base
         $goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
         $goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);
 
+        $goods['goodsName'] = $shareData['goodsName'];
+        $goods['shopPrice'] = $shareData['shopPrice'];
         $this->assign("info", $goods);
         $view_name = 'goods_detail_share';
 
