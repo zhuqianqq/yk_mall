@@ -21,7 +21,9 @@ function initSaleGrid(p){
             {title:'销量', name:'saleNum' ,width:20,sortable:true,align:'center'},
             {title:'操作', name:'' ,width:150, align:'center', renderer: function(val,item,rowIndex){
                 var h = "";
-	            h += "<a class='btn btn-blue' target='_blank' href='"+WST.U("home/goods/detail","goodsId="+item['goodsId'])+"'><i class='fa fa-search'></i>查看</a> ";
+				h += "<a class='btn btn-blue' target='_blank' href='"+WST.U("home/goods/detail","goodsId="+item['goodsId'])+"'><i class='fa fa-search'></i>查看</a> ";
+				if(item['isHot']==0)h += "<a class='btn btn-success' href=\"javascript:toHot(" + item['goodsId'] + ",1)\">推荐热销</a> ";
+	           	if(item['isHot']==1)h += "<a class='btn btn-danger' href=\"javascript:toHot(" + item['goodsId'] + ",0)\">取消推荐</a> ";				
 	            if(WST.GRANT.SJSP_04)h += "<a class='btn btn-red' href='javascript:illegal(" + item['goodsId'] + ",1)'><i class='fa fa-ban'></i>违规下架</a> ";
 	            if(WST.GRANT.SJSP_03)h += "<a class='btn btn-red' href='javascript:del(" + item['goodsId'] + ",1)'><i class='fa fa-trash-o'></i>删除</a> "; 
 	            return h;
@@ -235,4 +237,23 @@ function initIllegalGrid(p){
 }
 function toolTip(){
     WST.toolTip();
+}
+
+
+function toHot (goodsId,type){
+	//alert(goodsId);return;
+	$.post(WST.U('admin/goods/toHot'),{goodsId:goodsId,type:type},function(data,textStatus){
+		
+		var json = WST.toAdminJson(data);
+		//console.log(json);return;
+		if(json.status=='1'){
+			  WST.msg("操作成功",{icon:1});
+
+			  loadGrid(WST_CURR_PAGE);
+
+		}else{
+			  WST.msg(json.msg,{icon:2});
+		}
+  });
+		
 }

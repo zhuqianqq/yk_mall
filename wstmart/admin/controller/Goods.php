@@ -1,6 +1,9 @@
 <?php
 namespace wstmart\admin\controller;
 use wstmart\admin\model\Goods as M;
+use think\Db;
+use think\facade\Cache;
+
 /**
  * 商品控制器
  */
@@ -100,5 +103,23 @@ class Goods extends Base{
     public function del(){
     	$m = new M();
     	return $m->del();
+    }
+
+
+    /**
+     * 推荐到首页热销
+     */
+    public function toHot(){
+        $goodsId = (int)input("param.goodsId");
+    	$type = (int)input("param.type"); //type : 0 取消推荐 1 推荐首页
+        if ($type==1) {
+            $recommend_nums = Db::name('goods')->where(['isHot' => 1,'mIsIndex'=>1])->count();
+            if($recommend_nums>=3) return WSTReturn('首页已超过三个热销商品推荐位', -1);
+            Db::name('goods')->where(['goodsId' => $goodsId])->update(['isHot' => 1,'mIsIndex'=>1]);
+        }else{
+            Db::name('goods')->where(['goodsId' => $goodsId])->update(['isHot' => 0,'mIsIndex'=>0]);
+        }
+        Cache::rm('API_INDEX_HOTGOODS');
+    	return WSTReturn("操作成功", 1);
     }
 }
