@@ -23,15 +23,16 @@ class Goods extends Base{
 		if($shopName != '')$where[] = ['shopName|shopSn','like',"%$shopName%"];
 		// 排序
 		$sort = input('sort');
-		$order = 'saleTime desc';
+		$order = 'mIsIndex desc, saleTime desc';
 		if($sort!=''){
 			$sortArr = explode('.',$sort);
-			$order = $sortArr[0].' '.$sortArr[1];
+			$order = 'mIsIndex desc, ';
+			$order .= $sortArr[0].' '.$sortArr[1];
 		}
 		$keyCats = model('GoodsCats')->listKeyAll();
 		$rs = $this->alias('g')->join('__SHOPS__ s','g.shopId=s.shopId','left')
 		    ->where($where)
-			->field('goodsId,goodsName,goodsSn,saleNum,shopPrice,g.shopId,goodsImg,s.shopName,goodsCatIdPath,goodsStock')
+			->field('goodsId,goodsName,goodsSn,saleNum,shopPrice,g.shopId,goodsImg,s.shopName,goodsCatIdPath,goodsStock,isHot')
 			->order($order)
 			->paginate(input('limit/d'))->toArray();
 		foreach ($rs['data'] as $key => $v){

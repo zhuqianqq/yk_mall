@@ -576,12 +576,12 @@ class Goods extends CGoods{
 	 */
 	public function api_index_hotgoods(){
         
-        
-        $where[] = ['g.goodsStatus','=',1];
 		$where[] =['g.dataFlag','=',1];
 		$where[] =['g.isSale','=',1];
         $where[] =['g.isHot','=',1];
+        $where[] = ['g.mIsIndex', '=', 1];
         $where[] = ['s.shopStatus', '=', 1];
+        
 
 		$list = Db::name('goods')->alias('g')->join("__SHOPS__ s","g.shopId = s.shopId")
 				->where($where)
