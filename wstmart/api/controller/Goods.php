@@ -3,6 +3,7 @@ namespace wstmart\api\controller;
 use think\Db;
 use wstmart\common\model\GoodsCats;
 use wstmart\common\model\Attributes as AT;
+use wstmart\common\model\GoodsShare;
 use \wstmart\shop\model\Goods as M;
 use wstmart\common\model\TUserMap;
 use think\facade\Cache;
@@ -169,5 +170,37 @@ class Goods extends Base
         return $this->outJson(0, "success", $data);
 
     }
-    
+
+    /**
+     * 商品分享
+     * @return array
+     */
+    public function share()
+    {
+        $userid = $this->user_id;
+        if (empty($userid)) {
+            return $this->outJson(100, "缺少参数");
+        }
+        $goodsId = input('param.goodsId/d');
+        $goodsName = input('param.goodsName/s');
+        $shopPrice = input('param.shopPrice/s');
+        if (empty($goodsId) || empty($goodsName) || empty($shopPrice)) {
+            return $this->outJson(100, "缺少参数");
+        }
+
+        $shareData = [];
+        $shareData['goodsId'] = $goodsId;
+        $shareData['goodsName'] = $goodsName;
+        $shareData['shopPrice'] = $shopPrice;
+        $shareData['userId'] = $userid;
+        $shareData['createTime'] = date('Y-m-d H:i:s');
+        $id = Db::name('goods_share')->insertGetId($shareData);
+        if(!$id){
+            // 失败则返回错误
+            return $this->outJson(100, "分享失败");
+        }else{
+            $data['shareId'] = $id;
+            return $this->outJson(0, "success", $data);
+        }
+    }
 }
