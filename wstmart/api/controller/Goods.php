@@ -28,8 +28,9 @@ class Goods extends Base
 	 */
 	public function detail(){
         $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
+        $goods_cache_name_share = $this->goods_detail_prefix  . "share:" . input('goodsId/d');
         $goods_cache = Cache::get($goods_cache_name, null);
-        if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);;
+//        if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);;
 
         $root = WSTDomain();
         $m = model('goods');
@@ -39,9 +40,11 @@ class Goods extends Base
         if(empty($goods)) {
             return $this->outJson(1, "找不到此商品！");
         }
+        $goods_share_cache = Cache::get($goods_cache_name_share, 0);
         $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg]))[\'|\"].*?[\/]?>/";
         preg_match_all($pattern, $goods['goodsDesc'], $match);
         $goods['descArr'] = $match[1];
+        $goods['shareNum'] = $goods_share_cache;
 
         //hook('mobileControllerGoodsIndex',['getParams'=>input()]);
         // 分类信息
@@ -198,6 +201,8 @@ class Goods extends Base
             return $this->outJson(100, "价格不能低于该商品价格");
         }
 
+        $goods_cache_name = $this->goods_detail_prefix . "share:" . $goodsId;
+
         $shareData = [];
         $shareData['goodsId'] = $goodsId;
         $shareData['goodsName'] = $goodsName;
@@ -210,6 +215,7 @@ class Goods extends Base
             return $this->outJson(100, "分享失败");
         }else{
             $data['shareId'] = $id;
+            Cache::inc($goods_cache_name);
             return $this->outJson(0, "success", $data);
         }
     }
