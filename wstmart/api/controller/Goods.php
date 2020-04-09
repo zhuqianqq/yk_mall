@@ -27,7 +27,6 @@ class Goods extends Base
 	 * 商品详情
 	 */
 	public function detail(){
-
         $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
         $goods_cache = Cache::get($goods_cache_name, null);
         if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);;
@@ -40,6 +39,9 @@ class Goods extends Base
         if(empty($goods)) {
             return $this->outJson(1, "找不到此商品！");
         }
+        $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg]))[\'|\"].*?[\/]?>/";
+        preg_match_all($pattern, $goods['goodsDesc'], $match);
+        $goods['descArr'] = $match[1];
 
         //hook('mobileControllerGoodsIndex',['getParams'=>input()]);
         // 分类信息
