@@ -29,7 +29,7 @@ class Goods extends Base
 	public function detail(){
         $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
         $goods_cache = Cache::get($goods_cache_name, null);
-        if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);;
+        if($goods_cache) return $this->outJson(0,"查找成功！",$goods_cache);
 
         $root = WSTDomain();
         $m = model('goods');
@@ -212,5 +212,17 @@ class Goods extends Base
             $data['shareId'] = $id;
             return $this->outJson(0, "success", $data);
         }
+    }
+
+
+      /**
+     * 清理对应商品缓存数据
+     */
+    public function delGoodsCache(){
+        $goodsId = input('goodsId/d','');
+        if(!$goodsId){ return $this->outJson(100, "缺少参数"); }
+        $goods_cache_name = $this->goods_detail_prefix . $goodsId;
+        Cache::rm($goods_cache_name); 
+    	return WSTReturn("", 1);
     }
 }
