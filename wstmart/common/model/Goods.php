@@ -629,6 +629,9 @@ class Goods extends Base
                 //商品编辑之后执行
                 hook('afterEditGoods', ['goodsId' => $goodsId]);
                 hook('afterChangeGoodsStatus', ['goodsId' => $goodsId]);
+                //清除商品缓存
+                $goods_cache_name = config('cachekeys.goods_detail_prefix') . $goodsId;
+                Cache::rm($goods_cache_name);
                 Db::commit();
                 return WSTReturn("编辑成功", 1, ['id' => $goodsId]);
             } else {

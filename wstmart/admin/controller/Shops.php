@@ -97,7 +97,7 @@ class Shops extends Base{
     }
 
     /**
-     * 推荐到首页
+     * 推荐店铺到首页
      */
     public function recommend(){
         $m = new M();
@@ -105,12 +105,12 @@ class Shops extends Base{
     	$type = (int)input("param.type"); //type : 0 取消推荐 1 推荐首页
         if ($type==1) {
             $recommend_nums = Db::name('shops')->where(['isIndex' => 1])->count();
-            if($recommend_nums>=3) return WSTReturn('首页热销已超过三个推荐位', -1);
+            if($recommend_nums>=3) return WSTReturn('首页推荐店铺已超过三个推荐位', -1);
             Db::name('shops')->where(['shopId' => $shopId])->update(['isIndex' => 1]);
         }else{
             Db::name('shops')->where(['shopId' => $shopId])->update(['isIndex' => 0]);
         }
-        Cache::rm('API_INDEX_HOTGOODS');
+        Cache::rm(config('cachekeys.API_INDEX_SHOPS')); 
     	return WSTReturn("操作成功", 1);
     }
 

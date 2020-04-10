@@ -18,18 +18,14 @@ class Goods extends Base
         'AccessCheck' => ['only' => ['changeSaleStatus','save','del']],
     ];
 
-    /**
-     * @var string key前缀
-     */
-    public $goods_detail_prefix = "goods_detail_key_new:";
-
 	/**
 	 * 商品详情
 	 */
 	public function detail()
     {
-        $goods_cache_name = $this->goods_detail_prefix . input('goodsId/d');
-        $goods_cache_name_share = $this->goods_detail_prefix  . "share:" . input('goodsId/d');
+        $goods_detail_prefix = config('cachekeys.goods_detail_prefix');
+        $goods_cache_name = $goods_detail_prefix . input('goodsId/d');
+        $goods_cache_name_share = $goods_detail_prefix  . "share:" . input('goodsId/d');
         $goods_cache = Cache::get($goods_cache_name, null);
         $goods_share_cache = Cache::get($goods_cache_name_share, 0);
         if ($goods_cache) {
@@ -105,9 +101,8 @@ class Goods extends Base
     {
         $m = new M();
         $ret = $m->del();
-        
         if($ret["status"] == 1){
-            $goods_cache_name = $this->goods_detail_prefix . input('post.id/d');;
+            $goods_cache_name = config('cachekeys.goods_detail_prefix') . input('post.id/d');;
             Cache::delete($goods_cache_name);
             return $this->outJson(0,"删除成功");
         }
@@ -174,9 +169,9 @@ class Goods extends Base
 
         $data = [
             "list" => $list,
-            "current_page" => $page,
-            "total" => $total,
-            "has_next" => $has_next, //是否有下一页
+            "current_page" => (int)$page,
+            "total" => (int)$total,
+            "has_next" => (int)$has_next, //是否有下一页
         ];
         return $this->outJson(0, "success", $data);
 
@@ -208,7 +203,7 @@ class Goods extends Base
             return $this->outJson(100, "价格不能低于该商品价格");
         }
 
-        $goods_cache_name = $this->goods_detail_prefix . "share:" . $goodsId;
+        $goods_cache_name = config('cachekeys.goods_detail_prefix') . "share:" . $goodsId;
 
         $shareData = [];
         $shareData['goodsId'] = $goodsId;
@@ -234,7 +229,7 @@ class Goods extends Base
     public function delGoodsCache(){
         $goodsId = input('goodsId/d','');
         if(!$goodsId){ return $this->outJson(100, "缺少参数"); }
-        $goods_cache_name = $this->goods_detail_prefix . $goodsId;
+        $goods_cache_name = config('cachekeys.goods_detail_prefix') . $goodsId;
         Cache::rm($goods_cache_name); 
     	return WSTReturn("", 1);
     }

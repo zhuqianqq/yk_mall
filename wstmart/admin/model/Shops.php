@@ -100,6 +100,7 @@ class Shops extends Base
                 model('goods')->delByshopId($id);
                 //删除店铺钩子事件
                 hook('afterChangeShopStatus', ['shopId' => $id]);
+                Cache::rm(config('cachekeys.API_INDEX_SHOPS')); 
                 Db::commit();
                 return WSTReturn("删除成功", 1);
             }

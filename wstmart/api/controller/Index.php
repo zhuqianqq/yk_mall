@@ -38,23 +38,28 @@ class Index extends Base{
         $Ads = new Ads();
         $Shops = new Shops();
         $Goods = new Goods();
+
+        $ADS_CACHE_KEY = config('cachekeys.API_INDEX_ADS');
+        $SHOPS_CACHE_KEY = config('cachekeys.API_INDEX_SHOPS');
+        $HOTGOODS_CACHE_KEY = config('cachekeys.API_INDEX_HOTGOODS');
+
         //获取首页广告位数据
-        $ads_info = Cache::get('API_INDEX_ADS','');
+        $ads_info = Cache::get($ADS_CACHE_KEY,'');
         if (!$ads_info) {
             $ads_info = $Ads->api_index_ads(3)??[];
-            Cache::set("API_INDEX_ADS",$ads_info);
+            Cache::set($ADS_CACHE_KEY,$ads_info);
         }
         //获取首页店铺数据
-        $shops_info = Cache::get('API_INDEX_SHOPS','');
+        $shops_info = Cache::get($SHOPS_CACHE_KEY,'');
         if (!$shops_info) {
             $shops_info = $Shops->api_index_shops()??[];
-            Cache::set("API_INDEX_SHOPS",$shops_info);
+            Cache::set($SHOPS_CACHE_KEY,$shops_info);
         }
         //获取首页热卖商品数据
-        $goods_info = Cache::get('API_INDEX_HOTGOODS','');
+        $goods_info = Cache::get($HOTGOODS_CACHE_KEY,'');
         if (!$goods_info) {
             $goods_info = $Goods->api_index_hotgoods()??[];
-            Cache::set("API_INDEX_HOTGOODS",$goods_info);
+            Cache::set($HOTGOODS_CACHE_KEY,$goods_info);
         }
 
         $return_data = [
@@ -96,9 +101,9 @@ class Index extends Base{
      * 清理首页缓存数据
      */
     public function delCache(){
-        Cache::rm('API_INDEX_ADS'); 
-        Cache::rm('API_INDEX_SHOPS'); 
-        Cache::rm('API_INDEX_HOTGOODS'); 
+        Cache::rm(config('cachekeys.API_INDEX_ADS')); 
+        Cache::rm(config('cachekeys.API_INDEX_SHOPS')); 
+        Cache::rm(config('cachekeys.API_INDEX_HOTGOODS')); 
     	return WSTReturn("", 1);
     }
 }

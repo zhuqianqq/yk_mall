@@ -119,7 +119,7 @@ class Goods extends Base{
         }else{
             Db::name('goods')->where(['goodsId' => $goodsId])->update(['isHot' => 0,'mIsIndex'=>0]);
         }
-        Cache::rm('API_INDEX_HOTGOODS');
+        Cache::rm(config('cachekeys.API_INDEX_HOTGOODS'));
     	return WSTReturn("操作成功", 1);
     }
 }

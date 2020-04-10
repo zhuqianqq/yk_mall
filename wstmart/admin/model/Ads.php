@@ -2,6 +2,8 @@
 namespace wstmart\admin\model;
 use wstmart\admin\validate\Ads as validate;
 use think\Db;
+use think\facade\Cache;
+
 /**
  * 广告业务处理
  */
@@ -91,8 +93,9 @@ class ads extends Base{
 			WSTUseResource(1, (int)$data['adId'], $data['adFile'], 'ads-pic', 'adFile');
 		    $result = $this->allowField(true)->save($data,['adId'=>(int)$data['adId']]);
 	        if(false !== $result){
-	        	WSTClearAllCache();
-	        	Db::commit();
+				//WSTClearAllCache();
+				Cache::rm(config('cachekeys.API_INDEX_ADS')); //只清除广告位置缓存
+				Db::commit();
 	        	return WSTReturn("编辑成功", 1);
 	        }else{
         		return WSTReturn($this->getError(),-1); 
