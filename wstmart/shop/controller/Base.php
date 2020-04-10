@@ -47,7 +47,8 @@ class Base extends Controller {
     */
     public function editorUpload(){
         $this->checkAuth();
-        return WSTEditUpload(0);
+        //return WSTEditUpload(0);
+        return EditUploadPicToCos(0);
     }
 
     //登录验证方法--商家

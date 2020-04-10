@@ -1399,6 +1399,127 @@ function WSTPager($total,$rs,$page,$size = 0){
 
 
 /**
+* 编辑器上传图片到腾讯云服务器
+*/
+function EditUploadPicToCos($fromType){
+	$root = str_replace('/index.php','',request()->root());
+    //PHP上传失败
+    if (!empty($_FILES['imgFile']['error'])) {
+        switch($_FILES['imgFile']['error']){
+            case '1':
+                $error = '超过php.ini允许的大小。';
+                break;
+            case '2':
+                $error = '超过表单允许的大小。';
+                break;
+            case '3':
+                $error = '图片只有部分被上传。';
+                break;
+            case '4':
+                $error = '请选择图片。';
+                break;
+            case '6':
+                $error = '找不到临时目录。';
+                break;
+            case '7':
+                $error = '写文件到硬盘出错。';
+                break;
+            case '8':
+                $error = 'File upload stopped by extension。';
+                break;
+            case '999':
+            default:
+                $error = '未知错误。';
+        }
+        return ['error'=>1,'msg'=>$error];
+    }
+
+	$fileKey = key($_FILES);
+
+	$dir = 'image'; // 编辑器上传图片目录
+	$dirs = WSTConf("CONF.wstUploads");
+   	if(!in_array($dir, $dirs)){
+   		return json_encode(['error'=>1,'message'=>'非法文件目录！']);
+   	}
+   	// 上传文件
+    $file = request()->file($fileKey);
+    if($file===null){
+    	return json_encode(["error"=>1,"message"=>'上传文件不存在或超过服务器限制']);
+    }
+    $rule = [
+	    'type'=>'image/png,image/gif,image/jpeg,image/x-ms-bmp',
+	    'ext'=>'jpg,jpeg,gif,png,bmp',
+	    'size'=>'20971520'
+	];
+	$mediaType = 0;
+	if(input('dir')=='media'){
+		// 上传类型为视频或音频时，不限制大小
+		$rule = array_diff_key($rule, ['size'=>'']);
+		$videoExt = "3gp,mp4,rmvb,mov,avi,m4v";
+		$rule['ext'] .= $videoExt;
+		$typeArr = explode(',', $videoExt);
+		foreach($typeArr as $v){
+			$rule['type'] .= ",video/$v";
+		}
+		// 上传的资源类型为视频
+		$mediaType = 1;
+	}
+	$info = $file->validate($rule)->rule('uniqid')->move(Env::get('root_path').'/upload/'.$dir."/".date('Y-m'));
+    if ($info) {
+		$filePath = $info->getPathname();
+		$filePath = str_replace(Env::get('root_path'), '', $filePath);
+		$filePath = str_replace('\\', '/', $filePath);
+		$imgSrc = $info->getFilename();
+		$filePath = str_replace($imgSrc, '', $filePath);
+		//原图路径
+		$imageSrc = trim($filePath . $imgSrc, '/');
+		dd($imageSrc);
+		//打开原图
+		$image = \image\Image::open($imageSrc);
+	
+		if ($info->getSize() >= 500 * 1024) {
+			// 检测是否需要翻转图片
+			$image = checkImageOrientation($image, $imageSrc);
+			$thumbSrc = str_replace('.', '_thumb.', $imageSrc);  //缩略图路径
+			$width = min(640, $image->width());
+			$height = min(972, $image->height());
+			$image->thumb($width, $height, 2)->save($thumbSrc, $image->type(), 90);
+	
+			$res = \util\CosHelper::upload($thumbSrc); //上传腾讯cos
+		}else{
+			$res = \util\CosHelper::upload($imageSrc); //上传腾讯cos
+		}
+		$info = null;
+	
+		if($res["code"] == 0){
+			$rdata = [
+				'status' => 1,
+				'url' => $res["data"]["url"], //原图
+				'thumb' => $res["data"]["url"], //缩略图
+				'name' => $imgSrc,
+			];
+			return json_encode($rdata);
+		}else{
+			return json($res);
+		}
+	} else {
+		//上传失败获取错误信息
+		return $file->getError();
+	}
+
+    //     $rdata = ['status'=>1,'name'=>$name,'savePath'=>ltrim($filePath,'/')];
+    //     $info = null;
+    // 	hook('afterUploadPic',['data'=>&$rdata]);
+    // 	//图片记录
+    // 	WSTRecordResources($imageSrc, (int)$fromType, $mediaType);
+    // 	return json_encode(array('error' => 0, 'url' => WSTConf('CONF.resourcePath').'/'.$imageSrc));
+	// }
+	//return json_encode(["error"=>1,"message"=>$file->getError()]);
+}
+
+
+
+/**
 * 编辑器上传图片
 */
 function WSTEditUpload($fromType){
@@ -1434,7 +1555,8 @@ function WSTEditUpload($fromType){
         return ['error'=>1,'msg'=>$error];
     }
 
-    $fileKey = key($_FILES);
+	$fileKey = key($_FILES);
+
 	$dir = 'image'; // 编辑器上传图片目录
 	$dirs = WSTConf("CONF.wstUploads");
    	if(!in_array($dir, $dirs)){
