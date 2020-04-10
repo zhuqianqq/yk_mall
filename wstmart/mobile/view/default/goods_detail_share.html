@@ -116,7 +116,7 @@
 	    <div class="wst-go-name">{$info['goodsName']}</div>
 		<div class="ui-row-flex wst-go-price">
 		    <div class="ui-col ui-col-2">
-		    	<div class="price"><i>¥ </i>{$info['shopPrice']}<span class="market">¥ {$info['marketPrice']}</span></div>
+		    	<div class="price"><i>¥ </i>{$info['shopPrice']}</div>
 		    	{:hook('mobileDocumentGoodsDetailTips',["goods"=>$info])}
 		    	<!-- <div class="ui-row-flex info">
 				    <div class="ui-col ui-col" style="text-align: left;">快递: {if $info['isFreeShipping']==1}免运费{else}{php}echo sprintf("%.2f", $info['shop']['freight']);{/php}{/if}</div>
