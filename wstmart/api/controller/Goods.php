@@ -50,7 +50,7 @@ class Goods extends Base
         $goods['descArr'] = $match[1];
         $goods['shareNum'] = $goods_share_cache;
        
-        $goods['goodsDesc'] = str_replace('src=','style="width:100%" src=',$goods['goodsDesc']); //适应小程序样式
+        $goods['goodsDesc'] = str_replace('src=','style="max-width:100%;height:auto;" src=',$goods['goodsDesc']); //适应小程序样式
        
         //hook('mobileControllerGoodsIndex',['getParams'=>input()]);
         // 分类信息
