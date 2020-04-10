@@ -6,7 +6,6 @@ namespace util;
 use think\facade\Config;
 use think\facade\Cache;
 use think\facade\Db;
-use app\util\WXBizDataCrypt;
 
 class WechatHelper
 {
@@ -32,7 +31,8 @@ class WechatHelper
 
     public static function getAccessToken()
     {
-        $weiXin_config = Config::get('weixin');
+        $config = Config::get();
+        $weiXin_config = $config['weixin'];
         $app_id = $weiXin_config["appid"];
         $secret = $weiXin_config["secret"];
 

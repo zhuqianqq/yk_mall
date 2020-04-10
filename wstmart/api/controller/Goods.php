@@ -190,7 +190,8 @@ class Goods extends Base
     {
         $userid = $this->user_id;
         if (empty($userid)) {
-            return $this->outJson(100, "缺少参数");
+            $userid = 0;
+//            return $this->outJson(100, "缺少参数");
         }
         $goodsId = input('param.goodsId/d');
         $goodsName = input('param.goodsName/s');
