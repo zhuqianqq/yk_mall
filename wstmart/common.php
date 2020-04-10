@@ -1473,7 +1473,7 @@ function EditUploadPicToCos($fromType){
 		$filePath = str_replace($imgSrc, '', $filePath);
 		//原图路径
 		$imageSrc = trim($filePath . $imgSrc, '/');
-		dd($imageSrc);
+
 		//打开原图
 		$image = \image\Image::open($imageSrc);
 	
@@ -1493,6 +1493,7 @@ function EditUploadPicToCos($fromType){
 	
 		if($res["code"] == 0){
 			$rdata = [
+				'error' => 0,
 				'status' => 1,
 				'url' => $res["data"]["url"], //原图
 				'thumb' => $res["data"]["url"], //缩略图
@@ -1500,21 +1501,13 @@ function EditUploadPicToCos($fromType){
 			];
 			return json_encode($rdata);
 		}else{
-			return json($res);
+			return json_encode(["error"=>1,"message"=>$res]);
 		}
 	} else {
 		//上传失败获取错误信息
-		return $file->getError();
+		return json_encode(["error"=>1,"message"=>$file->getError()]);
 	}
 
-    //     $rdata = ['status'=>1,'name'=>$name,'savePath'=>ltrim($filePath,'/')];
-    //     $info = null;
-    // 	hook('afterUploadPic',['data'=>&$rdata]);
-    // 	//图片记录
-    // 	WSTRecordResources($imageSrc, (int)$fromType, $mediaType);
-    // 	return json_encode(array('error' => 0, 'url' => WSTConf('CONF.resourcePath').'/'.$imageSrc));
-	// }
-	//return json_encode(["error"=>1,"message"=>$file->getError()]);
 }
 
 
