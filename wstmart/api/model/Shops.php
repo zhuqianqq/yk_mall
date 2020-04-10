@@ -202,7 +202,7 @@ class Shops extends CShops{
     
         $res = Db::name('shops')->where($where)
             ->field('shopId,shopName,shopImg')
-            ->order('shopId','desc')
+            ->order('sort','asc')
             ->limit(3)
             ->select();
         foreach($res as $k => $v){

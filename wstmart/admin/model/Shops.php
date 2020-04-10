@@ -32,7 +32,7 @@ class Shops extends Base
         $order = [];
         if ($sort != '') {
             $sortArr = explode('.', $sort);
-            $order = 's.isIndex desc ,s.shopId asc ,';
+            $order = 's.isIndex desc ,s.sort asc ,';
             $order .= $sortArr[0] . ' ' . $sortArr[1];
         }
         return Db::table('__SHOPS__')->alias('s')->join('__AREAS__ a2', 's.areaId=a2.areaId', 'left')
