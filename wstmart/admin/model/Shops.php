@@ -718,7 +718,6 @@ class Shops extends Base
         //判断经营范围
         $goodsCatIds = input('post.goodsCatIds');
         $accredIds = input('post.accredIds');
-        if ($goodsCatIds == '') return WSTReturn('请选择经营范围');
 
         Db::startTrans();
         try {
@@ -753,14 +752,17 @@ class Shops extends Base
                 //启用上传图片
                 WSTUseResource(0, $extraId, $v, 'shopextras');
             }
-            //经营范围
-            Db::name('cat_shops')->where('shopId', '=', $shopId)->delete();
-            $goodsCats = explode(',', $goodsCatIds);
-            foreach ($goodsCats as $key => $v) {
-                if ((int)$v > 0) {
-                    Db::name('cat_shops')->insert(['shopId' => $shopId, 'catId' => $v]);
+            if (!empty($goodsCatIds)) {
+                //经营范围
+                Db::name('cat_shops')->where('shopId', '=', $shopId)->delete();
+                $goodsCats = explode(',', $goodsCatIds);
+                foreach ($goodsCats as $key => $v) {
+                    if ((int)$v > 0) {
+                        Db::name('cat_shops')->insert(['shopId' => $shopId, 'catId' => $v]);
+                    }
                 }
             }
+
             //认证类型
             Db::name('shop_accreds')->where('shopId', '=', $shopId)->delete();
             if ($accredIds != '') {
