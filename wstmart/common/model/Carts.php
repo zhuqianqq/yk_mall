@@ -265,8 +265,8 @@ class Carts extends Base{
 			if ($v['isFreeShipping'] == 0 && $carts[$v['shopId']]['isFreeShipping']) $carts[$v['shopId']]['isFreeShipping'] = false;
 			$carts[$v['shopId']]['shopWangWang'] = (int)$v['shopWangWang'];
 			if ($v['isSpec'] == 1) {
-				$v['shopPrice'] = (int)$v['specPrice'];
-				$v['defaultShopPrice'] = (int)$v['specPrice'];
+				$v['shopPrice'] = (float)$v['specPrice'];
+				$v['defaultShopPrice'] = (float)$v['specPrice'];
 				$v['goodsStock'] = (int)$v['specStock'];
 				$v['goodsWeight'] = (int)$v['specWeight'];
 				$v['goodsVolume'] = (int)$v['specVolume'];
@@ -281,7 +281,7 @@ class Carts extends Base{
 			}
 			//如果是结算的话，则要过滤了不符合条件的商品
 			if ($isSettlement && $v['allowBuy'] !=10) {
-				$this->disChkGoods($v['goodsId'],(int)$v['goodsSpecId'],$userId);
+				$this->disChkGoods($v['goodsId'],(float)$v['goodsSpecId'],$userId);
 				continue;
 			}
 			if ($v['isCheck'] == 1) {
@@ -299,7 +299,7 @@ class Carts extends Base{
 			$v['shopQQ'] = (int)$v['shopQQ'];
 			$v['shopWangWang'] = (int)$v['shopWangWang'];
 			$v['specIds'] = (int)$v['specIds'];
-			$v['specPrice'] = (int)$v['specPrice'];
+			$v['specPrice'] = (float)$v['specPrice'];
 			$carts[$v['shopId']]['list'][] = $v;
 			if (!in_array($v['goodsId'], $goodsIds)) $goodsIds[] = $v['goodsId'];
 		}
@@ -331,7 +331,7 @@ class Carts extends Base{
 		foreach($carts as $key => $v){
             if(!isset($v['list']))unset($carts[$key]);
 		}
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (int)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => 0];
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => 0];
 		//店铺优惠活动监听
 //		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
