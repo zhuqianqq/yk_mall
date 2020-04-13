@@ -63,7 +63,7 @@ class Carts extends Base{
 	/**
 	 * 未登录状态 加入购物车
 	 */
-	public function unlogin_addCart($userId,$goodsId,$goodsSpecId,$cartNum){
+	public function unlogin_addCart($userId,$goodsId,$goodsSpecId,$cartNum,$shareId=0){
 
 		$cartNum = ($cartNum>0)?$cartNum:1;
 		//验证传过来的商品是否合法
@@ -82,6 +82,7 @@ class Carts extends Base{
 				$data['goodsSpecId'] = $goodsSpecId;
 				$data['isCheck'] = 1;
 				$data['cartNum'] = $cartNum;
+				$data['shareId'] = $shareId;
 				$rs = $this->save($data);
 			}else{
 				$rs = $this->where(['userId'=>$userId,'goodsId'=>$goodsId,'goodsSpecId'=>$goodsSpecId])->setInc('cartNum',$cartNum);
