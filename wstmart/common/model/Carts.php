@@ -16,6 +16,7 @@ class Carts extends Base{
 		$goodsSpecId = (int)input('post.goodsSpecId');
 		$cartNum = (int)input('post.buyNum',1);
 		$cartNum = ($cartNum>0)?$cartNum:1;
+		$shareId = (int)input('post.shareId',0);
 		$type = (int)input('post.type'); //type:0  加入购物车  1：立即购买
 		if($userId==0)return WSTReturn('加入购物车失败，请先登录',-2);
 		//验证传过来的商品是否合法
@@ -34,6 +35,7 @@ class Carts extends Base{
 				$data['goodsSpecId'] = $goodsSpecId;
 				$data['isCheck'] = 1;
 				$data['cartNum'] = $cartNum;
+				$data['shareId'] = $shareId;
 				$rs = $this->save($data);
 			}else{
 				$rs = $this->where(['userId'=>$userId,'goodsId'=>$goodsId,'goodsSpecId'=>$goodsSpecId])->setInc('cartNum',$cartNum);
