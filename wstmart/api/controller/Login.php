@@ -211,9 +211,11 @@ class Login extends Base{
             }
 
             // 判断是否已经绑定了手机号
-            $exist_user= Users::where('userPhone', $phone)->find();
-            if($exist_user != null) {
+            $exist_user = Users::get($userid);
+            if(!empty($exist_user) && !empty($exist_user->userPhone)) {
+                // 判断手机号是否一致 如果不一致则直接返回
                 $data = Member::where('user_id',$exist_user->userId)->find();
+                $data['access_key'] = $exist_user->access_key;
                 return $this->outJson(0, "登录成功！",$data);
             }
 
@@ -222,14 +224,16 @@ class Login extends Base{
             ])->update([
                 'userPhone' => $phone,
             ]);
-            
+
             $data['user_id'] = $userid;
+            $data = Member::where('user_id',$exist_user->userId)->find();
             Member::setOtherInfo($data);
             Users::where([
                 "userId" => $userid,
             ])->update([
                 'access_key' => $data['access_key']
             ]);
+
             Db::commit();
         } catch (\Exception $e) {
             Db::rollback();
