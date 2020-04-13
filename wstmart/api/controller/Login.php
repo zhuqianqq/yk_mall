@@ -178,7 +178,7 @@ class Login extends Base{
         try {
             $code = $this->request->post("code", '', "trim");
             $loginInfo = WechatHelper::getOpenidByCode($code); // 以code换取openid
-            $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : 'opyS01HYzzAgIlCKO7m1P6GWvIfA';
+            $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
             if (empty($openId)) {
                 return $this->outJson(200, "获取微信openId失败！");
             }
@@ -205,7 +205,18 @@ class Login extends Base{
         try {
             $userid = $this->request->post("user_id", '', "trim");
             $phone = $this->request->post("phone", '', "trim");
+
+            if (ValidateHelper::isMobile($phone) == false || !$userid) {
+                return $this->outJson(100, "参数错误");
+            }
+
             // 判断是否已经绑定了手机号
+            $exist_user= Users::where('userPhone', $phone)->find();
+            if($exist_user != null) {
+                $data = Member::where('user_id',$exist_user->userId)->find();
+                return $this->outJson(0, "登录成功！",$data);
+            }
+
             Users::where([
                 "userId" => $userid,
             ])->update([
@@ -287,7 +298,11 @@ class Login extends Base{
             ])->update([
                 'access_key' => $data['access_key']
             ]);
+            $oneUser =  Users::where([
+                "userId" => $mall_user_id,
+            ])->find();
             $data['mall_user_id'] = $mall_user_id;
+            $data['userPhone'] = $oneUser->userPhone;
             Db::commit();
             return $this->outJson(0, "登录成功", $data);
         } catch (\Exception $e) {
