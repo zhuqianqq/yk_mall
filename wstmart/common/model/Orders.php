@@ -267,13 +267,23 @@ class Orders extends Base{
         $isUseScore = (int)input('isUseScore');
         $useScore = (int)input('useScore');
         if ($userId == 0) return WSTReturn('下单失败，请先登录');
+
         //检测购物车
         $carts = model('common/carts')->getCarts(true, $userId);
         if (empty($carts['carts'])) {
             return WSTReturn("下单失败，请选择有效的库存商品");
         }
 
+
         //检测地址是否有效
+        if (empty($addressId)) {
+            // 如果没有，则是每次都是添加地址
+            $ua = new UserAddress();
+            $addressRes = $ua->add($userId);
+            if ($addressRes["status"] == 1) {
+                $addressId = $addressRes['data']['addressId'];
+            }
+        }
         $address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
         if (empty($address)) {
             return WSTReturn("无效的用户地址");
@@ -302,9 +312,8 @@ class Orders extends Base{
         $address['userAddress'] = $address['areaName'] . $address['userAddress'];
         WSTUnset($address, 'isDefault,dataFlag,createTime,userId');
 
-
         //计算出每个订单应该分配的金额和积分
-        $orderScoreMoney = $this->allocScoreMoney($carts, $isUseScore, $useScore, $uId);
+//        $orderScoreMoney = $this->allocScoreMoney($carts, $isUseScore, $useScore, $uId);
         //生成订单
         Db::startTrans();
         try {
@@ -332,17 +341,20 @@ class Orders extends Base{
                 } else {
                     $order['deliverMoney'] = ($deliverType == 1) ? 0 : WSTOrderFreight($shopId, $order['areaId2'], $shopOrder);
                 }
-                if ($deliverType == 1) {//自提
-                    $order['storeId'] = (int)input("storeId_" . $shopId);
-                    $order['storeType'] = 1;
-                    $order['userName'] = input("store_userName_" . $shopId);
-                    $order['userPhone'] = input("store_userPhone_" . $shopId);
+                if ($deliverType == 1) {
+                    //自提--暂时没有自提
+//                    $order['storeId'] = (int)input("storeId_" . $shopId);
+//                    $order['storeType'] = 1;
+//                    $order['userName'] = input("store_userName_" . $shopId);
+//                    $order['userPhone'] = input("store_userPhone_" . $shopId);
                 }
                 $order['totalMoney'] = $order['goodsMoney'] + $order['deliverMoney'];
                 //积分支付-计算分配积分和金额
-                $shopOrderMoney = $orderScoreMoney[$shopId];
-                $order['scoreMoney'] = $shopOrderMoney['useMoney'];
-                $order['useScore'] = $shopOrderMoney['useScore'];
+//                $shopOrderMoney = $orderScoreMoney[$shopId];
+//                $order['scoreMoney'] = $shopOrderMoney['useMoney'];
+                $order['scoreMoney'] = 0.00;
+//                $order['useScore'] = $shopOrderMoney['useScore'];
+                $order['useScore'] = 0.00;
                 //实付金额要减去积分兑换的金额和店铺总优惠
                 $order['realTotalMoney'] = WSTPositiveNum($order['totalMoney'] - $order['scoreMoney'] - $shopOrder['promotionMoney']);
                 $order['needPay'] = $order['realTotalMoney'];
@@ -423,6 +435,7 @@ class Orders extends Base{
                         //创建订单商品记录
                         $orderGgoods = [];
                         $orderGoods['orderId'] = $orderId;
+                        $orderGoods['shareId'] = $goods['shareId'];
                         $orderGoods['goodsId'] = $goods['goodsId'];
                         $orderGoods['goodsNum'] = $goods['cartNum'];
                         $orderGoods['goodsPrice'] = $goods['shopPrice'];
@@ -599,7 +612,7 @@ class Orders extends Base{
             return WSTReturn("提交订单成功", 1, $orderunique);
         } catch (\Exception $e) {
             Db::rollback();
-            return WSTReturn('提交订单失败', -1);
+            return WSTReturn('提交订单失败' . $e->getMessage(), -1);
         }
     }
 	/**

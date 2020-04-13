@@ -231,7 +231,7 @@ class Carts extends Base{
 		           ->join($prefix.'shops','s.shopId = g.shopId','left')
 		           ->join($prefix.'goods_specs','c.goodsSpecId = gs.id','left')
 		           ->where($where)
-		           ->field('c.goodsSpecId,c.cartId,s.userId,s.shopId,s.shopName,g.isSale,g.goodsId,g.shippingFeeType,g.shopExpressId,s.shopQQ,shopWangWang,g.goodsName,g.shopPrice,g.shopPrice defaultShopPrice,g.goodsStock,g.goodsWeight,g.goodsVolume,g.isSpec,gs.specPrice,gs.specStock,gs.specWeight,gs.specVolume,g.goodsImg,g.gallery,c.isCheck,gs.specIds,c.cartNum,g.goodsCatId,g.isFreeShipping,s.isInvoice')
+		           ->field('c.shareId, c.goodsSpecId,c.cartId,s.userId,s.shopId,s.shopName,g.isSale,g.goodsId,g.shippingFeeType,g.shopExpressId,s.shopQQ,shopWangWang,g.goodsName,g.shopPrice,g.shopPrice defaultShopPrice,g.goodsStock,g.goodsWeight,g.goodsVolume,g.isSpec,gs.specPrice,gs.specStock,gs.specWeight,gs.specVolume,g.goodsImg,g.gallery,c.isCheck,gs.specIds,c.cartNum,g.goodsCatId,g.isFreeShipping,s.isInvoice')
 				   ->order('cartId DESC')
 				   ->select();
 		$carts = [];
@@ -326,6 +326,7 @@ class Carts extends Base{
 			    			}
 			    		}
 			    		$carts[$key]['list'][$skey]['specNames'] = $strName;
+			    		$carts[$key]['list'][$skey]['shareId'] = $v['shareId'];
 			    	}
 			    }
 		    }
