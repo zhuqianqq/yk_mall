@@ -103,10 +103,8 @@ class Carts extends Base{
 	public function settlement()
     {
         $userId = (int)input('post.user_id', 0); //直播用户id
-        if($userId > 0){
-            $userId = TUserMap::getMallUserId($userId);
-        }else{
-            $userId = (int)session('WST_USER.userId');
+        if (empty($userId)) {
+            return $this->outJson(100, '缺少参数');
         }
         $m = new M();
         //获取一个用户地址
@@ -124,7 +122,7 @@ class Carts extends Base{
         $pa = new Payments();
         $payments = $pa->getByGroup('2');
         //获取已选的购物车商品
-        $carts = $m->getCarts(true);
+        $carts = $m->getCarts(true, $userId);
 
         hook("mobileControllerCartsSettlement", ["carts" => $carts, "payments" => &$payments]);
 
