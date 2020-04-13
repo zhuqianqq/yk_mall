@@ -47,7 +47,7 @@ class Carts extends Base{
 			$data['carts'] = json_decode($data['carts'],true);
 			$m = new M();
 			foreach ($data['carts'] as $k => $v) {
-				 $m->unlogin_addCart($data['user_id'],$v['goodsId'],$v['goodsSpecId'],$v['buyNum']);
+				 $m->unlogin_addCart($data['user_id'],$v['goodsId'],$v['goodsSpecId'],$v['buyNum'],$v['shareId']);
 			}
 		}
 		return $this->outJson(0, "success");
@@ -66,10 +66,8 @@ class Carts extends Base{
 	 * 批量修改购物车状态
 	 */
 	public function batchChangeCartGoods(){
-		
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
 		$m = new M();
-		return $this->outJson(0, "success", $m->batchChangeCartGoods($mall_user_id));
+		return $this->outJson(0, "success", $m->batchChangeCartGoods(input('param.user_id')));
 	}
 	/**
 	 * 删除购物车里的商品
