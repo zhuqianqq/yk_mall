@@ -18,11 +18,9 @@ class Carts extends Base{
 	 * 查看购物车列表
 	 */
 	public function index(){
-
 		$m = new M();
 		$carts = $m->getCarts(false,input('param.user_id'));
 		return $this->outJson(0, "success", $carts);
-
 	}
     /**
     * 加入购物车
@@ -31,16 +29,37 @@ class Carts extends Base{
 
 		$m = new M();
 		$rs = $m->addCart(input('param.user_id'));
-		$rs['cartNum'] = WSTCartNum($mall_user_id);
+		$rs['cartNum'] = WSTCartNum(input('param.user_id'));
 		return $this->outJson(0, "success", $rs);
 	}
+
+	/**
+    * 用户未登录时加入购物车，登录后处理
+    */
+	public function unlogin_addCart(){
+
+		//dd(input('param.'));
+		$data = input('param.');
+		if(!$data['user_id']){
+			return WSTReturn("参数错误", -1);
+		}
+		if($data['carts']){
+			$data['carts'] = json_decode($data['carts'],true);
+			$m = new M();
+			foreach ($data['carts'] as $k => $v) {
+				 $m->unlogin_addCart($data['user_id'],$v['goodsId'],$v['goodsSpecId'],$v['buyNum']);
+			}
+		}
+		return $this->outJson(0, "success");
+	}
+
+
 	/**
 	 * 修改购物车商品状态
 	 */
 	public function changeCartGoods(){
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
 		$m = new M();
-		$rs = $m->changeCartGoods($mall_user_id);
+		$rs = $m->changeCartGoods(input('param.user_id'));
 		return $this->outJson(0, "success", $rs);
 	}
 	/**

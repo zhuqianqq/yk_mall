@@ -276,7 +276,7 @@ class Users extends Base
         $timeVerify = session('VerifyCode_userPhone_Time2');
 
         if ($loginName != session('VerifyCode_userPhone2')) {
-            return WSTReturn("登录手机号与校验手机号不一致，请重新输入！", -1);
+//            return WSTReturn("登录手机号与校验手机号不一致，请重新输入！", -1);
         }
         if (!session('VerifyCode_userPhone_Verify2') || time() > floatval($timeVerify) + 10 * 60) {
 //            return WSTReturn("短信验证码已失效，请重新发送！", -1);

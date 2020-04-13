@@ -16,7 +16,7 @@ class Carts extends Base{
 		$goodsSpecId = (int)input('post.goodsSpecId');
 		$cartNum = (int)input('post.buyNum',1);
 		$cartNum = ($cartNum>0)?$cartNum:1;
-		$type = (int)input('post.type');
+		$type = (int)input('post.type'); //type:0  加入购物车  1：立即购买
 		if($userId==0)return WSTReturn('加入购物车失败，请先登录',-2);
 		//验证传过来的商品是否合法
 		$chk = $this->checkGoodsSaleSpec($goodsId,$goodsSpecId, $userId);
@@ -57,6 +57,47 @@ class Carts extends Base{
 		}
 		return WSTReturn("加入购物车失败", -1);
 	}
+
+	/**
+	 * 未登录状态 加入购物车
+	 */
+	public function unlogin_addCart($userId,$goodsId,$goodsSpecId,$cartNum){
+
+		$cartNum = ($cartNum>0)?$cartNum:1;
+		//验证传过来的商品是否合法
+		$chk = $this->checkGoodsSaleSpec($goodsId,$goodsSpecId, $userId);
+		if($chk['status']==-1)return $chk;
+		//检测库存是否足够
+		if($chk['data']['stock']<$cartNum) $cartNum =  $chk['data']['stock']; //若库存不够  最大购买数量为库存数量
+		//添加实物商品
+		if($chk['data']['goodsType']==0){
+			$goodsSpecId = $chk['data']['goodsSpecId'];
+			$goods = $this->where(['userId'=>$userId,'goodsId'=>$goodsId,'goodsSpecId'=>$goodsSpecId])->select();
+			if(count($goods)==0){
+				$data = array();
+				$data['userId'] = $userId;
+				$data['goodsId'] = $goodsId;
+				$data['goodsSpecId'] = $goodsSpecId;
+				$data['isCheck'] = 1;
+				$data['cartNum'] = $cartNum;
+				$rs = $this->save($data);
+			}else{
+				$rs = $this->where(['userId'=>$userId,'goodsId'=>$goodsId,'goodsSpecId'=>$goodsSpecId])->setInc('cartNum',$cartNum);
+			}
+			if(false !==$rs){
+				WSTReturn("添加成功", 1);
+			}
+		}else{
+			//非实物商品
+            $carts = [];
+            $carts['goodsId'] = $goodsId;
+            $carts['cartNum'] = $cartNum;
+            session('TMP_CARTS',$carts);
+            WSTReturn("添加成功", 1);
+		}
+		return WSTReturn("加入购物车失败", -1);
+	}
+
 	/**
 	 * 验证商品是否合法
 	 */
@@ -215,20 +256,20 @@ class Carts extends Base{
 			$carts[$v['shopId']]['promotion'] = [];//店铺优惠活动
 			$carts[$v['shopId']]['promotionMoney'] = 0;//店铺要优惠的金额
 			//----------------------------
-			$carts[$v['shopId']]['shopId'] = $v['shopId'];
+			$carts[$v['shopId']]['shopId'] = (int)$v['shopId'];
 			$carts[$v['shopId']]['shopName'] = $v['shopName'];
-			$carts[$v['shopId']]['shopQQ'] = $v['shopQQ'];
-			$carts[$v['shopId']]['userId'] = $v['userId'];
+			$carts[$v['shopId']]['shopQQ'] = (int)$v['shopQQ'];
+			$carts[$v['shopId']]['userId'] = (int)$v['userId'];
 			$carts[$v['shopId']]['isInvoice'] = $v['isInvoice'];
 			//如果店铺一旦不包邮了，那么就不用去判断商品是否包邮了
 			if ($v['isFreeShipping'] == 0 && $carts[$v['shopId']]['isFreeShipping']) $carts[$v['shopId']]['isFreeShipping'] = false;
-			$carts[$v['shopId']]['shopWangWang'] = $v['shopWangWang'];
+			$carts[$v['shopId']]['shopWangWang'] = (int)$v['shopWangWang'];
 			if ($v['isSpec'] == 1) {
-				$v['shopPrice'] = $v['specPrice'];
-				$v['defaultShopPrice'] = $v['specPrice'];
-				$v['goodsStock'] = $v['specStock'];
-				$v['goodsWeight'] = $v['specWeight'];
-				$v['goodsVolume'] = $v['specVolume'];
+				$v['shopPrice'] = (int)$v['specPrice'];
+				$v['defaultShopPrice'] = (int)$v['specPrice'];
+				$v['goodsStock'] = (int)$v['specStock'];
+				$v['goodsWeight'] = (int)$v['specWeight'];
+				$v['goodsVolume'] = (int)$v['specVolume'];
 			}
 			//判断能否购买，预设allowBuy值为10，为将来的各种情况预留10个情况值，从0到9
 			$v['allowBuy'] = 10;
@@ -236,7 +277,7 @@ class Carts extends Base{
 				$v['allowBuy'] = 0;//库存不足
 			} else if($v['goodsStock'] < $v['cartNum']) {
 				//$v['allowBuy'] = 1;//库存比购买数小
-				$v['cartNum'] = $v['goodsStock'];
+				$v['cartNum'] = (int)$v['goodsStock'];
 			}
 			//如果是结算的话，则要过滤了不符合条件的商品
 			if ($isSettlement && $v['allowBuy'] !=10) {
@@ -246,7 +287,7 @@ class Carts extends Base{
 			if ($v['isCheck'] == 1) {
 				$carts[$v['shopId']]['goodsMoney'] = $carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
-				$goodsTotalNum++;
+				$goodsTotalNum+=$v['cartNum'];
 			}
 			$v['specNames'] = [];
 			unset($v['shopName']);
@@ -254,7 +295,11 @@ class Carts extends Base{
 			if ($uId > 0 && isset($v['goodsName'])) {
 				$v['goodsName'] = htmlspecialchars_decode($v['goodsName']);
 			}
-
+			$v['goodsSpecId'] = (int)$v['goodsSpecId'];
+			$v['shopQQ'] = (int)$v['shopQQ'];
+			$v['shopWangWang'] = (int)$v['shopWangWang'];
+			$v['specIds'] = (int)$v['specIds'];
+			$v['specPrice'] = (int)$v['specPrice'];
 			$carts[$v['shopId']]['list'][] = $v;
 			if (!in_array($v['goodsId'], $goodsIds)) $goodsIds[] = $v['goodsId'];
 		}
@@ -286,7 +331,7 @@ class Carts extends Base{
 		foreach($carts as $key => $v){
             if(!isset($v['list']))unset($carts[$key]);
 		}
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => $goodsTotalMoney, 'goodsTotalNum' => $goodsTotalNum, 'promotionMoney' => 0];
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (int)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => 0];
 		//店铺优惠活动监听
 //		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   

@@ -4,6 +4,7 @@ namespace wstmart\common\model;
 use think\Db;
 use wstmart\common\validate\Goods as Validate;
 use wstmart\common\model\Shops;
+use think\facade\Cache;
 
 /**
  * 商品类
