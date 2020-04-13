@@ -63,7 +63,7 @@ class Login extends Base{
     }
 
     /**
-     * 小程序登录
+     * 小程序授权
      */
     public function loginByMinWechat()
     {
@@ -148,16 +148,74 @@ class Login extends Base{
                 'from' => 1,
             ]);
 
-            if (!empty($unionId)) {
-                $data = Member::getByUnionId($unionId);
-            } else {
-                $data = Member::getByOpenId($openId);
-            }
+//            if (!empty($unionId)) {
+//                $data = Member::getByUnionId($unionId);
+//            } else {
+//                $data = Member::getByOpenId($openId);
+//            }
+//
+//            $data['mall_user_id'] = $mall_user_id;
+//            Member::setOtherInfo($data);
+//            Users::where([
+//                "userId" => $mall_user_id,
+//            ])->update([
+//                'access_key' => $data['access_key']
+//            ]);
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+            return $this->outJson(0, "授权失败", $e->getMessage() ?? '接口异常');
+        }
 
-            $data['mall_user_id'] = $mall_user_id;
+        return $this->outJson(0, "授权成功", $data);
+    }
+
+    /**
+     * 小程序是否授权
+     */
+    public function loginByMinWechatCode()
+    {
+        try {
+            $code = $this->request->post("code", '', "trim");
+            $loginInfo = WechatHelper::getOpenidByCode($code); // 以code换取openid
+            $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : 'opyS01HYzzAgIlCKO7m1P6GWvIfA';
+            if (empty($openId)) {
+                return $this->outJson(200, "获取微信openId失败！");
+            }
+            $data = Member::getByOpenId($openId);
+
+            $hasAuth = 0; // 是否授权
+            if (!empty($data)) {
+                $hasAuth = 1;
+            }
+            $data['hasAuth'] = $hasAuth;
+        } catch (\Exception $e) {
+            return $this->outJson(0, "查询失败", $e->getMessage() ?? '接口异常');
+        }
+
+        return $this->outJson(0, "查询成功", $data);
+    }
+
+    /**
+     * 小程序绑定手机号这一步才是真正的登录
+     */
+    public function loginByMinWechatPhone()
+    {
+        Db::startTrans();
+        try {
+            $userid = $this->request->post("user_id", '', "trim");
+            $phone = $this->request->post("phone", '', "trim");
+            // 判断是否已经绑定了手机号
+            Users::where([
+                "userId" => $userid,
+            ])->update([
+                'userPhone' => $phone,
+            ]);
+            
+            $data['user_id'] = $userid;
             Member::setOtherInfo($data);
             Users::where([
-                "userId" => $mall_user_id,
+                "userId" => $userid,
             ])->update([
                 'access_key' => $data['access_key']
             ]);
