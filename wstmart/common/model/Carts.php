@@ -282,7 +282,8 @@ class Carts extends Base{
 				$this->disChkGoods($v['goodsId'],(float)$v['goodsSpecId'],$userId);
 				continue;
 			}
-			if ($v['isCheck'] == 1) {
+			//未选中商品 已下架商品  库存小于或等于0商品不予统计金额
+			if ($v['isCheck'] == 1 && $v['isSale'] !=0 && $v['goodsStock'] > 0 && $v['specStock'] > 0) {
 				$carts[$v['shopId']]['goodsMoney'] = $carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
@@ -296,7 +297,7 @@ class Carts extends Base{
 			$v['goodsSpecId'] = (int)$v['goodsSpecId'];
 			$v['shopQQ'] = (int)$v['shopQQ'];
 			$v['shopWangWang'] = (int)$v['shopWangWang'];
-			$v['specIds'] = (int)$v['specIds'];
+			$v['specIds'] = $v['specIds'];
 			$v['specPrice'] = (float)$v['specPrice'];
 
 			//商品已经下架  商品库存小于或等于0
