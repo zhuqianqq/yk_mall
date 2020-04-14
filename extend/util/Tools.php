@@ -254,6 +254,22 @@ class Tools
         }
     }
 
+    public static function my_curl($url, $method = null, $data = null)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        if ($method == 'post') {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        }
+        $result = curl_exec($ch);
+        curl_close($ch);
+        // var_dump($return);
+        return $result;
+    }
+
     /**
      * get 请求
      * @param $url

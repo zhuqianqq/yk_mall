@@ -5,6 +5,8 @@ use think\Db;
 use wstmart\common\model\Orders as M;
 use wstmart\common\model\Payments;
 use wstmart\common\model\TMember;
+use wstmart\common\pay\AliPay;
+use wstmart\common\pay\WeixinPay;
 
 /**
  * 订单控制器
@@ -27,17 +29,81 @@ class Orders extends Base{
 	 */
 	public function submit()
     {
-        $m = new M();
-        $rs = $m->submit(2);
-        if ($rs["status"] == -1) {
-            return $this->outJson(1, $rs["msg"]);
+        try {
+            $m = new M();
+            $rs = $m->submit(2);
+            if ($rs["status"] == -1) {
+                throw new \Exception($rs["msg"], 100);
+            }
+            if ($rs["status"] == 1) {
+                $pkey = WSTBase64urlEncode($rs["data"] . "@1");
+                $rs["pkey"] = $pkey;
+                $userId = (int)input('post.user_id', 0); //直播用户id
+                $payType = (int)input('post.payType', 1); // 1 在线 0 自提
+                $deliverType = (int)input('post.deliverType', 1); // 1 支付宝 0 微信
+                $pkey = WSTBase64urlDecode($pkey);
+                $pkey = explode('@',$pkey);
+                $orderNo = $pkey[0];
+                $isBatch = (int)$pkey[1];
+                $obj = array();
+                $obj["userId"] = $userId;
+                $obj["orderNo"] = $orderNo;
+                $obj["isBatch"] = $isBatch;
+                $order = $m->getPayOrders($obj);
+                if ($deliverType == 1) {
+                    // 支付宝
+                    $pay = new  Alipay();
+                    $data = [
+                        'orderunique' => $rs['data'],
+                        'sdkString' => $pay->sdkExecute([
+                            'tradeNo' => $rs['data'],
+                            'tradeMoney' =>  $order["needPay"],
+                        ]),
+                    ];
+                } else {
+                    // 微信
+                    $config = Payments::where(['payCode' => 'weixinpays'])->find();
+                    if (empty($config)) {
+                        throw new \Exception('支付配置错误', 100);
+                    }
+
+                    $config = Payments::where(['payCode' => 'weixinpays'])->find();
+                    $payConfig = $config['payConfig'];
+                    if (empty($payConfig)) {
+                        throw new \Exception('支付配置错误', 100);
+                    }
+                    $payConfigData = json_decode($payConfig, true);
+                    $key = $payConfigData['apiKey'];
+                    $appId = $payConfigData['appId'];
+                    $mchId = $payConfigData['mchId'];
+                    if (empty($key) || empty($appId) || empty($mchId)) {
+                        throw new \Exception('支付配置错误', 100);
+                    }
+                    $notifyUrl = 'https://shop.wengyingwangluo.cn/api/weixinpays/notify';
+                    $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
+                    $recharge['merOrderId'] = $rs['data'];
+                    $recharge['money'] = $order["needPay"];
+                    $wxOrder = $payer->prepay($recharge);
+
+                    $prepayData = [
+                        'appId' => $appId,
+                        'partnerId' => $mchId,
+                        'prepayId' => $wxOrder['prepay_id'],
+                        'nonceStr' => $payer->createNonceString(),
+                        'package' => 'Sign=WXPay',
+                        'timestamp' => time()
+                    ];
+                    $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
+
+                    $prepayData['sign'] = $payer->sign($signData);
+                    $prepayData['orderunique'] = $rs['data'];
+                    $data = $prepayData;
+                }
+                return $this->outJson(0, "提交成功!", $data);
+            }
+        } catch (\Exception $e) {
+            return $this->outJson(100, $e->getMessage());
         }
-        if ($rs["status"] == 1) {
-            $pkey = WSTBase64urlEncode($rs["data"] . "@1");
-            $rs["pkey"] = $pkey;
-        }
-        //return \json_encode($rs);
-        return $this->outJson(0, "提交成功!", $rs);
     }
 	/**
 	 * 提交虚拟订单
