@@ -222,8 +222,8 @@ class Login extends Base{
 //            $phone = $this->request->post("phone", '', "trim");
             $code = $this->request->post("code", '', "trim");
             $detail = $this->request->post("detail", '');
-            return $this->outJson(0, "登录成功！", $detail);
             $detailData = json_decode($detail, true);
+            return $this->outJson(0, "登录成功！",$detailData);
             if (empty($detailData['iv']) || empty($detailData['encryptedData']) || empty($code)) {
                 return $this->outJson(100, "参数错误");
             }
