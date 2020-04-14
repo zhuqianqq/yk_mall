@@ -284,7 +284,7 @@ class Carts extends Base{
 			}
 			//未选中商品 已下架商品  库存小于或等于0商品不予统计金额
 			if ($v['isCheck'] == 1 && $v['isSale'] !=0 && $v['goodsStock'] > 0 && $v['specStock'] > 0) {
-				$carts[$v['shopId']]['goodsMoney'] = $carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'];
+				$carts[$v['shopId']]['goodsMoney'] = (int)($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum']);
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
 			}
@@ -426,7 +426,8 @@ class Carts extends Base{
 		if($ids=='')return WSTReturn("操作失败");
         $ids = explode(',',WSTFormatIn(',',$ids));
         $userId = ($uId>0)?$uId:(int)session('WST_USER.userId');
-        $isCheck = ((int)input('post.isCheck/d',-1)==1)?1:0;
+		$isCheck = ((int)input('post.isCheck/d',-1)==1)?1:0;
+        $this->where('userId',$userId)->update(['isCheck'=>0]);//只提交一次新增该sql 将该userId下购物车商品isCheck全设0逻辑;
         $this->where([['cartId','in',$ids],['userId','=',$userId]])->update(['isCheck'=>$isCheck]);
 		return WSTReturn("操作成功", 1);
 	}
