@@ -258,7 +258,7 @@ class Login extends Base{
             $data['user_id'] = $userid;
             $data = Member::where('user_id',$exist_user->userId)->find();
             Member::setOtherInfo($data);
-            $data['userPhone'] = $userid;
+            $data['userPhone'] = $phone;
             Users::where([
                 "userId" => $userid,
             ])->update([
