@@ -67,6 +67,35 @@ class Goods extends Base
       
 	}
 
+    /**
+     * 查询成功
+     * @return array
+     */
+	public function guessLike()
+    {
+        // 当前无浏览记录，取热销商品
+        $where = [];
+        $where[] = ['isSale','=',1];
+        $where[] = ['goodsStatus','=',1];
+        $where[] = ['dataFlag','=',1];
+        $goods_group = Db::name('goods')
+            ->where($where)
+            ->group('goodsCatId')
+            ->column('goodsCatId');
+        $num = 10;
+        $goods = Db::name('goods')->field('goodsId,goodsName,goodsImg,goodsSn,goodsStock,saleNum,shopPrice,marketPrice,isSpec,appraiseNum,visitNum,isNew')
+            ->where($where)
+            ->where([['goodsCatId', 'in', $goods_group]])
+            ->limit(3 * $num)
+            ->select();
+        if(empty($goods))return [];
+
+        // 从数组中随机取$num个单元
+        shuffle($goods);
+        $goods = array_slice($goods,0, $num);
+        return $this->outJson(0, '查询成功', $goods);
+    }
+
 
     /**
      * 商品新增&编辑

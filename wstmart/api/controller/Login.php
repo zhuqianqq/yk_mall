@@ -7,6 +7,7 @@ use util\AccessKeyHelper;
 use util\SmsHelper;
 use util\ValidateHelper;
 use util\WechatHelper;
+use util\WXBizDataCrypt;
 use wstmart\common\model\Member;
 use wstmart\common\model\Users;
 /**
@@ -83,6 +84,7 @@ class Login extends Base{
             $redisKey = self::KEY_XCX_LOGIN . $code;
             $redisData = Cache::get($redisKey);
             if (!empty($redisData)) {
+//                file_put_contents('/data/webroot/wx2.log', "code:" . $code . ':data:' . $redisData, FILE_APPEND);
                 $loginInfo = json_decode($redisData, true);
                 $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
                 $unionId = '';
@@ -192,13 +194,14 @@ class Login extends Base{
             if (empty($openId)) {
                 return $this->outJson(200, "获取微信openId失败！");
             }
+            $redisKey = self::KEY_XCX_LOGIN . $code;
+            Cache::set($redisKey, json_encode($loginInfo), 300);
+//            file_put_contents('/data/webroot/wx.log', "code:" . $code . ':data:' . json_encode($loginInfo), FILE_APPEND);
             $data = Member::getByOpenId($openId);
 
             $hasAuth = 0; // 是否授权
             if (!empty($data)) {
                 $hasAuth = 1;
-                $redisKey = self::KEY_XCX_LOGIN . $code;
-                Cache::set($redisKey, json_encode($loginInfo), 300);
             }
             $data['hasAuth'] = $hasAuth;
         } catch (\Exception $e) {
@@ -216,19 +219,34 @@ class Login extends Base{
         Db::startTrans();
         try {
             $userid = $this->request->post("user_id", '', "trim");
-            $phone = $this->request->post("phone", '', "trim");
+//            $phone = $this->request->post("phone", '', "trim");
+            $code = $this->request->post("code", '', "trim");
+            $iv = $this->request->post("iv", '');
+            $encryptedData = $this->request->post("encryptedData", '');
 
-            if (ValidateHelper::isMobile($phone) == false || !$userid) {
-                return $this->outJson(100, "参数错误");
+            if (empty($iv) || empty($encryptedData) || empty($code)) {
+                throw new \Exception("参数错误", 100);
             }
-
             // 判断是否已经绑定了手机号
             $exist_user = Users::get($userid);
             if(!empty($exist_user) && !empty($exist_user->userPhone)) {
                 // 判断手机号是否一致 如果不一致则直接返回
                 $data = Member::where('user_id',$exist_user->userId)->find();
                 $data['access_key'] = $exist_user->access_key;
+                $data['userPhone'] = $exist_user->userPhone;
+                Db::commit();
                 return $this->outJson(0, "登录成功！",$data);
+            }
+            
+            $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
+            if (empty($loginInfo)) {
+                throw new \Exception("获取信息失败" . json_encode($loginInfo), 100);
+            }
+            $loginInfo = json_decode($loginInfo, true);
+            $phone = $loginInfo['phoneNumber'];
+
+            if (ValidateHelper::isMobile($phone) == false || !$userid) {
+                throw new \Exception("参数错误", 100);
             }
 
             Users::where([
@@ -237,9 +255,9 @@ class Login extends Base{
                 'userPhone' => $phone,
             ]);
 
-            $data['user_id'] = $userid;
             $data = Member::where('user_id',$exist_user->userId)->find();
             Member::setOtherInfo($data);
+            $data['userPhone'] = $phone;
             Users::where([
                 "userId" => $userid,
             ])->update([
