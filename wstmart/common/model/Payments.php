@@ -11,7 +11,7 @@ class Payments extends Base{
 	 * $isApp 如果是接口请求,则不返回payConfig数据
 	 */
 	public function getByGroup($payfor = '', $onlineType = -1, $isApp = false){
-		$payments = ['0'=>[],'1'=>[]];
+		$payments = [];
 		$where = ['enabled'=>1];
 		if(in_array($onlineType,[1,0]))$where['isOnline'] = $onlineType;
 		$rs = $this->where($where)->where("find_in_set ($payfor,payFor)")->order('payOrder asc')->select();
@@ -20,7 +20,7 @@ class Payments extends Base{
 			if($isApp)unset($v['payConfig']);
 			$payments[$v['isOnline']][] = $v;
 		}
-		return $payments;
+		return array_values($payments)[0];
 	}
 
 	
