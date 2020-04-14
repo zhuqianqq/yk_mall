@@ -7,6 +7,7 @@ use util\AccessKeyHelper;
 use util\SmsHelper;
 use util\ValidateHelper;
 use util\WechatHelper;
+use util\WXBizDataCrypt;
 use wstmart\common\model\Member;
 use wstmart\common\model\Users;
 /**
@@ -218,7 +219,18 @@ class Login extends Base{
         Db::startTrans();
         try {
             $userid = $this->request->post("user_id", '', "trim");
-            $phone = $this->request->post("phone", '', "trim");
+//            $phone = $this->request->post("phone", '', "trim");
+            $code = $this->request->post("code", '', "trim");
+            $detail = $this->request->post("detail", '', "trim");
+            $detailData = json_decode($detail, true);
+            if (empty($detailData['iv']) || empty($detailData['encryptedData']) || empty($code)) {
+                return $this->outJson(100, "参数错误");
+            }
+            $iv = $detailData['iv'];
+            $encryptedData = $detailData['encryptedData'];
+            $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
+            $loginInfo = json_decode($loginInfo, true);
+            return $this->outJson(0, "登录成功！",$loginInfo);
 
             if (ValidateHelper::isMobile($phone) == false || !$userid) {
                 return $this->outJson(100, "参数错误");
