@@ -238,15 +238,10 @@ class Carts extends Base{
 		$goodsIds = [];
 		$goodsTotalNum = 0;
 		$goodsTotalMoney = 0;
-		foreach ($rs as $key => $v) {
-			//购物车中购买时  商品已经下架  
-			// if($v['isSale']==0){
-			// 	Db::table($prefix.'carts')
-			// 	->where(['userId'=>$userId,'goodsId'=>$v['goodsId']])
-			// 	->delete();
-			// 	return ['status'=>-1,'msg'=>'商品已下架'];
-			// }
+		$canNotBuy = [];
 
+		foreach ($rs as $key => $v) {
+			
 			//如果gallery中有数据  把goodsImg换为gallery的第一张
 			if ($v['gallery']) {
 				$v['goodsImg'] =  explode(',', $v['gallery'])[0] ;
@@ -303,6 +298,15 @@ class Carts extends Base{
 			$v['shopWangWang'] = (int)$v['shopWangWang'];
 			$v['specIds'] = (int)$v['specIds'];
 			$v['specPrice'] = (float)$v['specPrice'];
+
+			//商品已经下架  商品库存小于或等于0
+			if($v['isSale']==0 || $v['goodsStock']<=0 || $v['specStock']<=0){
+				// Db::table($prefix.'carts')
+				// ->where(['userId'=>$userId,'goodsId'=>$v2['goodsId']])
+				// ->delete();
+				$canNotBuy[] = $v;
+				continue;
+			}	
 			$carts[$v['shopId']]['list'][] = $v;
 			if (!in_array($v['goodsId'], $goodsIds)) $goodsIds[] = $v['goodsId'];
 		}
@@ -331,13 +335,16 @@ class Carts extends Base{
 			    }
 		    }
 		}
-		//过滤无效店铺
+
+
+		//过滤无效店铺,已经下架商品,商品库存小于或等于0商品
 		foreach($carts as $key => $v){
-            if(!isset($v['list']))unset($carts[$key]);
+			if(!isset($v['list']))unset($carts[$key]);
 		}
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => bcdiv($goodsTotalMoney, 1, 2), 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00'];
+	
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
 		//店铺优惠活动监听
-//		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
+		//hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
 	}
 	
