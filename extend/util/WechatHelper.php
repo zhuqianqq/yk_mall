@@ -16,7 +16,7 @@ class WechatHelper
         $wechat_config = $config['weixin'];
         $realUrl = 'https://api.weixin.qq.com/sns/jscode2session?appid=' . $wechat_config['appid'] . '&secret=' . $wechat_config['secret'] . '&js_code=' . $code . '&grant_type=authorization_code';
         $res = Tools::curlGet($realUrl, null);
-        //Tools::addLog("wechat", "取得微信授权结果", json_encode($res));
+        Tools::addLog("wechat", "取得微信授权结果", json_encode($res));
         if ($res == null || !isset($res["session_key"])) {
             return null;
         }
