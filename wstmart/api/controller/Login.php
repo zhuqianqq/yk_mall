@@ -227,17 +227,6 @@ class Login extends Base{
             if (empty($iv) || empty($encryptedData) || empty($code)) {
                 throw new \Exception("参数错误", 100);
             }
-            $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
-            if (empty($loginInfo)) {
-                throw new \Exception("获取信息失败" . json_encode($loginInfo), 100);
-            }
-            $loginInfo = json_decode($loginInfo, true);
-            $phone = $loginInfo['phoneNumber'];
-
-            if (ValidateHelper::isMobile($phone) == false || !$userid) {
-                throw new \Exception("参数错误", 100);
-            }
-
             // 判断是否已经绑定了手机号
             $exist_user = Users::get($userid);
             if(!empty($exist_user) && !empty($exist_user->userPhone)) {
@@ -247,6 +236,17 @@ class Login extends Base{
                 $data['userPhone'] = $exist_user->userPhone;
                 Db::commit();
                 return $this->outJson(0, "登录成功！",$data);
+            }
+            
+            $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
+            if (empty($loginInfo)) {
+                throw new \Exception("获取信息失败" . json_encode($loginInfo), 100);
+            }
+            $loginInfo = json_decode($loginInfo, true);
+            $phone = $loginInfo['phoneNumber'];
+
+            if (ValidateHelper::isMobile($phone) == false || !$userid) {
+                throw new \Exception("参数错误", 100);
             }
 
             Users::where([
