@@ -193,14 +193,14 @@ class Login extends Base{
             if (empty($openId)) {
                 return $this->outJson(200, "获取微信openId失败！");
             }
+            $redisKey = self::KEY_XCX_LOGIN . $code;
+            Cache::set($redisKey, json_encode($loginInfo), 300);
+            file_put_contents('/data/webroot/wx.log', "code:" . $code . ':data:' . json_encode($loginInfo), FILE_APPEND);
             $data = Member::getByOpenId($openId);
 
             $hasAuth = 0; // 是否授权
             if (!empty($data)) {
                 $hasAuth = 1;
-                $redisKey = self::KEY_XCX_LOGIN . $code;
-                Cache::set($redisKey, json_encode($loginInfo), 300);
-                file_put_contents('/data/webroot/wx.log', "code:" . $code . ':data:' . json_encode($loginInfo), FILE_APPEND);
             }
             $data['hasAuth'] = $hasAuth;
         } catch (\Exception $e) {
