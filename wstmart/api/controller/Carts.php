@@ -141,7 +141,7 @@ class Carts extends Base{
         //$this->assign('userOrderScore',$useOrderScore);
         //$this->assign('userOrderMoney',$useOrderMoney);
         $result['userOrderScore'] = $useOrderScore;
-        $result['userOrderMoney'] = $useOrderMoney;
+        $result['userOrderMoney'] = bcdiv($useOrderMoney, 1, 2);
         //$this->assign('carts',$carts);
         $result['carts'] = $carts;
         //return $this->fetch('settlement');

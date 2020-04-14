@@ -288,7 +288,7 @@ class Carts extends Base{
 				continue;
 			}
 			if ($v['isCheck'] == 1) {
-				$carts[$v['shopId']]['goodsMoney'] = $carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'];
+				$carts[$v['shopId']]['goodsMoney'] = bcdiv($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'],1, 2);
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
 			}
@@ -335,7 +335,7 @@ class Carts extends Base{
 		foreach($carts as $key => $v){
             if(!isset($v['list']))unset($carts[$key]);
 		}
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => 0];
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => bcdiv($goodsTotalMoney, 1, 2), 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00'];
 		//店铺优惠活动监听
 //		hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
