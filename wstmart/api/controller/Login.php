@@ -2,6 +2,7 @@
 namespace wstmart\api\controller;
 use think\Db;
 use think\Exception;
+use think\facade\Cache;
 use util\AccessKeyHelper;
 use util\SmsHelper;
 use util\ValidateHelper;
@@ -12,6 +13,7 @@ use wstmart\common\model\Users;
  * 登录控制器
  */
 class Login extends Base{
+    const KEY_XCX_LOGIN = "KEY:XCX:LOGIN:CODE:";
     protected $middleware = [
         //'access_check' => ['only' => ['loginOut']],
     ];
@@ -78,15 +80,23 @@ class Login extends Base{
             $province = $this->request->post("province", '', "trim");
             $iv = $this->request->post("iv", '', "trim");
             $encryptedData = $this->request->post("encryptedData", '', "trim");
-            if (empty($iv) && empty($encryptedData)) {
-                $loginInfo = WechatHelper::getOpenidByCode($code); // 以code换取openid
+            $redisKey = self::KEY_XCX_LOGIN . $code;
+            $redisData = Cache::get($redisKey);
+            if (!empty($redisData)) {
+                $loginInfo = json_decode($redisData, true);
                 $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
                 $unionId = '';
             } else {
-                $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
-                $loginInfo = json_decode($loginInfo, true);
-                $unionId = isset($loginInfo['unionId']) ? $loginInfo['unionId'] : '';
-                $openId = isset($loginInfo['openId']) ? $loginInfo['openId'] : '';
+                if (empty($iv) && empty($encryptedData)) {
+                    $loginInfo = WechatHelper::getOpenidByCode($code); // 以code换取openid
+                    $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
+                    $unionId = '';
+                } else {
+                    $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
+                    $loginInfo = json_decode($loginInfo, true);
+                    $unionId = isset($loginInfo['unionId']) ? $loginInfo['unionId'] : '';
+                    $openId = isset($loginInfo['openId']) ? $loginInfo['openId'] : '';
+                }
             }
 
             if (empty($loginInfo)) {
@@ -187,6 +197,8 @@ class Login extends Base{
             $hasAuth = 0; // 是否授权
             if (!empty($data)) {
                 $hasAuth = 1;
+                $redisKey = self::KEY_XCX_LOGIN . $code;
+                Cache::set($redisKey, json_encode($loginInfo), 300);
             }
             $data['hasAuth'] = $hasAuth;
         } catch (\Exception $e) {
