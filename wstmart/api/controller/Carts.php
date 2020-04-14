@@ -73,10 +73,8 @@ class Carts extends Base{
 	 * 删除购物车里的商品
 	 */
 	public function delCart(){
-
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
 		$m = new M();
-		$rs= $m->delCart($mall_user_id);
+		$rs= $m->delCart(input('param.user_id'));
 		return $this->outJson(0, "success", $rs);
 	}
 	/**
