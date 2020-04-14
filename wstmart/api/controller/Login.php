@@ -221,14 +221,12 @@ class Login extends Base{
             $userid = $this->request->post("user_id", '', "trim");
 //            $phone = $this->request->post("phone", '', "trim");
             $code = $this->request->post("code", '', "trim");
-            $detail = $this->request->post("detail", '');
-            $detailData = json_decode($detail, true);
-            return $this->outJson(0, "登录成功！",$detailData);
-            if (empty($detailData['iv']) || empty($detailData['encryptedData']) || empty($code)) {
+            $iv = $this->request->post("iv", '');
+            $encryptedData = $this->request->post("encryptedData", '');
+
+            if (empty($iv) || empty($encryptedData) || empty($code)) {
                 return $this->outJson(100, "参数错误");
             }
-            $iv = $detailData['iv'];
-            $encryptedData = $detailData['encryptedData'];
             $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
             return $this->outJson(0, "登录成功！",$loginInfo);
             if (empty($loginInfo)) {
