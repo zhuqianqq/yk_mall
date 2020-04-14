@@ -225,17 +225,17 @@ class Login extends Base{
             $encryptedData = $this->request->post("encryptedData", '');
 
             if (empty($iv) || empty($encryptedData) || empty($code)) {
-                return $this->outJson(100, "参数错误");
+                throw new \Exception("参数错误", 100);
             }
             $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
             if (empty($loginInfo)) {
-                return $this->outJson(100, "获取信息失败");
+                throw new \Exception("获取信息失败" . json_encode($loginInfo), 100);
             }
             $loginInfo = json_decode($loginInfo, true);
             $phone = $loginInfo['phoneNumber'];
 
             if (ValidateHelper::isMobile($phone) == false || !$userid) {
-                return $this->outJson(100, "参数错误");
+                throw new \Exception("参数错误", 100);
             }
 
             // 判断是否已经绑定了手机号
@@ -254,7 +254,7 @@ class Login extends Base{
             ])->update([
                 'userPhone' => $phone,
             ]);
-            
+
             $data = Member::where('user_id',$exist_user->userId)->find();
             Member::setOtherInfo($data);
             $data['userPhone'] = $phone;
