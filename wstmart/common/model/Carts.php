@@ -284,7 +284,7 @@ class Carts extends Base{
 			}
 			//未选中商品 已下架商品  库存小于或等于0商品不予统计金额
 			if ($v['isCheck'] == 1 && $v['isSale'] !=0 && $v['goodsStock'] > 0 && $v['specStock'] > 0) {
-				$carts[$v['shopId']]['goodsMoney'] = (int)($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum']);
+				$carts[$v['shopId']]['goodsMoney'] = bcdiv($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'],1, 2);
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
 			}
@@ -343,7 +343,7 @@ class Carts extends Base{
 			if(!isset($v['list']))unset($carts[$key]);
 		}
 	
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => 0,'canNotBuy' => $canNotBuy];
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
 		//店铺优惠活动监听
 		//hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
