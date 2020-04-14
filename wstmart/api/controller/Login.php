@@ -228,13 +228,11 @@ class Login extends Base{
                 return $this->outJson(100, "参数错误");
             }
             $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
-            return $this->outJson(0, "登录成功！",$loginInfo);
             if (empty($loginInfo)) {
                 return $this->outJson(100, "获取信息失败");
             }
             $loginInfo = json_decode($loginInfo, true);
             $phone = $loginInfo['phoneNumber'];
-            return $this->outJson(0, "登录成功！",$loginInfo);
 
             if (ValidateHelper::isMobile($phone) == false || !$userid) {
                 return $this->outJson(100, "参数错误");
