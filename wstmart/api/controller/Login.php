@@ -244,6 +244,7 @@ class Login extends Base{
                 // 判断手机号是否一致 如果不一致则直接返回
                 $data = Member::where('user_id',$exist_user->userId)->find();
                 $data['access_key'] = $exist_user->access_key;
+                $data['userPhone'] = $exist_user->userPhone;
                 return $this->outJson(0, "登录成功！",$data);
             }
 
@@ -254,6 +255,7 @@ class Login extends Base{
             ]);
 
             $data['user_id'] = $userid;
+            $data['userPhone'] = $phone;
             $data = Member::where('user_id',$exist_user->userId)->find();
             Member::setOtherInfo($data);
             Users::where([
