@@ -245,6 +245,7 @@ class Login extends Base{
                 $data = Member::where('user_id',$exist_user->userId)->find();
                 $data['access_key'] = $exist_user->access_key;
                 $data['userPhone'] = $exist_user->userPhone;
+                Db::commit();
                 return $this->outJson(0, "登录成功！",$data);
             }
 
@@ -255,9 +256,9 @@ class Login extends Base{
             ]);
 
             $data['user_id'] = $userid;
-            $data['userPhone'] = $phone;
             $data = Member::where('user_id',$exist_user->userId)->find();
             Member::setOtherInfo($data);
+            $data['userPhone'] = $userid;
             Users::where([
                 "userId" => $userid,
             ])->update([
