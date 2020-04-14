@@ -83,7 +83,7 @@ class Login extends Base{
             $redisKey = self::KEY_XCX_LOGIN . $code;
             $redisData = Cache::get($redisKey);
             if (!empty($redisData)) {
-                file_put_contents('/data/webroot/wx2.log', "code:" . $code . ':data:' . $redisData, FILE_APPEND);
+//                file_put_contents('/data/webroot/wx2.log', "code:" . $code . ':data:' . $redisData, FILE_APPEND);
                 $loginInfo = json_decode($redisData, true);
                 $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
                 $unionId = '';
@@ -195,7 +195,7 @@ class Login extends Base{
             }
             $redisKey = self::KEY_XCX_LOGIN . $code;
             Cache::set($redisKey, json_encode($loginInfo), 300);
-            file_put_contents('/data/webroot/wx.log', "code:" . $code . ':data:' . json_encode($loginInfo), FILE_APPEND);
+//            file_put_contents('/data/webroot/wx.log', "code:" . $code . ':data:' . json_encode($loginInfo), FILE_APPEND);
             $data = Member::getByOpenId($openId);
 
             $hasAuth = 0; // 是否授权
