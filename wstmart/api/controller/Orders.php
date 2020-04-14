@@ -39,7 +39,6 @@ class Orders extends Base{
                 $pkey = WSTBase64urlEncode($rs["data"] . "@1");
                 $rs["pkey"] = $pkey;
                 $userId = (int)input('post.user_id', 0); //直播用户id
-                $payType = (int)input('post.payType', 1); // 1 在线 0 自提
                 $deliverType = (int)input('post.deliverType', 1); // 1 支付宝 0 微信
                 $pkey = WSTBase64urlDecode($pkey);
                 $pkey = explode('@',$pkey);
