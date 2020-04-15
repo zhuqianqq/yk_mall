@@ -56,7 +56,7 @@ class Orders extends Base{
                         'orderunique' => $rs['data'],
                         'alipay' => $pay->sdkExecute([
                             'tradeNo' => $rs['data'],
-                            'tradeMoney' =>  $order["needPay"],
+                            'tradeMoney' =>  bcdiv($order["needPay"], 1 , 2),
                         ]),
                     ];
                 } else {
