@@ -151,7 +151,8 @@ class UserAddress extends Base{
 
         $data['areaId'] = 0;
         $data['areaIdPath'] = '0_0';
-    
+        $data['createTime'] = date('Y-m-d H:i:s');//编辑时更改其创建时间  作为排序依据
+        
         if(!input('userAddress')){
             return WSTReturn('地址信息不能为空',-1);
         }    
