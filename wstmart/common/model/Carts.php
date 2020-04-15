@@ -427,7 +427,7 @@ class Carts extends Base{
         $ids = explode(',',WSTFormatIn(',',$ids));
         $userId = ($uId>0)?$uId:(int)session('WST_USER.userId');
 		$isCheck = ((int)input('post.isCheck/d',-1)==1)?1:0;
-        $this->where('userId',$userId)->update(['isCheck'=>0]);//只提交一次新增该sql 将该userId下购物车商品isCheck全设0逻辑;
+        //$this->where('userId',$userId)->update(['isCheck'=>0]);//只提交一次新增该sql 将该userId下购物车商品isCheck全设0逻辑;
         $this->where([['cartId','in',$ids],['userId','=',$userId]])->update(['isCheck'=>$isCheck]);
 		return WSTReturn("操作成功", 1);
 	}
