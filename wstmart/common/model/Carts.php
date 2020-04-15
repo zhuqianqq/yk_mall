@@ -260,20 +260,20 @@ class Carts extends Base{
 			$carts[$v['shopId']]['promotion'] = [];//店铺优惠活动
 			$carts[$v['shopId']]['promotionMoney'] = 0;//店铺要优惠的金额
 			//----------------------------
-			$carts[$v['shopId']]['shopId'] = (int)$v['shopId'];
+			$carts[$v['shopId']]['shopId'] = $v['shopId'];
 			$carts[$v['shopId']]['shopName'] = $v['shopName'];
-			$carts[$v['shopId']]['shopQQ'] = (int)$v['shopQQ'];
-			$carts[$v['shopId']]['userId'] = (int)$v['userId'];
+			$carts[$v['shopId']]['shopQQ'] = $v['shopQQ'];
+			$carts[$v['shopId']]['userId'] = $v['userId'];
 			$carts[$v['shopId']]['isInvoice'] = $v['isInvoice'];
 			//如果店铺一旦不包邮了，那么就不用去判断商品是否包邮了
 			if ($v['isFreeShipping'] == 0 && $carts[$v['shopId']]['isFreeShipping']) $carts[$v['shopId']]['isFreeShipping'] = false;
-			$carts[$v['shopId']]['shopWangWang'] = (int)$v['shopWangWang'];
+			$carts[$v['shopId']]['shopWangWang'] = $v['shopWangWang'];
 			if ($v['isSpec'] == 1) {
-				$v['shopPrice'] = (float)$v['specPrice'];
-				$v['defaultShopPrice'] = (float)$v['specPrice'];
-				$v['goodsStock'] = (int)$v['specStock'];
-				$v['goodsWeight'] = (int)$v['specWeight'];
-				$v['goodsVolume'] = (int)$v['specVolume'];
+				$v['shopPrice'] = $v['specPrice'];
+				$v['defaultShopPrice'] = $v['specPrice'];
+				$v['goodsStock'] = $v['specStock'];
+				$v['goodsWeight'] = $v['specWeight'];
+				$v['goodsVolume'] = $v['specVolume'];
 			}
 			//判断能否购买，预设allowBuy值为10，为将来的各种情况预留10个情况值，从0到9
 			$v['allowBuy'] = 10;
@@ -281,16 +281,16 @@ class Carts extends Base{
 				$v['allowBuy'] = 0;//库存不足
 			} else if($v['goodsStock'] < $v['cartNum']) {
 				//$v['allowBuy'] = 1;//库存比购买数小
-				$v['cartNum'] = (int)$v['goodsStock'];
+				$v['cartNum'] = $v['goodsStock'];
 			}
 			//如果是结算的话，则要过滤了不符合条件的商品
 			if ($isSettlement && $v['allowBuy'] !=10) {
-				$this->disChkGoods($v['goodsId'],(float)$v['goodsSpecId'],$userId);
+				$this->disChkGoods($v['goodsId'],$v['goodsSpecId'],$userId);
 				continue;
 			}
 			//未选中商品 已下架商品  库存小于或等于0商品不予统计金额
 			if ($v['isCheck'] == 1 && $v['isSale'] !=0 && $v['goodsStock'] > 0 && $v['specStock'] > 0) {
-				$carts[$v['shopId']]['goodsMoney'] = (float)bcdiv($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'],1, 2);
+				$carts[$v['shopId']]['goodsMoney'] = bcdiv($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'],1, 2);
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
 			}
@@ -300,23 +300,17 @@ class Carts extends Base{
 			if ($uId > 0 && isset($v['goodsName'])) {
 				$v['goodsName'] = htmlspecialchars_decode($v['goodsName']);
 			}
-			$v['goodsSpecId'] = (int)$v['goodsSpecId'];
-			$v['shopQQ'] = (int)$v['shopQQ'];
-			$v['shopWangWang'] = (int)$v['shopWangWang'];
+			$v['goodsSpecId'] = $v['goodsSpecId'];
+			$v['shopQQ'] = $v['shopQQ'];
+			$v['shopWangWang'] = $v['shopWangWang'];
 			$v['specIds'] = $v['specIds'];
-			$v['specPrice'] = (float)$v['specPrice']; 
+			$v['specPrice'] = $v['specPrice']; 
 
 			//商品已经下架  商品库存小于或等于0
 			if($v['isSale']==0 || $v['goodsStock']<=0 || $v['specStock']<=0){
 				// Db::table($prefix.'carts')
 				// ->where(['userId'=>$userId,'goodsId'=>$v2['goodsId']])
 				// ->delete();
-				$v['shopPrice'] = (float)$v['shopPrice'];
-				$v['defaultShopPrice'] = (float)$v['defaultShopPrice'];
-				$v['goodsWeight'] = (float)$v['goodsWeight'];
-				$v['goodsVolume'] = (float)$v['goodsVolume'];
-				$v['specPrice'] = (float)$v['specPrice'];
-
 				$canNotBuy[] = $v;
 				continue;
 			}	
@@ -359,7 +353,7 @@ class Carts extends Base{
 			if(!isset($v['list']))unset($carts[$key]);
 		}
 	
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)bcdiv($goodsTotalMoney,1, 2), 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => bcdiv($goodsTotalMoney,1, 2), 'goodsTotalNum' => $goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
 		//店铺优惠活动监听
 		//hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
