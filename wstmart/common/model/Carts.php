@@ -343,7 +343,7 @@ class Carts extends Base{
 			if(!isset($v['list']))unset($carts[$key]);
 		}
 	
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => (float)$goodsTotalMoney, 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
+		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' =>  bcdiv($goodsTotalMoney,1, 2), 'goodsTotalNum' => (int)$goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
 		//店铺优惠活动监听
 		//hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
