@@ -2,6 +2,7 @@
 namespace wstmart\api\controller;
 use wstmart\common\model\UserAddress as M;
 use wstmart\common\model\TUserMap;
+use think\Db;
 
 /**
  * 用户地址控制器
@@ -16,14 +17,16 @@ class UserAddress extends Base{
 	 */
 	public function index(){
 
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
 		$m = new M();
-		$userId = session('WST_USER.userId');
-		$addressList = $m->listQuery($mall_user_id);
-		//获取省级地区信息
-		$area = model('areas')->listQuery(0);
+		$where = ['userId'=>(int)$userId,'dataFlag'=>1];
+		$addressList = Db::name('user_address')->order('isDefault asc, addressId desc')->where($where)->select();
 
-		return $this->outJson(0, "success", ['addressList'=>$addressList,'area'=>$area]);
+		//$addressList = $m->listQuery(input('param.user_id'));
+		return $this->outJson(0, "success", ['addressList'=>$addressList]);
+
+		//获取省级地区信息
+		//$area = model('areas')->listQuery(0);
+		//return $this->outJson(0, "success", ['addressList'=>$addressList,'area'=>$area]);
 	}
 	/**
 	 * 获取地址信息
