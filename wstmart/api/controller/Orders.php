@@ -29,7 +29,8 @@ class Orders extends Base{
 	 */
 	public function submit()
     {
-        $pay = new  AliPay();
+        $pay = new  WeixinPay(1, 1, 1, 1);;
+        return $pay;
         $data = [
             'orderunique' => 11,
             'alipay' => $pay->sdkExecute([
