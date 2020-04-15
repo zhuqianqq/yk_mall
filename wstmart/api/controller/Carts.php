@@ -113,7 +113,7 @@ class Carts extends Base{
             $userAddress = $ua->getDefaultAddress();
         }
         //$this->assign('userAddress',$userAddress);
-        $result['userAddress'] = $userAddress;
+        $result['userAddress'] = (object)$userAddress;
         //获取支付方式
         $pa = new Payments();
         $payments = $pa->getByGroup('2');
