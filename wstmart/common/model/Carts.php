@@ -307,15 +307,17 @@ class Carts extends Base{
 			$v['specPrice'] = (float)$v['specPrice']; 
 
 			//商品已经下架  商品库存小于或等于0
-			if($v['isSale']==0 || $v['goodsStock']<=0 || $v['specStock']<=0){
+			if($v['isSale']==0 || $v['goodsStock']<=0){
 				// Db::table($prefix.'carts')
 				// ->where(['userId'=>$userId,'goodsId'=>$v2['goodsId']])
 				// ->delete();
-				$v['shopPrice'] = (float)$v['shopPrice'];
-				$v['defaultShopPrice'] = (float)$v['defaultShopPrice'];
-				$v['goodsWeight'] = (float)$v['goodsWeight'];
-				$v['goodsVolume'] = (float)$v['goodsVolume'];
-				$v['specPrice'] = (float)$v['specPrice'];
+				if(!$v['specStock']){
+					$v['shopPrice'] = (float)$v['shopPrice'];
+					$v['defaultShopPrice'] = (float)$v['defaultShopPrice'];
+					$v['goodsWeight'] = (float)$v['goodsWeight'];
+					$v['goodsVolume'] = (float)$v['goodsVolume'];
+					$v['specPrice'] = (float)$v['specPrice'];
+				}
 
 				$canNotBuy[] = $v;
 				continue;
