@@ -17,13 +17,12 @@ class WeixinPay
     const REFUND_URL = 'https://api.mch.weixin.qq.com/secapi/pay/refund';
 
     // Native
-    const PEM_CERT = '/www/zhibo_v2.0/static/payment/wx/apiclient_cert.pem';
-    const PEM_ROOT = '/www/zhibo_v2.0/static/payment/wx/rootca.pem';
-    const PEM_KEY = '/www/zhibo_v2.0/static/payment/wx/apiclient_key.pem';
+    const PEM_CERT = '/data/cert/wx/apiclient_cert.pem';
+    const PEM_KEY = '/data/cert/wx/apiclient_key.pem';
 
     // JSAPI
-    const PEM_JS_CERT = '/www/zhibo_v2.0/static/payment/wx/apiclient_jsapi_cert.pem';
-    const PEM_JS_KEY = '/www/zhibo_v2.0/static/payment/wx/apiclient_jsapi_key.pem';
+    const PEM_JS_CERT = '/data/cert/wx/apiclient_jsapi_cert.pem';
+    const PEM_JS_KEY = '/data/cert/wx/apiclient_jsapi_key.pem';
 
     private $appId;
     private $mchId;
