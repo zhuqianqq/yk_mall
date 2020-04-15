@@ -100,18 +100,28 @@ class UserAddress extends Base{
         $data['userId'] = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
         $data['createTime'] = date('Y-m-d H:i:s');
         if($data['userId']==0)return WSTReturn('新增失败，请先登录');
-        // 检测是否存在下级地区
-        $hasChild = model('Areas')->hasChild(input('areaId'));
-        if($hasChild)return WSTReturn('请选择完整的地区信息',-1);
+        // 检测是否存在下级地区 
+        // $hasChild = model('Areas')->hasChild(input('areaId'));
+        // if($hasChild)return WSTReturn('请选择完整的地区信息',-1);
 
-        $areaIds = model('Areas')->getParentIs((int)input('areaId'));
-        if(!empty($areaIds))$data['areaIdPath'] = implode('_',$areaIds)."_";
-        $validate = new Validate;
-        if (!$validate->scene('add')->check($data)) {
-        	return WSTReturn($validate->getError());
-        }else{
-        	$result = $this->allowField(true)->save($data);
-        }
+        // $areaIds = model('Areas')->getParentIs((int)input('areaId'));
+        // if(!empty($areaIds))$data['areaIdPath'] = implode('_',$areaIds)."_";
+        // $validate = new Validate;
+        // if (!$validate->scene('add')->check($data)) {
+        // 	return WSTReturn($validate->getError());
+        // }else{
+        // 	$result = $this->allowField(true)->save($data);
+        // }
+        //不再维护user_address表的areaId与areaIdPath字段  客户端在userAddress字段填写地址的全部内容
+
+        $data['areaId'] = 0;
+        $data['areaIdPath'] = 0;
+       
+        if(!input('userAddress')){
+            return WSTReturn('地址信息不能为空',-1);
+        }    
+        $result = $this->allowField(true)->save($data);
+
         if(false !== $result){
             //修改默认地址
             if((int)input('post.isDefault')==1){
@@ -131,17 +141,28 @@ class UserAddress extends Base{
         $data = input('post.');
         unset($data['addressId']);
         // 检测是否存在下级地区
-        $hasChild = model('Areas')->hasChild(input('areaId'));
-        if($hasChild)return WSTReturn('请选择完整的地区信息',-1);
+        // $hasChild = model('Areas')->hasChild(input('areaId'));
+        // if($hasChild)return WSTReturn('请选择完整的地区信息',-1);
         
-        $areaIds = model('Areas')->getParentIs((int)input('areaId'));
-        if(!empty($areaIds))$data['areaIdPath'] = implode('_',$areaIds)."_";
-        $validate = new Validate;
-        if (!$validate->scene('edit')->check($data)) {
-        	return WSTReturn($validate->getError());
-        }else{
-        	$result = $this->allowField(true)->save($data,['addressId'=>$id,'userId'=>$userId]);
-        }
+        // $areaIds = model('Areas')->getParentIs((int)input('areaId'));
+        // if(!empty($areaIds))$data['areaIdPath'] = implode('_',$areaIds)."_";
+        // $validate = new Validate;
+        // if (!$validate->scene('edit')->check($data)) {
+        // 	return WSTReturn($validate->getError());
+        // }else{
+        // 	$result = $this->allowField(true)->save($data,['addressId'=>$id,'userId'=>$userId]);
+        // }
+
+         //不再维护user_address表的areaId与areaIdPath字段  客户端在userAddress字段填写地址的全部内容
+
+        $data['areaId'] = 0;
+        $data['areaIdPath'] = 0;
+    
+        if(!input('userAddress')){
+            return WSTReturn('地址信息不能为空',-1);
+        }    
+        $result = $this->allowField(true)->save($data,['addressId'=>$id,'userId'=>$userId]);
+        
         //修改默认地址
         if((int)input('post.isDefault')==1)
           $this->where("addressId != $id and userId=".$userId)->setField('isDefault',0);
