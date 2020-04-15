@@ -304,7 +304,7 @@ class Carts extends Base{
 			$v['shopQQ'] = (int)$v['shopQQ'];
 			$v['shopWangWang'] = (int)$v['shopWangWang'];
 			$v['specIds'] = $v['specIds'];
-			$v['specPrice'] = (float)$v['specPrice'];
+			$v['specPrice'] = (float)$v['specPrice']; 
 
 			//商品已经下架  商品库存小于或等于0
 			if($v['isSale']==0 || $v['goodsStock']<=0 || $v['specStock']<=0){
