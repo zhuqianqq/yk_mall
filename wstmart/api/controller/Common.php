@@ -127,7 +127,11 @@ class Common extends Base
             return $this->outJson(0,"验证码已发送到{$mask_mobile}，请注意查收");
         }
 
-        $vcode = mt_rand(1000,999999);
+        $vcode = '';
+        for ($i = 0; $i < 6; $i ++) {
+            $vcode .= mt_rand(0, 9);
+        }
+        
         $result = SmsHelper::sendSmsMessage($mobile,"短信验证码：{$vcode}，有效期5分钟");
         if ($result['code'] != 0) {
             return $this->outJson($result["code"],$result['msg']);
