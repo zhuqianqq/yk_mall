@@ -18,13 +18,12 @@ class UserAddress extends Base{
 	public function index(){
 
 		$m = new M();
-		$where = ['userId'=>(int)$userId,'dataFlag'=>1];
+		$where = ['userId'=>(int)input('param.user_id'),'dataFlag'=>1];
 		$addressList = Db::name('user_address')->order('isDefault asc, addressId desc')->where($where)->select();
-
-		//$addressList = $m->listQuery(input('param.user_id'));
 		return $this->outJson(0, "success", ['addressList'=>$addressList]);
 
 		//获取省级地区信息
+		//$addressList = $m->listQuery(input('param.user_id'));
 		//$area = model('areas')->listQuery(0);
 		//return $this->outJson(0, "success", ['addressList'=>$addressList,'area'=>$area]);
 	}
