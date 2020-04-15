@@ -328,25 +328,28 @@ class Carts extends Base{
 		if (count($goodsIds) > 0) {
 		    $specs = DB::name('spec_items')->alias('s')->join('__SPEC_CATS__ sc','s.catId=sc.catId','left')
 				->where([['s.goodsId','in',$goodsIds],['s.dataFlag','=',1]])->field('catName,itemId,itemName')->select();
-		
+	
 		    if(count($specs)>0){ 
 		    	$specMap = [];
 		    	foreach ($specs as $key =>$v){
 		    		$specMap[$v['itemId']] = $v;
-		    	}
+				}
+		
 			    foreach ($carts as $key =>$shop){
-			    	foreach ($shop['list'] as $skey =>$v){
-			    		$strName = [];
-			    		if($v['specIds']!=''){
-			    			$str = explode(':',$v['specIds']);
-			    			foreach ($str as $vv){
-			    				if(isset($specMap[$vv]))$strName[] = $specMap[$vv];
-			    			}
-			    		}
-			    		$carts[$key]['list'][$skey]['specNames'] = $strName;
-			    		$carts[$key]['list'][$skey]['shareId'] = $v['shareId'];
-			    	}
-			    }
+					if(isset($shop['list'])){
+						foreach ($shop['list'] as $skey =>$v){
+							$strName = [];
+							if($v['specIds']!=''){
+								$str = explode(':',$v['specIds']);
+								foreach ($str as $vv){
+									if(isset($specMap[$vv]))$strName[] = $specMap[$vv];
+								}
+							}
+							$carts[$key]['list'][$skey]['specNames'] = $strName;
+							$carts[$key]['list'][$skey]['shareId'] = $v['shareId'];
+						}
+					}
+				}	
 		    }
 		}
 
