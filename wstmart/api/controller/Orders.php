@@ -106,6 +106,39 @@ class Orders extends Base{
             return $this->outJson(100, $e->getMessage());
         }
     }
+
+    /**
+     * 查询订单状态
+     * @return array
+     */
+    public function getOrderStatus()
+    {
+        try {
+            $userId = (int)input('post.user_id', 0); //直播用户id
+            $deliverType = (int)input('post.deliverType', 1); // 1 支付宝 0 微信
+            $orderunique = (int)input('post.orderunique', ''); // 订单号
+            if (empty($userId) || empty($deliverType) || empty($orderunique)) {
+                return $this->outJson(100, "缺少参数!");
+            }
+            if ($deliverType == 1) {
+                // 1 支付宝
+                $payFrom = 'alipays';
+            } else {
+                // 微信
+                $payFrom = 'weixinpays';
+            }
+            $cnt = model('orders')
+                ->where(["userId" => $userId, "orderunique" => $orderunique, 'payFrom' => $payFrom, 'isPay' => 1])
+                ->count();
+            if ($cnt) {
+                // 支付成功
+                return $this->outJson(0, "支付成功!");
+            }
+            return $this->outJson(100, "暂未成功!");
+        } catch (\Exception $e) {
+            return $this->outJson(100, $e->getMessage());
+        }
+    }
 	/**
 	 * 提交虚拟订单
 	 */
