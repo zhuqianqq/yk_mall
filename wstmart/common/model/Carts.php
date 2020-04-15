@@ -311,6 +311,11 @@ class Carts extends Base{
 				// Db::table($prefix.'carts')
 				// ->where(['userId'=>$userId,'goodsId'=>$v2['goodsId']])
 				// ->delete();
+				$v['shopPrice'] = (float)$v['shopPrice'];
+				$v['defaultShopPrice'] = (float)$v['defaultShopPrice'];
+				$v['goodsWeight'] = (float)$v['goodsWeight'];
+				$v['goodsVolume'] = (float)$v['goodsVolume'];
+				
 				$canNotBuy[] = $v;
 				continue;
 			}	
@@ -321,7 +326,8 @@ class Carts extends Base{
 		//加载规格值
 		if (count($goodsIds) > 0) {
 		    $specs = DB::name('spec_items')->alias('s')->join('__SPEC_CATS__ sc','s.catId=sc.catId','left')
-		        ->where([['s.goodsId','in',$goodsIds],['s.dataFlag','=',1]])->field('catName,itemId,itemName')->select();
+				->where([['s.goodsId','in',$goodsIds],['s.dataFlag','=',1]])->field('catName,itemId,itemName')->select();
+		
 		    if(count($specs)>0){ 
 		    	$specMap = [];
 		    	foreach ($specs as $key =>$v){

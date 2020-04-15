@@ -44,7 +44,9 @@ class Carts extends Base{
 			return WSTReturn("参数错误", -1);
 		}
 		if($data['carts']){
+			echo $data['carts'];die;
 			$data['carts'] = json_decode($data['carts'],true);
+			dd($data['carts']);
 			$m = new M();
 			foreach ($data['carts'] as $k => $v) {
 				 $m->unlogin_addCart($data['user_id'],$v['goodsId'],$v['goodsSpecId'],$v['buyNum'],$v['shareId']);
