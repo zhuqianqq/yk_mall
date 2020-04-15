@@ -255,6 +255,13 @@ class Orders extends Base{
     {
         $addressId = (int)input('post.s_addressId');
         $deliverType = ((int)input('post.deliverType') != 0) ? 1 : 0;
+        if ($deliverType) {
+            // 1支付宝
+            $payFrom = 'alipays';
+        } else {
+            // 微信
+            $payFrom = 'weixinpays';
+        }
 
         $payType = ((int)input('post.payType') != 0) ? 1 : 0;
         //$userId = ($uId==0)?(int)session('WST_USER.userId'):$uId;
@@ -330,6 +337,7 @@ class Orders extends Base{
                 $order = [];
                 $order = array_merge($order, $address);
                 $order['orderNo'] = $orderNo;
+                $order['payFrom'] = $payFrom;
                 $order['userId'] = $userId;
                 $order['shopId'] = $shopId;
                 $order['payType'] = $payType;
