@@ -115,7 +115,7 @@ class UserAddress extends Base{
         //不再维护user_address表的areaId与areaIdPath字段  客户端在userAddress字段填写地址的全部内容
 
         $data['areaId'] = 0;
-        $data['areaIdPath'] = 0;
+        $data['areaIdPath'] = '0_0';
        
         if(!input('userAddress')){
             return WSTReturn('地址信息不能为空',-1);
@@ -156,7 +156,7 @@ class UserAddress extends Base{
          //不再维护user_address表的areaId与areaIdPath字段  客户端在userAddress字段填写地址的全部内容
 
         $data['areaId'] = 0;
-        $data['areaIdPath'] = 0;
+        $data['areaIdPath'] = '0_0';
     
         if(!input('userAddress')){
             return WSTReturn('地址信息不能为空',-1);

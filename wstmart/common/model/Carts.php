@@ -151,6 +151,12 @@ class Carts extends Base{
 	public function delCart($uId = 0){
 		$userId = ($uId>0)?$uId:(int)session('WST_USER.userId');
 		$id = input('post.id');
+		//type为all 删除购物车中所有选中的商品
+		$type = input('post.type','');
+		if($type == 'all'){
+			$this->where("userId = ".$userId." and isCheck = 1 ")->delete();
+			return WSTReturn("删除成功", 1);
+		}
 		$id = explode(',',WSTFormatIn(",",$id));
 		$id = array_filter($id);
 		$this->where("userId = ".$userId." and cartId in(".implode(',', $id).")")->delete();
