@@ -54,7 +54,7 @@ class Orders extends Base{
                     $pay = new  Alipay();
                     $data = [
                         'orderunique' => $rs['data'],
-                        'sdkString' => $pay->sdkExecute([
+                        'alipay' => $pay->sdkExecute([
                             'tradeNo' => $rs['data'],
                             'tradeMoney' =>  $order["needPay"],
                         ]),
@@ -85,16 +85,18 @@ class Orders extends Base{
                     $wxOrder = $payer->prepay($recharge);
 
                     $prepayData = [
-                        'appId' => $appId,
-                        'partnerId' => $mchId,
-                        'prepayId' => $wxOrder['prepay_id'],
-                        'nonceStr' => $payer->createNonceString(),
-                        'package' => 'Sign=WXPay',
-                        'timestamp' => time()
+                        'wxpay' => [
+                            'appId' => $appId,
+                            'partnerId' => $mchId,
+                            'prepayId' => $wxOrder['prepay_id'],
+                            'nonceStr' => $payer->createNonceString(),
+                            'package' => 'Sign=WXPay',
+                            'timestamp' => time()
+                        ]
                     ];
                     $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
 
-                    $prepayData['sign'] = $payer->sign($signData);
+                    $prepayData['wxpay']['sign'] = $payer->sign($signData);
                     $prepayData['orderunique'] = $rs['data'];
                     $data = $prepayData;
                 }
