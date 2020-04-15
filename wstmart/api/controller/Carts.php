@@ -108,12 +108,12 @@ class Carts extends Base{
         $result = [];
         $ua = new UserAddress();
         if ($addressId > 0) {
-            $userAddress = $ua->getById($addressId);
+            $userAddress = $ua->getById($addressId,$userId);
         } else {
-            $userAddress = $ua->getDefaultAddress();
-        }
+            $userAddress = $ua->getDefaultAddress($userId);
+		}
         //$this->assign('userAddress',$userAddress);
-        $result['userAddress'] = (object)$userAddress;
+		$result['userAddress'] = (object)$userAddress;
         //获取支付方式
         $pa = new Payments();
         $payments = $pa->getByGroup('2');

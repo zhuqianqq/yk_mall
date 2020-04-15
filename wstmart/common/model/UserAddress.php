@@ -58,37 +58,31 @@ class UserAddress extends Base{
     *  获取用户信息
     */
     public function getById($id, $uId=0){
-        //$userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
-        $userId = (int)input('post.user_id', 0); //直播用户id
-        if($userId > 0){
-            $userId = TUserMap::getMallUserId($userId);
-        }else{
-            $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
-        }
+        $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
     	$rs = $this->get(['addressId'=>$id,'userId'=>$userId,'dataFlag'=>1]);
         if(empty($rs))return [];
-        $areaIds = [];
-        $areaMaps = [];
-        $tmp = explode('_',$rs['areaIdPath']);
-        $rs['areaId2'] = $tmp[1];
-        foreach ($tmp as $vv){
-         	if($vv=='')continue;
-         	if(!in_array($vv,$areaIds))$areaIds[] = $vv;
-        }
-        if(!empty($areaIds)){
-	         $areas = Db::name('areas')->where([['areaId','in',$areaIds],['isShow','=',1],['dataFlag','=',1]])->field('areaId,areaName')->select();
-	         foreach ($areas as $v){
-	         	 $areaMaps[$v['areaId']] = $v['areaName'];
-	         }
-	         $tmp = explode('_',$rs['areaIdPath']);
-	         $areaNames = [];
-		     foreach ($tmp as $vv){
-	         	 if($vv=='')continue;
-                 if(!isset($areaMaps[$vv]))return [];
-	         	 $areaNames[] = $areaMaps[$vv];
-	         	 $rs['areaName'] = implode('',$areaNames);
-	         }
-         }
+        // $areaIds = [];
+        // $areaMaps = [];
+        // $tmp = explode('_',$rs['areaIdPath']);
+        // $rs['areaId2'] = $tmp[1];
+        // foreach ($tmp as $vv){
+        //  	if($vv=='')continue;
+        //  	if(!in_array($vv,$areaIds))$areaIds[] = $vv;
+        // }
+        // if(!empty($areaIds)){
+	    //      $areas = Db::name('areas')->where([['areaId','in',$areaIds],['isShow','=',1],['dataFlag','=',1]])->field('areaId,areaName')->select();
+	    //      foreach ($areas as $v){
+	    //      	 $areaMaps[$v['areaId']] = $v['areaName'];
+	    //      }
+	    //      $tmp = explode('_',$rs['areaIdPath']);
+	    //      $areaNames = [];
+		//      foreach ($tmp as $vv){
+	    //      	 if($vv=='')continue;
+        //          if(!isset($areaMaps[$vv]))return [];
+	    //      	 $areaNames[] = $areaMaps[$vv];
+	    //      	 $rs['areaName'] = implode('',$areaNames);
+	    //      }
+        //  }
         return $rs;
     }
     /**
@@ -206,38 +200,32 @@ class UserAddress extends Base{
      * 获取默认地址
      */
     public function getDefaultAddress($uId=0){
-    	//$userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
-        $userId = (int)input('post.user_id', 0); //直播用户id
-        if($userId > 0){
-            $userId = TUserMap::getMallUserId($userId);
-        }else{
-            $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
-        }
+        $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
     	$where = ['userId'=>$userId,'dataFlag'=>1];
         $rs = $this->where($where)->order('isDefault desc,addressId desc')->find();
         if(empty($rs))return [];
-        $areaIds = [];
-        $areaMaps = [];
-        $tmp = explode('_',$rs['areaIdPath']);
-        $rs['areaId2'] = $tmp[1];
-        foreach ($tmp as $vv){
-         	if($vv=='')continue;
-         	if(!in_array($vv,$areaIds))$areaIds[] = $vv;
-        }
-        if(!empty($areaIds)){
-	         $areas = Db::name('areas')->where([['areaId','in',$areaIds],['isShow','=',1],['dataFlag','=',1]])->field('areaId,areaName')->select();
-	         foreach ($areas as $v){
-	         	 $areaMaps[$v['areaId']] = $v['areaName'];
-	         }
-	         $tmp = explode('_',$rs['areaIdPath']);
-	         $areaNames = [];
-		     foreach ($tmp as $vv){
-	         	 if($vv=='')continue;
-                 if(!isset($areaMaps[$vv]))return [];
-	         	 $areaNames[] = $areaMaps[$vv];
-	         	 $rs['areaName'] = implode('',$areaNames);
-	         }
-         }
+        // $areaIds = [];
+        // $areaMaps = [];
+        // $tmp = explode('_',$rs['areaIdPath']);
+        // $rs['areaId2'] = $tmp[1];
+        // foreach ($tmp as $vv){
+        //  	if($vv=='')continue;
+        //  	if(!in_array($vv,$areaIds))$areaIds[] = $vv;
+        // }
+        // if(!empty($areaIds)){
+	    //      $areas = Db::name('areas')->where([['areaId','in',$areaIds],['isShow','=',1],['dataFlag','=',1]])->field('areaId,areaName')->select();
+	    //      foreach ($areas as $v){
+	    //      	 $areaMaps[$v['areaId']] = $v['areaName'];
+	    //      }
+	    //      $tmp = explode('_',$rs['areaIdPath']);
+	    //      $areaNames = [];
+		//      foreach ($tmp as $vv){
+	    //      	 if($vv=='')continue;
+        //          if(!isset($areaMaps[$vv]))return [];
+	    //      	 $areaNames[] = $areaMaps[$vv];
+	    //      	 $rs['areaName'] = implode('',$areaNames);
+	    //      }
+        //  }
          return $rs;
     }
 }
