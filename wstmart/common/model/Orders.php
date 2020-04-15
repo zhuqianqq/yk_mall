@@ -297,26 +297,26 @@ class Orders extends Base{
         }
         $areaIds = [];
         $areaMaps = [];
-        $tmp = explode('_', $address['areaIdPath']);
-        $address['areaId2'] = $tmp[1];//记录配送城市
-        foreach ($tmp as $vv) {
-            if ($vv == '') continue;
-            if (!in_array($vv, $areaIds)) $areaIds[] = $vv;
-        }
-        if (!empty($areaIds)) {
-            $areas = Db::name('areas')->where([['areaId', 'in', $areaIds], ['dataFlag', '=', 1]])->field('areaId,areaName')->select();
-            foreach ($areas as $v) {
-                $areaMaps[$v['areaId']] = $v['areaName'];
-            }
-            $tmp = explode('_', $address['areaIdPath']);
-            $areaNames = [];
-            foreach ($tmp as $vv) {
-                if ($vv == '') continue;
-                $areaNames[] = $areaMaps[$vv];
-                $address['areaName'] = implode('', $areaNames);
-            }
-        }
-        $address['userAddress'] = $address['areaName'] . $address['userAddress'];
+//        $tmp = explode('_', $address['areaIdPath']);
+//        $address['areaId2'] = $tmp[1];//记录配送城市
+//        foreach ($tmp as $vv) {
+//            if ($vv == '') continue;
+//            if (!in_array($vv, $areaIds)) $areaIds[] = $vv;
+//        }
+//        if (!empty($areaIds)) {
+//            $areas = Db::name('areas')->where([['areaId', 'in', $areaIds], ['dataFlag', '=', 1]])->field('areaId,areaName')->select();
+//            foreach ($areas as $v) {
+//                $areaMaps[$v['areaId']] = $v['areaName'];
+//            }
+//            $tmp = explode('_', $address['areaIdPath']);
+//            $areaNames = [];
+//            foreach ($tmp as $vv) {
+//                if ($vv == '') continue;
+//                $areaNames[] = $areaMaps[$vv];
+//                $address['areaName'] = implode('', $areaNames);
+//            }
+//        }
+//        $address['userAddress'] = $address['areaName'] . $address['userAddress'];
         WSTUnset($address, 'isDefault,dataFlag,createTime,userId');
 
         //计算出每个订单应该分配的金额和积分
@@ -347,7 +347,8 @@ class Orders extends Base{
                 if ($shopOrder['isFreeShipping']) {
                     $order['deliverMoney'] = 0;
                 } else {
-                    $order['deliverMoney'] = ($deliverType == 1) ? 0 : WSTOrderFreight($shopId, $order['areaId2'], $shopOrder);
+                    $order['deliverMoney'] = 0;
+//                    $order['deliverMoney'] = ($deliverType == 1) ? 0 : WSTOrderFreight($shopId, $order['areaId2'], $shopOrder);
                 }
                 if ($deliverType == 1) {
                     //自提--暂时没有自提
