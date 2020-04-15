@@ -40,11 +40,12 @@ class Carts extends Base{
 
 		//dd(input('param.'));
 		$data = input('param.');
+	
 		if(!$data['user_id']){
 			return WSTReturn("参数错误", -1);
 		}
 		if($data['carts']){
-			echo $data['carts'];die;
+			//echo $data['carts'];die;
 			$data['carts'] = json_decode($data['carts'],true);
 			dd($data['carts']);
 			$m = new M();

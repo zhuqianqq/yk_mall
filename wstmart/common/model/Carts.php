@@ -315,7 +315,8 @@ class Carts extends Base{
 				$v['defaultShopPrice'] = (float)$v['defaultShopPrice'];
 				$v['goodsWeight'] = (float)$v['goodsWeight'];
 				$v['goodsVolume'] = (float)$v['goodsVolume'];
-				
+				$v['specPrice'] = (float)$v['specPrice'];
+
 				$canNotBuy[] = $v;
 				continue;
 			}	
