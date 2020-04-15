@@ -45,13 +45,12 @@ class UserAddress extends Base{
      * 新增/编辑地址
      */
     public function edits(){
-		$mall_user_id = TUserMap::getMallUserId(input('param.mall_user_id'));  //商城用户id
-
+		
         $m = new M();
         if((int)input('addressId')>0){
-        	$rs = $m->edit($mall_user_id);
+        	$rs = $m->edit(input('param.user_id'));
         }else{
-        	$rs = $m->add($mall_user_id);
+        	$rs = $m->add(input('param.user_id'));
 		} 
 		return $this->outJson(0, "success",$rs);
     }
