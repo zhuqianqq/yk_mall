@@ -90,7 +90,7 @@ class Orders extends Base{
                             'partnerId' => $mchId,
                             'prepayId' => $wxOrder['prepay_id'],
                             'nonceStr' => $payer->createNonceString(),
-                            'package' => 'Sign=WXPay',
+                            'package' => 'com.xhw.instore',
                             'timestamp' => time()
                         ]
                     ];
