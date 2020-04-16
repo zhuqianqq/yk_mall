@@ -48,6 +48,8 @@ class Goods extends Base
         $goodsAttr = $goods['goodsAttr'];
         if (!empty($goodsAttr)) {
             $goods['goodsAttr'] = json_decode($goodsAttr);
+        } else {
+            $goods['goodsAttr'] = [];
         }
        
         $goods['goodsDesc'] = str_replace('src=','style="max-width:100%;height:auto;" src=',$goods['goodsDesc']); //适应小程序样式
