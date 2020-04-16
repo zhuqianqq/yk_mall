@@ -226,6 +226,8 @@ class Goods extends Base
         $goodsId = input('param.goodsId/d');
         $goodsName = input('param.goodsName/s');
         $shopPrice = input('param.shopPrice/s');
+        $gallery = input('param.gallery/s'); // 轮播图，如果有，分享出去的详情就用这个
+        $imgContent = input('param.imgContent/s'); // 详情图，如果有，分享出去的详情就用这个
         if (empty($goodsId) || empty($goodsName) || empty($shopPrice)) {
             return $this->outJson(100, "缺少参数");
         }
