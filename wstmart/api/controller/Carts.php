@@ -4,6 +4,7 @@ use wstmart\common\model\Carts as M;
 use wstmart\common\model\UserAddress;
 use wstmart\common\model\Payments;
 use wstmart\common\model\TUserMap;
+use think\Db;
 
 /**
  * 购物车控制器
@@ -195,5 +196,13 @@ class Carts extends Base{
     	$userId = (int)session('WST_USER.userId');
     	$rs = model("common/Stores")->shopStores($userId);
     	return WSTReturn("", 1,$rs);
+	}
+	
+	/**
+     * 获取购物车中商品数量
+     */
+    public function countCartGoods(){
+		$rs = Db::name('carts')->where('userId',input('param.user_id'))->count();
+		return $this->outJson(0, "success", ['num'=>$rs]);
     }
 }
