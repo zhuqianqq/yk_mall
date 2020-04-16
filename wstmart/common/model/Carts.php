@@ -289,7 +289,7 @@ class Carts extends Base{
 				continue;
 			}
 			//未选中商品 已下架商品  库存小于或等于0商品不予统计金额
-			if ($v['isCheck'] == 1 && $v['isSale'] !=0 && $v['goodsStock'] > 0 && $v['specStock'] > 0) {
+			if ($v['isCheck'] == 1 && $v['isSale'] !=0 && $v['goodsStock'] > 0 ) {
 				$carts[$v['shopId']]['goodsMoney'] = bcdiv($carts[$v['shopId']]['goodsMoney'] + $v['shopPrice'] * $v['cartNum'],1, 2);
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
@@ -307,13 +307,16 @@ class Carts extends Base{
 			$v['specPrice'] = $v['specPrice']; 
 
 			//商品已经下架  商品库存小于或等于0
-			if($v['isSale']==0 || $v['goodsStock']<=0 || $v['specStock']<=0){
-				// Db::table($prefix.'carts')
-				// ->where(['userId'=>$userId,'goodsId'=>$v2['goodsId']])
-				// ->delete();
-				$canNotBuy[] = $v;
-				continue;
-			}	
+			if(!$isSettlement){
+				if($v['isSale']==0 || $v['goodsStock']<=0 ){
+					// Db::table($prefix.'carts')
+					// ->where(['userId'=>$userId,'goodsId'=>$v2['goodsId']])
+					// ->delete();
+					$canNotBuy[] = $v;
+					continue;
+				}
+			}
+				
 			$carts[$v['shopId']]['list'][] = $v;
 			if (!in_array($v['goodsId'], $goodsIds)) $goodsIds[] = $v['goodsId'];
 		}
@@ -348,7 +351,7 @@ class Carts extends Base{
 		}
 
 
-		//过滤无效店铺,已经下架商品,商品库存小于或等于0商品
+		//过滤无效店铺
 		foreach($carts as $key => $v){
 			if(!isset($v['list']))unset($carts[$key]);
 		}
