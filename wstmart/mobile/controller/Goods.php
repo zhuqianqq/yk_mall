@@ -99,6 +99,27 @@ class Goods extends Base
                 cookie("wx_history_goods", $history, 25920000);
             }
         }
+
+        $shareGallery = $shareData['gallery'];
+        $shareImgContent = $shareData['imgContent'];
+        if (!empty($shareGallery)) {
+            $gallery = [];
+            //$gallery[] = $rs['goodsImg'];
+            $tmp = explode(',', $shareGallery);
+            $gallery = array_merge($gallery, $tmp);
+            $goods['gallery'] = $gallery;
+        }
+        if (!empty($shareImgContent)) {
+            $shareImgContentImg = [];
+            $tmp = explode(',', $shareImgContent);
+            $goodsDescArr = array_merge($shareImgContentImg, $tmp);
+            $goodsDesc = '';
+            foreach ($goodsDescArr as $v) {
+                $goodsDesc .= '<img src="' .$v . '" align="absmiddle" size="790x1">';
+            }
+            $goods['goodsDesc'] = $goodsDesc;
+        }
+
         $goods['consult'] = model('GoodsConsult')->firstQuery($goods['goodsId']);
         $goods['appraises'] = model('GoodsAppraises')->getGoodsEachApprNum($goods['goodsId']);
         $goods['appraise'] = model('GoodsAppraises')->getGoodsFirstAppraise($goods['goodsId']);

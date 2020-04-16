@@ -45,6 +45,12 @@ class Goods extends Base
         preg_match_all($pattern, $goods['goodsDesc'], $match);
         $goods['descArr'] = $match[1];
         $goods['shareNum'] = $goods_share_cache;
+        $goodsAttr = $goods['goodsAttr'];
+        if (!empty($goodsAttr)) {
+            $goods['goodsAttr'] = json_decode($goodsAttr);
+        } else {
+            $goods['goodsAttr'] = [];
+        }
        
         $goods['goodsDesc'] = str_replace('src=','style="max-width:100%;height:auto;" src=',$goods['goodsDesc']); //适应小程序样式
        
@@ -220,6 +226,8 @@ class Goods extends Base
         $goodsId = input('param.goodsId/d');
         $goodsName = input('param.goodsName/s');
         $shopPrice = input('param.shopPrice/s');
+        $gallery = input('param.gallery/s'); // 轮播图，如果有，分享出去的详情就用这个
+        $imgContent = input('param.imgContent/s'); // 详情图，如果有，分享出去的详情就用这个
         if (empty($goodsId) || empty($goodsName) || empty($shopPrice)) {
             return $this->outJson(100, "缺少参数");
         }
@@ -240,6 +248,8 @@ class Goods extends Base
         $shareData['shopPrice'] = $shopPrice;
         $shareData['userId'] = $userid;
         $shareData['createTime'] = date('Y-m-d H:i:s');
+        $shareData['gallery'] = $gallery;
+        $shareData['imgContent'] = $imgContent;
         $id = Db::name('goods_share')->insertGetId($shareData);
         if(!$id){
             // 失败则返回错误
