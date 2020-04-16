@@ -45,6 +45,10 @@ class Goods extends Base
         preg_match_all($pattern, $goods['goodsDesc'], $match);
         $goods['descArr'] = $match[1];
         $goods['shareNum'] = $goods_share_cache;
+        $goodsAttr = $goods['goodsAttr'];
+        if (!empty($goodsAttr)) {
+            $goods['goodsAttr'] = json_decode($goodsAttr);
+        }
        
         $goods['goodsDesc'] = str_replace('src=','style="max-width:100%;height:auto;" src=',$goods['goodsDesc']); //适应小程序样式
        
