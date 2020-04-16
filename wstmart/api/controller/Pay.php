@@ -7,6 +7,7 @@ namespace wstmart\api\controller;
 use util\Tools;
 use wstmart\api\service\AlipayService;
 use wstmart\common\model\TInviteOrder;
+use wstmart\common\pay\AliPay;
 
 class Pay extends Base
 {
@@ -16,32 +17,24 @@ class Pay extends Base
      */
     public function alipayNotify()
     {
-//        Tools::addLog("alipay_notify", "支付宝回调开始,praram:" . $this->request->getInput());
-        Tools::addLog("alipay_notify", "支付宝回调开始2,praram:" . json_encode($this->request->param()));
+        Tools::addLog("alipay_notify", "支付宝回调开始, praram:" . json_encode($this->request->param()));
         $aliPay = new AlipayService();
         //首先必需验证签名，然后验证是否是支付宝发来的通知。
-        Tools::addLog("alipay_notify", "支付宝回调0");
+        $pay = new AliPay();
+        $signResult = $pay->verifyData($this->request->param());
+        if (!$signResult) {
+            Tools::addLog("alipay_notify", "支付宝回调验证签名失败");
+            exit("failed");
+        }
 
-        //$verify_result = $aliPay->verifyNotify();
-        Tools::addLog("alipay_notify", "支付宝回调1");
-
-        //if ($verify_result) {
-            $result = $aliPay->alipayNotify($this->request->param());
-            Tools::addLog("alipay_notify", "支付宝回调2");
-
-            if ($result) {
-                Tools::addLog("alipay_notify", "支付宝回调通知处理成功");
-                exit("success"); //成功时返回success
-            } else {
-                Tools::addLog("alipay_notify", "支付宝回调通知处理失败");
-                exit("failed");
-            }
-       // } else {
-            // Tools::addLog("alipay_notify", "支付宝回调3");
-
-            // Tools::addLog("alipay_notify", "支付宝回调验证签名失败");
-            // exit("failed");
-        //}
+        $result = $aliPay->alipayNotify($this->request->param());
+        if ($result) {
+            Tools::addLog("alipay_notify", "支付宝回调通知处理成功");
+            exit("success"); //成功时返回success
+        } else {
+            Tools::addLog("alipay_notify", "支付宝回调通知处理失败");
+            exit("failed");
+        }
     }
 
     /*

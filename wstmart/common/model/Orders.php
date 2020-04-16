@@ -11,6 +11,13 @@ use wstmart\common\model\OrderRefunds as M;
  */
 class Orders extends Base{
 	protected $pk = 'orderId';
+	const IS_PAY_WAIT = 0; // 等待支付
+	const IS_PAY_SUCC = 1; // 支付成功
+	const IS_PAY_FAIL = 2; // 支付失败
+
+    const IS_CLOSED_N = 0; // 未关闭
+    const IS_CLOSED_Y = 1; // 已关闭
+
 	/**
 	 * 快速下单
 	 */
@@ -2138,8 +2145,8 @@ class Orders extends Base{
 			return WSTReturn('操作失败',-1);
 		}
 	}
-	
-	/**
+
+    /**
 	 * 获取支付订单信息
 	 */
 	public function getPayOrders ($obj){
@@ -2628,4 +2635,161 @@ class Orders extends Base{
         return $orders;
     }
 
+    /**
+     * 完成支付订单--新加--APP支付
+     */
+    public function success($obj) {
+        $trade_no = $obj["trade_no"];
+        $isBatch = (int)$obj["isBatch"];
+        $orderNo = $obj["out_trade_no"];
+        $userId = (int)$obj["userId"];
+        $payFrom = $obj["payFrom"];
+        $payMoney = (float)$obj["total_fee"];
+        if ($payFrom != '') {
+            $cnt = model('orders')
+                ->where(['payFrom' => $payFrom, "userId" => $userId, "tradeNo" => $trade_no])
+                ->count();
+            if ($cnt > 0) {
+                throw new \Exception('订单已支付');
+            }
+        }
+        $where = [["userId", "=", $userId], ["dataFlag", "=", 1], ["orderStatus", "=", -2], ["isPay", "=", 0], ["payType", "=", 1]];
+        $where[] = ["needPay", ">", 0];
+        $where[] = ['orderunique', "=", $orderNo];
+        $orders = model('orders')->where($where)->field('needPay, orderId, orderType, orderNo, shopId, payFrom, realTotalMoney')->select();
+
+        if (count($orders)==0) throw new \Exception('无效的订单信息');
+        $needPay = 0;
+        foreach ($orders as $key => $v) {
+            $needPay += $v['needPay'];
+        }
+        if ($needPay > $payMoney) {
+            throw new \Exception('支付金额不正确');
+        }
+        Db::startTrans();
+        try{
+            $data = array();
+            $data["needPay"] = 0;
+            $data["isPay"] = self::IS_PAY_SUCC;
+            $data["orderStatus"] = 0;
+            $data["tradeNo"] = $trade_no;
+            $data["payFrom"] = $payFrom;
+            $data["payTime"] = date("Y-m-d H:i:s");
+            $data["isBatch"] = $isBatch;
+            $data["totalPayFee"] = $payMoney * 100;
+            $rs = model('orders')->where($where)->update($data);
+
+            if ($needPay > 0 && false != $rs){
+                foreach ($orders as $key => $v) {
+                    $orderId = $v["orderId"];
+                    $shop = model('shops')->get($v->shopId);
+
+                    //新增订单日志
+                    $logOrder = [];
+                    $logOrder['orderId'] = $orderId;
+                    $logOrder['orderStatus'] = 0;
+                    $logOrder['logContent'] = "订单已支付,下单成功";
+                    $logOrder['logUserId'] = $userId;
+                    $logOrder['logType'] = 0;
+                    $logOrder['logTime'] = date('Y-m-d H:i:s');
+                    Db::name('log_orders')->insert($logOrder);
+                    //创建一条充值流水记录
+                    $lm = [];
+                    $lm['targetType'] = 0;
+                    $lm['targetId'] = $userId;
+                    $lm['dataId'] = $orderId;
+                    $lm['dataSrc'] = 1;
+                    $lm['remark'] = '交易订单【'.$v['orderNo'].'】充值¥'.$needPay;
+                    $lm['moneyType'] = 1;
+                    $lm['money'] = $needPay;
+                    $lm['payType'] = $payFrom;
+                    $lm['tradeNo'] = $trade_no;
+                    $lm['createTime'] = date('Y-m-d H:i:s');
+                    model('LogMoneys')->create($lm);
+                    //创建一条支出流水记录
+                    $lm = [];
+                    $lm['targetType'] = 0;
+                    $lm['targetId'] = $userId;
+                    $lm['dataId'] = $orderId;
+                    $lm['dataSrc'] = 1;
+                    $lm['remark'] = '交易订单【'.$v['orderNo'].'】支出¥'.$needPay;
+                    $lm['moneyType'] = 0;
+                    $lm['money'] = $needPay;
+                    $lm['payType'] = 0;
+                    $lm['createTime'] = date('Y-m-d H:i:s');
+                    model('LogMoneys')->create($lm);
+                    //虚拟商品处理
+                    if($v['orderType']==1){
+                        $this->handleVirtualGoods($v['orderId']);
+                    }else{
+                        //发送一条商家信息
+                        $tpl = WSTMsgTemplates('ORDER_HASPAY');
+                        if( $tpl['tplContent']!='' && $tpl['status']=='1'){
+                            $find = ['${ORDER_NO}'];
+                            $replace = [$v['orderNo']];
+
+                            $msg = array();
+                            $msg["shopId"] = $shop["shopId"];
+                            $msg["tplCode"] = $tpl["tplCode"];
+                            $msg["msgType"] = 1;
+                            $msg["content"] = str_replace($find,$replace,$tpl['tplContent']);
+                            $msg["msgJson"] = ['from'=>1,'dataId'=>$orderId];
+                            model("common/MessageQueues")->add($msg);
+                        }
+
+                        //判断是否需要发送商家短信
+                        $tpl = WSTMsgTemplates('PHONE_SHOP_PAY_ORDER');
+                        if((int)WSTConf('CONF.smsOpen')==1 && $tpl['tplContent']!='' && $tpl['status']=='1'){
+
+                            $params = ['tpl'=>$tpl,'params'=>['ORDER_NO'=>$v['orderNo']]];
+
+                            $msg = array();
+                            $tplCode = "PHONE_SHOP_PAY_ORDER";
+                            $msg["shopId"] = $shop["shopId"];
+                            $msg["tplCode"] = $tplCode;
+                            $msg["msgType"] = 2;
+                            $msg["paramJson"] = ['CODE'=>$tplCode,'method'=>'complatePay','params'=>$params];
+                            $msg["msgJson"] = "";
+                            model("common/MessageQueues")->add($msg);
+                        }
+                        //微信消息
+                        if((int)WSTConf('CONF.wxenabled')==1){
+                            $params = [];
+                            $params['ORDER_NO'] = $v['orderNo'];
+                            $params['PAY_TIME'] = date('Y-m-d H:i:s');
+                            $params['MONEY'] = $v['realTotalMoney'];
+                            $params['PAY_SRC'] = WSTLangPayFrom($v['payFrom']);
+
+                            $msg = array();
+                            $tplCode = "WX_ORDER_PAY";
+                            $msg["shopId"] = $shop["shopId"];
+                            $msg["tplCode"] = $tplCode;
+                            $msg["msgType"] = 4;
+                            $msg["paramJson"] = ['CODE'=>$tplCode,'URL'=>Url('wechat/orders/sellerorder','',true,true),'params'=>$params];
+                            $msg["msgJson"] = "";
+                            model("common/MessageQueues")->add($msg);
+                        }
+                    }
+                }
+            }
+            Db::commit();
+            hook("afterOrderPaySuccess",['orderId'=>$orderNo,'isBatch'=>$isBatch,'uerSystem'=>[0,1],'printCatId'=>1]);
+            return true;
+        }catch (\Exception $e) {
+            Db::rollback();
+            throw new \Exception('操作失败');
+        }
+    }
+
+    /**
+     * 支付失败关闭
+     * @param $payType
+     * @param $tranNo
+     * @param $failReason
+     * @throws \Exception
+     */
+    public function failure($tranNo)
+    {
+        self::where(['orderunique' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+    }
 }

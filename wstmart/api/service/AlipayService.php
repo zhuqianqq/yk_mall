@@ -13,8 +13,10 @@ use AopClient;
 use think\Db;
 use think\facade\Config;
 use util\Tools;
+use wstmart\common\model\Orders;
 use wstmart\common\model\TAliMobilePay;
 use wstmart\common\model\TInviteOrder;
+use wstmart\common\pay\AliPay;
 
 require_once 'alipay2/aop/AopClient.php';
 
@@ -238,72 +240,36 @@ class AlipayService
                 return false;
             }
 
-            $where = [
-                "out_trade_no" => $order_num,
-            ];
-            // 更新alipay_mobile_pay订单状态
-            $alipay_data = Db::table('t_ali_mobile_pay')->where($where)->field("out_trade_no,notify_trade_status,trade_busi_code")->find();
-            if (empty($alipay_data)) {
-                $this->log('alipayNotify: 没有out_trade_no=' . $order_num . '支付宝回调记录');
+            $m = new Orders();
+            $order = $m->where(['orderunique' => $order_num, 'isPay' => Orders::IS_PAY_WAIT])->find();
+            if (empty($order)) {
+                $this->log('alipayNotify: 没有该订单');
                 return false;
             }
-            if ($alipay_data["notify_trade_status"] == 'TRADE_SUCCESS') {
-                $this->log('alipayNotify: 交易状态已经为成功状态');
-                return true;
+
+            // 交易正常关闭,支付宝通常会在30分钟后关闭未支付的订单
+            if (strtoupper($map['trade_status']) == 'TRADE_CLOSED') {
+                // 若充值记录状态为等待支付则更新为已失败
+                $m->failure($order_num);
+                return 'success';
             }
-
-            $amount = @$map['total_amount']; // 交易金额
-            Db::startTrans();
-            $up_data = [
-                "notify_time" => @$map['notify_time'],// 通知时间
-                "notify_type" => @$map['notify_type'],// 通知类型
-                "notify_id" => @$map['notify_id'],// 通知ID
-                "notify_sign_type" => @$map['sign_type'],// 签名方式
-                "notify_sign" => @$map['sign'],// 签名
-                "notify_out_trade_no" => $order_num,// 业务订单号
-                "notify_subject" => @$map['subject'],// 商品名称
-                "notify_payment_type" => @$map['payment_type'],// 支付类型
-                "notify_trade_no" => @$map['trade_no'],// 支付宝交易号
-                "notify_trade_status" => @$map['trade_status'],// 交易状态
-                "notify_seller_id" => @$map['seller_id'],// 卖家支付宝用户号
-                "notify_seller_email" => @$map['seller_email'],// 卖家支付宝账号
-                "notify_buyer_id" => @$map['buyer_id'],// 买家支付宝用户号
-                "notify_buyer_email" => @$map['buyer_email'],// 买家支付宝账号
-                "notify_total_fee" => $amount,
-                "notify_quantity" => @$map['quantity'], // 购买数量,
-                "notify_price" => @$map['price'], // 商品单价
-                "notify_body" => @$map['body'], // 商品描述
-                "notify_gmt_create" => @$map['gmt_create'], // 交易创建时间
-                "notify_gmt_payment" => @$map['gmt_payment'], // 交易付款时间
-                "notify_is_total_fee_adjust" => @$map['is_total_fee_adjust'], // 是否调整总价
-                "notify_use_coupon" => @$map['use_coupon'], // 是否使用红包买家
-                "notify_discount" => @$map['discount'], // 折扣
-                "notice_time" => date('Y-m-d H:i:s'), // 收到通知时间
-                "notify_is_total_fee_adjust" => @$map['is_total_fee_adjust'], // 是否调整总价
-            ];
-
-            if ($map['trade_status'] == 'TRADE_SUCCESS') {
-                $up_data['pay_status'] = TAliMobilePay::PAY_STATUS_SUCCESS; //支付成功
-                $up_data["finish_time"] = date('Y-m-d H:i:s'); // 收到支付宝完成通知时间
-            }else{
-                $up_data['pay_status'] = TAliMobilePay::PAY_STATUS_FAIL; //支付失败
+            if (!in_array(strtoupper($map['trade_status']), AliPay::SUCCESS_CODE)) {
+                // 如果状态不为成功
+                $this->log('alipayNotify: 交易状态不为成功状态');
+                return false;
             }
-
-            Db::table('t_ali_mobile_pay')->where($where)->update($up_data);
-
-            if ($map['trade_status'] == 'TRADE_SUCCESS') {
-                //更新业务订单状态
-                if($alipay_data['trade_busi_code'] == TInviteOrder::TRADE_BUSI_CODE){
-                    TInviteOrder::finishInviteOrder($order_num);
-                }
-            }
+            $obj = [];
+            $obj["trade_no"] = $order_num;
+            $obj["isBatch"] = $order['isBatch'];
+            $obj["out_trade_no"] = $order_num;
+            $obj["userId"] = (int)$order['userId'];
+            $obj["payFrom"] = $order['payFrom'];
+            $obj["total_fee"] = (float)$map["total_amount"];
+            $m->success($obj);
             $this->log('支付宝回调通知success');
-
-            Db::commit();
             return true;
         } catch (\Exception $e) {
-            Db::rollback();
-            $this->log('支付宝回调通知消息：系统故障:' . $e->getMessage() . PHP_EOL . $e->getTraceAsString(), $map);
+            $this->log('支付宝回调通知消息：系统故障:' . $e->getMessage() . PHP_EOL . $e->getTraceAsString());
             return false;
         }
     }
