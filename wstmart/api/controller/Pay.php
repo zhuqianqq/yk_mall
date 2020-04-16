@@ -17,6 +17,7 @@ class Pay extends Base
     public function alipayNotify()
     {
         Tools::addLog("alipay_notify", "支付宝回调开始,praram:" . $this->request->getInput());
+        Tools::addLog("alipay_notify2", "支付宝回调开始,praram:" . $this->request->param());
         $aliPay = new AlipayService();
         //首先必需验证签名，然后验证是否是支付宝发来的通知。
         Tools::addLog("alipay_notify", "支付宝回调0");
