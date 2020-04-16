@@ -554,6 +554,42 @@ class Goods extends CGoods{
         return [$list, $total, $has_next];
     }
 
+
+    /**
+     * 
+     * 猜你喜欢
+     * 
+     */
+    public function getGuessLike($page,$page_size){
+        
+        $where = ["isSale" => 1, "goodsStatus" => 1, 'dataFlag' => 1];
+       
+        $goods_group = Db::name('goods')
+            ->where($where)
+            ->group('goodsCatId')
+            ->column('goodsCatId');
+
+        $query = $this->field('goodsId,goodsName,goodsImg,goodsSn,goodsStock,saleNum,shopPrice,marketPrice,isSpec,appraiseNum,visitNum,isNew')
+            ->where($where)
+            ->where([['goodsCatId', 'in', $goods_group]]);
+
+        $total = $query->count(); //总记录条数
+
+        $list = [];
+        $has_next = 0; //是否有下一页 0:无，1：有
+        if ($total > 0) {
+            $offset = ($page - 1) * $page_size;
+            $list = $query->limit($offset, $page_size + 1)//多查一条
+                    ->orderRaw('rand()')   
+                    ->select();
+            self::checkHasNextPage($list, $page_size, $has_next);
+        }
+     
+        return [$list, $total, $has_next];
+
+    }
+    
+
     /**
      * 是否有下一页记录
      * @param Collection $list

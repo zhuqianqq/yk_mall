@@ -79,27 +79,21 @@ class Goods extends Base
      */
 	public function guessLike()
     {
-        // 当前无浏览记录，取热销商品
-        $where = [];
-        $where[] = ['isSale','=',1];
-        $where[] = ['goodsStatus','=',1];
-        $where[] = ['dataFlag','=',1];
-        $goods_group = Db::name('goods')
-            ->where($where)
-            ->group('goodsCatId')
-            ->column('goodsCatId');
-        $num = 10;
-        $goods = Db::name('goods')->field('goodsId,goodsName,goodsImg,goodsSn,goodsStock,saleNum,shopPrice,marketPrice,isSpec,appraiseNum,visitNum,isNew')
-            ->where($where)
-            ->where([['goodsCatId', 'in', $goods_group]])
-            ->limit(3 * $num)
-            ->select();
-        if(empty($goods))return [];
 
-        // 从数组中随机取$num个单元
-        shuffle($goods);
-        $goods = array_slice($goods,0, $num);
-        return $this->outJson(0, '查询成功', $goods);
+        $page = input('param.page',1);
+        $page_size = input('param.page_size',10); 
+
+        $m = model('goods');
+       
+        list($list, $total, $has_next) = $m->getGuessLike($page,$page_size);
+        
+        $data = [
+            "list" => $list,
+            "current_page" => (int)$page,
+            "total" => (int)$total,
+            "has_next" => (int)$has_next, //是否有下一页
+        ];
+        return $this->outJson(0, "success", $data);
     }
 
 
