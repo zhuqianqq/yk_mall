@@ -248,6 +248,8 @@ class Goods extends Base
         $shareData['shopPrice'] = $shopPrice;
         $shareData['userId'] = $userid;
         $shareData['createTime'] = date('Y-m-d H:i:s');
+        $shareData['gallery'] = $gallery;
+        $shareData['imgContent'] = $imgContent;
         $id = Db::name('goods_share')->insertGetId($shareData);
         if(!$id){
             // 失败则返回错误
