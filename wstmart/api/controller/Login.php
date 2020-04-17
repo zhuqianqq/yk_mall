@@ -315,23 +315,23 @@ class Login extends Base{
                 $data["avatar"] = empty($avatar) ? $data['avatar'] : $avatar;
                 $data["sex"] = $gender > 0 ? $gender : $data['sex'];
                 $data["user_id"] = $mall_user_id;
+
+                Member::where([
+                    "id" => $mid,
+                ])->update([
+                    'nick_name' => empty($nick_name) ? $data['nick_name'] : $nick_name,
+                    'avatar' => empty($avatar) ? $data['avatar'] : $avatar,
+                    'city' => empty($city) ? $data['city'] : $city,
+                    'country' => empty($country) ? $data['country'] : $country,
+                    'sex' => $gender > 0 ? $gender : $data['sex'],
+                    'province' => empty($province) ? $data['province'] : $province,
+                    'openid' => empty($openid) ? $data['openid'] : $openid,
+                    'user_id' => $mall_user_id,
+                ]);
             } else {
                 $mall_user_id = $data['user_id'];
                 $mid = $data['id'];
             }
-
-            Member::where([
-                "id" => $mid,
-            ])->update([
-                'nick_name' => empty($nick_name) ? $data['nick_name'] : $nick_name,
-                'avatar' => empty($avatar) ? $data['avatar'] : $avatar,
-                'city' => empty($city) ? $data['city'] : $city,
-                'country' => empty($country) ? $data['country'] : $country,
-                'sex' => $gender > 0 ? $gender : $data['sex'],
-                'province' => empty($province) ? $data['province'] : $province,
-                'openid' => empty($openid) ? $data['openid'] : $openid,
-                'user_id' => $mall_user_id,
-            ]);
 
             $data = Member::getByUnionId($unionid);
             Member::setOtherInfo($data);
