@@ -2,6 +2,7 @@
 namespace wstmart\api\controller;
 use think\Loader;
 use Env;
+use util\Tools;
 use wstmart\common\model\Payments as M;
 use wstmart\common\model\Orders as OM;
 use wstmart\common\model\LogMoneys as LM;
@@ -142,6 +143,7 @@ class Weixinpays extends Base{
 		$notify = new \Notify();
 		// 存储微信的回调
 		$xml = file_get_contents("php://input");
+        Tools::addLog("wxpay_notify", "微信回调开始, praram:" . $xml);
 		$notify->saveData ( $xml );
 		if ($notify->checkSign () == FALSE) {
 			$notify->setReturnParameter ( "return_code", "FAIL" ); // 返回状态码

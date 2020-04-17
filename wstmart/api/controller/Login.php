@@ -5,6 +5,7 @@ use think\Exception;
 use think\facade\Cache;
 use util\AccessKeyHelper;
 use util\SmsHelper;
+use util\Tools;
 use util\ValidateHelper;
 use util\WechatHelper;
 use util\WXBizDataCrypt;
@@ -56,6 +57,11 @@ class Login extends Base{
             $data->access_key = $data['access_key'];
             $data->save();
             $data['mall_user_id'] = $data->userId;
+
+            if (ValidateHelper::isMobile($data['userName'])){
+                $data['userName'] = Tools::maskMobile($data['userName']);
+            }
+
             SmsHelper::clearCacheKey($phone, "login");
             Db::commit();
             return $this->outJson(0, "登录成功", $data);
@@ -120,10 +126,10 @@ class Login extends Base{
             if (empty($data)) {
                 // 没有没有unionid存在，则新建
                 if (!empty($unionId)) {
-                    $mid = Member::registerByUnionId($unionId);
+                    $mid = Member::registerByUnionId($unionId, 1);
                     $data = Member::getByUnionId($unionId);
                 } else {
-                    $mid = Member::registerByOpenId($openId);
+                    $mid = Member::registerByOpenId($openId, 1);
                     $data = Member::getByOpenId($openId);
                 }
 
@@ -134,7 +140,7 @@ class Login extends Base{
                 $data["nick_name"] = empty($nick_name) ? $data['nick_name'] : $nick_name;
                 $data["avatar"] = empty($avatar) ? $data['avatar'] : $avatar;
                 $data["sex"] = $gender > 0 ? $gender : $data['sex'];
-                $mall_user_id = \wstmart\api\model\Users::register($data); //注册商城用户
+                $mall_user_id = \wstmart\api\model\Users::register($data, 1); //注册商城用户
                 if (!$mall_user_id) {
                     throw new Exception('注册失败');
                 }
@@ -287,12 +293,14 @@ class Login extends Base{
         $province = $this->request->post("province", '', 'trim');
         $openid = $this->request->post("openid", '', "trim");
         $unionid = $this->request->post("unionid", '', "trim");
+        if (empty($avatar) || empty($nick_name) || empty($openid)) {
+            return $this->outJson(100, "缺少参数");
+        }
 
         Db::startTrans();
         try {
             $data = Member::getByUnionId($unionid);
             if (!$data) {
-                $data['phone'] = $nick_name;
                 $data['nick_name'] = $nick_name;
                 $mall_user_id = \wstmart\api\model\Users::register($data); //注册商城用户
                 if (!$mall_user_id) {
@@ -307,23 +315,23 @@ class Login extends Base{
                 $data["avatar"] = empty($avatar) ? $data['avatar'] : $avatar;
                 $data["sex"] = $gender > 0 ? $gender : $data['sex'];
                 $data["user_id"] = $mall_user_id;
+
+                Member::where([
+                    "id" => $mid,
+                ])->update([
+                    'nick_name' => empty($nick_name) ? $data['nick_name'] : $nick_name,
+                    'avatar' => empty($avatar) ? $data['avatar'] : $avatar,
+                    'city' => empty($city) ? $data['city'] : $city,
+                    'country' => empty($country) ? $data['country'] : $country,
+                    'sex' => $gender > 0 ? $gender : $data['sex'],
+                    'province' => empty($province) ? $data['province'] : $province,
+                    'openid' => empty($openid) ? $data['openid'] : $openid,
+                    'user_id' => $mall_user_id,
+                ]);
             } else {
                 $mall_user_id = $data['user_id'];
                 $mid = $data['id'];
             }
-
-            Member::where([
-                "id" => $mid,
-            ])->update([
-                'nick_name' => empty($nick_name) ? $data['nick_name'] : $nick_name,
-                'avatar' => empty($avatar) ? $data['avatar'] : $avatar,
-                'city' => empty($city) ? $data['city'] : $city,
-                'country' => empty($country) ? $data['country'] : $country,
-                'sex' => $gender > 0 ? $gender : $data['sex'],
-                'province' => empty($province) ? $data['province'] : $province,
-                'openid' => empty($openid) ? $data['openid'] : $openid,
-                'user_id' => $mall_user_id,
-            ]);
 
             $data = Member::getByUnionId($unionid);
             Member::setOtherInfo($data);
@@ -335,7 +343,9 @@ class Login extends Base{
             $oneUser =  Users::where([
                 "userId" => $mall_user_id,
             ])->find();
-            $data['mall_user_id'] = $mall_user_id;
+            $data['nick_name'] = $oneUser->userName ?: $data['nick_name'];
+            $data['nick_name'] = $oneUser->userPhoto ?: $data['avatar'];
+            $data['mall_user_id'] = (int)$mall_user_id;
             $data['userPhone'] = $oneUser->userPhone;
             Db::commit();
             return $this->outJson(0, "登录成功", $data);

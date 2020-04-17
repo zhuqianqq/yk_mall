@@ -47,14 +47,14 @@ class Users extends CUsers{
      * 注册
      * @param array $data
      */
-    public static function register($data)
+    public static function register($data, $from = 0)
     {
         $user_name = !empty($data["phone"]) ? $data["phone"] : $data["display_code"] ?? '';
         $nick_name = $data["nick_name"] ?? $data["phone"] ?? $data["display_code"] ?? '';
         $salt = mt_rand(1000,9999);
         $pwd = Tools::randStr(8); // 随机密码
         $insert_data = [
-            "loginName" => $user_name, // 登录账号 手机号
+            "loginName" => $user_name ?: $nick_name, // 登录账号 手机号
             "userName" => $nick_name,
             "userType" => self::USER_TYPE_NORMAL, //会员类型: 0:普通会员 1 主播 2 代理
             "loginSecret" => $salt, // 密码盐值
@@ -65,7 +65,7 @@ class Users extends CUsers{
             "createTime" => date("Y-m-d H:i:s"),
             'lastTime' => date("Y-m-d H:i:s"),
             'lastIP' => Tools::getClientIp(),
-            'plat' => 0, // 来源平台
+            'plat' => $from, // 来源平台
         ];
         $user_id = self::insertGetId($insert_data);
         Tools::addLog("mall_user","register user_id:{$user_id}");
