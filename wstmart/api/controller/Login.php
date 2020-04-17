@@ -343,7 +343,7 @@ class Login extends Base{
             $oneUser =  Users::where([
                 "userId" => $mall_user_id,
             ])->find();
-            $data['mall_user_id'] = $mall_user_id;
+            $data['mall_user_id'] = (int)$mall_user_id;
             $data['userPhone'] = $oneUser->userPhone;
             Db::commit();
             return $this->outJson(0, "登录成功", $data);
