@@ -74,8 +74,8 @@ class Goods extends Base
 	}
 
     /**
-     * 查询成功
-     * @return array
+     * 猜你喜欢
+     * @return json
      */
 	public function guessLike()
     {
