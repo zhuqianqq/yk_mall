@@ -345,7 +345,7 @@ class Login extends Base{
             ])->find();
             $data['nick_name'] = $oneUser->userName ?: $data['nick_name'];
             $data['avatar'] = $oneUser->userPhoto ?: $data['avatar'];
-            $data['sex'] = $oneUser->sex ?: $data['sex'];
+            $data['sex'] = $oneUser->userSex ?: $data['sex'];
             $data['mall_user_id'] = (int)$mall_user_id;
             $data['userPhone'] = $oneUser->userPhone;
             Db::commit();
