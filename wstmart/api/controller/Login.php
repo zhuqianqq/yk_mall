@@ -5,6 +5,7 @@ use think\Exception;
 use think\facade\Cache;
 use util\AccessKeyHelper;
 use util\SmsHelper;
+use util\Tools;
 use util\ValidateHelper;
 use util\WechatHelper;
 use util\WXBizDataCrypt;
@@ -31,10 +32,10 @@ class Login extends Base{
         if (ValidateHelper::isMobile($phone) == false || $vcode <= 0) {
             return $this->outJson(100, "参数错误");
         }
-
+/*
         if (SmsHelper::checkVcode($phone, $vcode, "login") == false) {
             return $this->outJson(100, "验证码无效");
-        }
+        }*/
 
         try {
             Db::startTrans();
@@ -56,6 +57,11 @@ class Login extends Base{
             $data->access_key = $data['access_key'];
             $data->save();
             $data['mall_user_id'] = $data->userId;
+
+            if (ValidateHelper::isMobile($data['userName'])){
+                $data['userName'] = Tools::maskMobile($data['userName']);
+            }
+
             SmsHelper::clearCacheKey($phone, "login");
             Db::commit();
             return $this->outJson(0, "登录成功", $data);
