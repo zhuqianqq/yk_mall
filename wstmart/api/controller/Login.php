@@ -343,6 +343,7 @@ class Login extends Base{
             $oneUser =  Users::where([
                 "userId" => $mall_user_id,
             ])->find();
+            $data['nick_name'] = $oneUser->userName;
             $data['mall_user_id'] = (int)$mall_user_id;
             $data['userPhone'] = $oneUser->userPhone;
             Db::commit();
