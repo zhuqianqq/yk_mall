@@ -32,10 +32,10 @@ class Login extends Base{
         if (ValidateHelper::isMobile($phone) == false || $vcode <= 0) {
             return $this->outJson(100, "参数错误");
         }
-/*
+
         if (SmsHelper::checkVcode($phone, $vcode, "login") == false) {
             return $this->outJson(100, "验证码无效");
-        }*/
+        }
 
         try {
             Db::startTrans();
