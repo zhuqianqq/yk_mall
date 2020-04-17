@@ -301,6 +301,7 @@ class Login extends Base{
         try {
             $data = Member::getByUnionId($unionid);
             if (!$data) {
+                $data['loginName'] = $nick_name;
                 $data['nick_name'] = $nick_name;
                 $mall_user_id = \wstmart\api\model\Users::register($data); //注册商城用户
                 if (!$mall_user_id) {
