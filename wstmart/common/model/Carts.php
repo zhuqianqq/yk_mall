@@ -242,7 +242,9 @@ class Carts extends Base{
 				   ->select();
 		$carts = [];
 		$goodsIds = [];
-		$goodsTotalNum = 0;
+		$goodsTotalNum = 0; //被选中商品 （已下架商品  库存小于或等于0商品不予统计）
+		$goodsIsCheckedNum = 0; //被选中的商品数量 （已下架商品  库存小于或等于0商品统计）
+		$goodsCount = 0;  //购物车所有商品数量
 		$goodsTotalMoney = 0;
 		$canNotBuy = [];
 
@@ -294,6 +296,12 @@ class Carts extends Base{
 				$goodsTotalMoney = $goodsTotalMoney + $v['shopPrice'] * $v['cartNum'];
 				$goodsTotalNum+=$v['cartNum'];
 			}
+			if ($v['isCheck'] == 1 ){
+				$goodsIsCheckedNum+=$v['cartNum'];
+			}
+
+			$goodsCount+=$v['cartNum'];
+
 			$v['specNames'] = [];
 			unset($v['shopName']);
 			// app端处理
@@ -356,7 +364,15 @@ class Carts extends Base{
 			if(!isset($v['list']))unset($carts[$key]);
 		}
 	
-		$cartData = ['carts' => array_values($carts), 'goodsTotalMoney' => bcdiv($goodsTotalMoney,1, 2), 'goodsTotalNum' => $goodsTotalNum, 'promotionMoney' => '0.00','canNotBuy' => $canNotBuy];
+		$cartData = [
+			'carts' => array_values($carts), 
+			'goodsTotalMoney' => bcdiv($goodsTotalMoney,1, 2),
+			'goodsTotalNum' => $goodsTotalNum, 
+			'goodsIsCheckedNum' => $goodsIsCheckedNum, 
+			'goodsCount' => $goodsCount, 
+			'promotionMoney' => '0.00',
+			'canNotBuy' => $canNotBuy
+		];
 		//店铺优惠活动监听
 		//hook("afterQueryCarts",["carts"=>&$cartData,'isSettlement'=>$isSettlement,'isVirtual'=>false,'uId'=>$userId]);
 		return $cartData;   
