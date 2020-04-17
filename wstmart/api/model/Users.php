@@ -54,7 +54,7 @@ class Users extends CUsers{
         $salt = mt_rand(1000,9999);
         $pwd = Tools::randStr(8); // 随机密码
         $insert_data = [
-            "loginName" => $user_name, // 登录账号 手机号
+            "loginName" => $user_name ?? $nick_name, // 登录账号 手机号
             "userName" => $nick_name,
             "userType" => self::USER_TYPE_NORMAL, //会员类型: 0:普通会员 1 主播 2 代理
             "loginSecret" => $salt, // 密码盐值
