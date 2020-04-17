@@ -244,7 +244,7 @@ class Carts extends Base{
 		$goodsIds = [];
 		$goodsTotalNum = 0; //被选中商品 （已下架商品  库存小于或等于0商品不予统计）
 		$goodsIsCheckedNum = 0; //被选中的商品数量 （已下架商品  库存小于或等于0商品统计）
-		$goodsCount = 0;  //购物车所有商品数量
+		$goodsCount = 0;  //购物车所有商品数量（按种类统计  同种类数量为计为一）
 		$goodsTotalMoney = 0;
 		$canNotBuy = [];
 
@@ -300,7 +300,7 @@ class Carts extends Base{
 				$goodsIsCheckedNum+=$v['cartNum'];
 			}
 
-			$goodsCount+=$v['cartNum'];
+			$goodsCount++;
 
 			$v['specNames'] = [];
 			unset($v['shopName']);
