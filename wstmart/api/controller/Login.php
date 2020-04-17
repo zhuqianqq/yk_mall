@@ -293,12 +293,14 @@ class Login extends Base{
         $province = $this->request->post("province", '', 'trim');
         $openid = $this->request->post("openid", '', "trim");
         $unionid = $this->request->post("unionid", '', "trim");
+        if (empty($avatar) || empty($nick_name) || empty($openid)) {
+            return $this->outJson(100, "缺少参数");
+        }
 
         Db::startTrans();
         try {
             $data = Member::getByUnionId($unionid);
             if (!$data) {
-                $data['phone'] = $nick_name;
                 $data['nick_name'] = $nick_name;
                 $mall_user_id = \wstmart\api\model\Users::register($data); //注册商城用户
                 if (!$mall_user_id) {
