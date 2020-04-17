@@ -173,10 +173,11 @@ class Member extends Base
      * @param $unionid
      * @return int|string
      */
-    public static function registerByOpenId($openid)
+    public static function registerByOpenId($openid, $from = 0)
     {
         $data = [
             'openid' => $openid,
+            'from' => (int)$from,
             'last_update_time' => date("Y-m-d H:i:s"),
             'create_time' => date("Y-m-d H:i:s"),
         ];

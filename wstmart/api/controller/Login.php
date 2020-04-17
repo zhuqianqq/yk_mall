@@ -126,10 +126,10 @@ class Login extends Base{
             if (empty($data)) {
                 // 没有没有unionid存在，则新建
                 if (!empty($unionId)) {
-                    $mid = Member::registerByUnionId($unionId);
+                    $mid = Member::registerByUnionId($unionId, 1);
                     $data = Member::getByUnionId($unionId);
                 } else {
-                    $mid = Member::registerByOpenId($openId);
+                    $mid = Member::registerByOpenId($openId, 1);
                     $data = Member::getByOpenId($openId);
                 }
 
@@ -140,7 +140,7 @@ class Login extends Base{
                 $data["nick_name"] = empty($nick_name) ? $data['nick_name'] : $nick_name;
                 $data["avatar"] = empty($avatar) ? $data['avatar'] : $avatar;
                 $data["sex"] = $gender > 0 ? $gender : $data['sex'];
-                $mall_user_id = \wstmart\api\model\Users::register($data); //注册商城用户
+                $mall_user_id = \wstmart\api\model\Users::register($data, 1); //注册商城用户
                 if (!$mall_user_id) {
                     throw new Exception('注册失败');
                 }

@@ -47,7 +47,7 @@ class Users extends CUsers{
      * 注册
      * @param array $data
      */
-    public static function register($data)
+    public static function register($data, $from = 0)
     {
         $user_name = !empty($data["phone"]) ? $data["phone"] : $data["display_code"] ?? '';
         $nick_name = $data["nick_name"] ?? $data["phone"] ?? $data["display_code"] ?? '';
@@ -65,7 +65,7 @@ class Users extends CUsers{
             "createTime" => date("Y-m-d H:i:s"),
             'lastTime' => date("Y-m-d H:i:s"),
             'lastIP' => Tools::getClientIp(),
-            'plat' => 0, // 来源平台
+            'plat' => $from, // 来源平台
         ];
         $user_id = self::insertGetId($insert_data);
         Tools::addLog("mall_user","register user_id:{$user_id}");
