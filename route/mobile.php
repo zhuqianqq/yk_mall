@@ -23,5 +23,6 @@ Route::rules([
     'mnews'=>'mobile/news/view',
     'mcategoty'=>'mobile/goodscats/index',
     'mshopgoods-:shopId'=>'mobile/shops/goods',
-	'mnewsdetail-:id'=>'mobile/news/getnews'
+	'mnewsdetail-:id'=>'mobile/news/getnews',
+	'mdown'=>'mobile/share/download',
 ]);
