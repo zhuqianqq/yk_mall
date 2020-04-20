@@ -94,7 +94,8 @@ class Weixinpays extends Base
             $return_code = $sign_passed ? 'SUCCESS' : 'FAIL';
             $response = "<xml><return_code><![CDATA[$return_code]]></return_code><return_msg><![CDATA[$message]]></return_msg></xml>";
         }
-        return $response;
+        echo  $response;
+        exit();
     }
 
     // 生成回调验证签名+
