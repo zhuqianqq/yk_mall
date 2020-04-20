@@ -292,7 +292,7 @@ class Orders extends Base{
 		$address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
 		
 		//检测地址是否有效
-        if (empty($addressId)) {
+        if (empty($address)) {
             // 如果没有，则是每次都是添加地址
             $ua = new UserAddress();
             $addressRes = $ua->add($userId);
