@@ -11,7 +11,123 @@ use wstmart\common\model\ChargeItems as CM;
  * 微信支付控制器
  */
 class Weixinpays extends Base{
-	
+
+    /**
+     * 微信 APP 回调地址
+     * @param bool $channel 渠道参见$params[appMultipleInfo]
+     * @return string
+     */
+    public function notify($channel = false)
+    {
+        // 接收异步回调参数
+        $raw_xml = file_get_contents("php://input");
+        Tools::addLog("wxpay_notify", "wx回调开始, praram:" . $raw_xml);
+        die;
+
+        if(empty($raw_xml)){
+            return;
+        }
+
+        $response = "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
+        $sign_passed = false;
+
+        $data = [];
+
+        try {
+            // 处理数据
+            $xmlobj = simplexml_load_string($raw_xml);
+            foreach ($xmlobj as  $k => $v) {
+                if (is_object($v)) {
+                    $data[$k] = $v->__toString();
+                } else {
+                    $data[$k] = $v;
+                }
+            }
+            unset($xmlobj);
+
+            // appMultipleInfo
+            $channel = $channel ?? $data['channel'] ?? false;
+
+            // 生成签名验证
+            $sign_passed = $this->backSign($data, $channel) == $data['sign'];
+
+            if(!$sign_passed){
+                throw new \Exception("验签失败");
+            }
+
+            $order_id = $data['out_trade_no'];
+            $recharge = RechargeRecord::findOne(['merOrderId' => $order_id]);
+
+            if (empty($recharge)) {
+                throw new \Exception("Payment record #$order_id is not exists");
+            }
+
+            if ($recharge->tradeStatus != RechargeRecord::TRADE_STATUS_SUCCESS) {
+                $payment_success = $data['return_code'] === "SUCCESS" && $data['result_code'] === "SUCCESS";
+
+                if(!$payment_success){
+                    throw new \Exception("通知代码错误 - " . $data['return_code'] . ' & ' . $data['result_code']);
+                }
+
+                $money = bcdiv($data['total_fee'], 100);
+                switch ($data['trade_type']) {
+                    case 'APP':
+                        $recharge->payType = RechargeRecord::RECHARGE_TYPE_WX;
+                        break;
+
+                    case 'JSAPI':
+                        $recharge->payType = RechargeRecord::RECHARGE_TYPE_JSAPI;
+                        if ($recharge->source ==  UserSource::SOURCE_XCX) {
+                            $recharge->payType = RechargeRecord::RECHARGE_TYPE_WXAPP;
+                        }
+                        break;
+
+                    case 'NATIVE':
+                        $recharge->payType = RechargeRecord::RECHARGE_TYPE_NATIVE;
+                        break;
+                }
+
+                $recharge->success($recharge->payType, $data['transaction_id'], $money);
+
+                if ($recharge->source == UserSource::SOURCE_SHENGTIAN) {
+                    RechargeTicket::autoBuy($recharge->id, $recharge->userid);
+                }
+            }
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            $return_code = $sign_passed ? 'SUCCESS' : 'FAIL';
+            $response = "<xml><return_code><![CDATA[$return_code]]></return_code><return_msg><![CDATA[$message]]></return_msg></xml>";
+
+            if (is_object($recharge)) {
+                $recharge->failure($recharge->payType, $data['transaction_id'], $e->getMessage());
+            }
+        }
+
+        return $response;
+    }
+
+    // 生成回调验证签名+
+    private function backSign($data, $channel = false)
+    {
+        $key = Yii::$app->params['key'];
+        if (isset(Yii::$app->params['appMultipleInfo'][$channel])) {
+            $key = Yii::$app->params['appMultipleInfo'][$channel]['key'];
+        }
+
+        if (isset($data['sign'])) {
+            unset($data['sign']);
+        }
+
+        if (isset($data['channel'])) {
+            unset($data['channel']);
+        }
+
+        $sign_1 = http_build_query($data);
+        $sign_2 = $sign_1."&key=".$key;
+        $sign_3 = strtoupper(MD5($sign_2));
+        return $sign_3;
+    }
+
 	/**
 	 * 初始化
 	 */
