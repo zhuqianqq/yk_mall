@@ -235,6 +235,7 @@ class Login extends Base{
             }
             // 判断是否已经绑定了手机号
             $exist_user = Users::get($userid);
+            var_dump($exist_user);die;
             if(!empty($exist_user) && !empty($exist_user->userPhone)) {
                 // 判断手机号是否一致 如果不一致则直接返回
                 $data = Member::where('user_id', $userid)->find();
