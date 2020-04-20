@@ -235,17 +235,18 @@ class Login extends Base{
             }
             // 判断是否已经绑定了手机号
             $exist_user = Users::get($userid);
-            var_dump($exist_user);die;
             if(!empty($exist_user) && !empty($exist_user->userPhone)) {
                 // 判断手机号是否一致 如果不一致则直接返回
                 $data = Member::where('user_id', $userid)->find();
                 $data['access_key'] = $exist_user->access_key;
                 $data['userPhone'] = $exist_user->userPhone;
+                echo 222;die;
                 Db::commit();
                 return $this->outJson(0, "登录成功！",$data);
             }
             
             $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
+            var_dump($loginInfo);die;
             if (empty($loginInfo)) {
                 throw new \Exception("获取信息失败" . json_encode($loginInfo), 100);
             }
