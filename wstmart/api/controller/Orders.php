@@ -102,7 +102,7 @@ class Orders extends Base{
                             'appId' => $appId,
                             'partnerId' => $mchId,
                             'prepayId' => $wxOrder['prepay_id'],
-                            'nonceStr' => $payer->createNonceString(),
+                            'nonceStr' => $signData['noncestr'],
                             'package' => $package,
                             'timestamp' => time(),
                             'sign' => $payer->sign($signData),
