@@ -103,9 +103,10 @@ class Orders extends Base{
                             'prepayId' => $wxOrder['prepay_id'],
                             'nonceStr' => $payer->createNonceString(),
                             'package' => 'Sign=WXPay',
-                            'timestamp' => time()
+                            'timestamp' => time(),
+                            'sign' => $payer->sign($signData)
                         ]
-                    ];;
+                    ];
                 }
                 return $this->outJson(0, "提交成功!", $data);
             }
