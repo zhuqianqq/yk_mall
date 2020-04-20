@@ -74,7 +74,7 @@ class Orders extends Base{
                     $payConfigData = json_decode($payConfig, true);
                     $key = $payConfigData['apiKey'];
                     $appId = $payConfigData['appId'];
-                    $mchId = $payConfigData['mchId'];
+                    $mchId = $payConfigData['mchId']; // 商户号
                     if (empty($key) || empty($appId) || empty($mchId)) {
                         throw new \Exception('支付配置错误', 100);
                     }
@@ -85,20 +85,27 @@ class Orders extends Base{
                     $wxOrder = $payer->prepay($recharge);
 
                     $prepayData = [
+                        'appId' => $appId,
+                        'partnerId' => $mchId,
+                        'prepayId' => $wxOrder['prepay_id'],
+                        'nonceStr' => $payer->createNonceString(),
+                        'package' => 'Sign=WXPay',
+                        'timestamp' => time()
+                    ];
+                    $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
+
+                    $data = [
                         'wxpay' => [
                             'appId' => $appId,
                             'partnerId' => $mchId,
                             'prepayId' => $wxOrder['prepay_id'],
                             'nonceStr' => $payer->createNonceString(),
                             'package' => 'Sign=WXPay',
-                            'timestamp' => time()
-                        ]
+                            'timestamp' => time(),
+                            'sign' => $payer->sign($signData),
+                        ],
+                        'orderunique' => $rs['data']
                     ];
-                    $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
-
-                    $prepayData['wxpay']['sign'] = $payer->sign($signData);
-                    $prepayData['orderunique'] = $rs['data'];
-                    $data = $prepayData;
                 }
                 return $this->outJson(0, "提交成功!", $data);
             }

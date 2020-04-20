@@ -202,7 +202,7 @@ class UserAddress extends Base{
      */
     public function getDefaultAddress($uId=0){
         $userId = ((int)$uId==0)?(int)session('WST_USER.userId'):$uId;
-    	$where = ['userId'=>$userId,'dataFlag'=>1];
+    	$where = ['userId'=>$userId,'dataFlag'=>1, 'isDefault' => 1];
         $rs = $this->where($where)->order('isDefault desc,addressId desc')->find();
         if(empty($rs))return [];
         // $areaIds = [];
