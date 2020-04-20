@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: hessian
- * Date: 23/01/2017
- * Time: 17:13
- */
 namespace wstmart\common\pay;
 
 use util\Tools;
@@ -84,7 +78,7 @@ class WeixinPay
             'appid' => $this->appId,
             'mch_id' => $this->mchId,
             'device_info' => $this->deviceInfo,
-            'body' => '映购-购买商品',
+            'body' => 'test',
             'trade_type' => $tradeType,
             'spbill_create_ip' => $ip,
             'total_fee' => intval(bcmul($record['money'], 100)),
