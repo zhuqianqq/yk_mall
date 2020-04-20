@@ -95,20 +95,19 @@ class Orders extends Base{
                         'package' => $package,
                         'timestamp' => time()
                     ];
+                    $prepayData = [
+                        'appId' => $appId,
+                        'partnerId' => $mchId,
+                        'prepayId' => $wxOrder['prepay_id'],
+                        'nonceStr' => $payer->createNonceString(),
+                        'package' => 'Sign=WXPay',
+                        'timestamp' => time()
+                    ];
                     $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
 
-                    $data = [
-                        'wxpay' => [
-                            'appId' => $appId,
-                            'partnerId' => $mchId,
-                            'prepayId' => $wxOrder['prepay_id'],
-                            'nonceStr' => $signData['noncestr'],
-                            'package' => $package,
-                            'timestamp' => time(),
-                            'sign' => $payer->sign($signData),
-                        ],
-                        'orderunique' => $rs['data']
-                    ];
+                    $prepayData['sign'] = $payer->sign($signData);
+                    $data['wxpay'] = $prepayData;
+                    $data['orderunique'] = $rs['data'];
                 }
                 return $this->outJson(0, "提交成功!", $data);
             }
