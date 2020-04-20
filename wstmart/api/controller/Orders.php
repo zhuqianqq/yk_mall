@@ -102,7 +102,7 @@ class Orders extends Base{
                             'nonceStr' => $payer->createNonceString(),
                             'package' => 'Sign=WXPay',
                             'timestamp' => time(),
-                            'sign' => $payer->sign($signData),
+                            'sign' => $payer->sign($signData) . '1',
                         ],
                         'orderunique' => $rs['data']
                     ];
