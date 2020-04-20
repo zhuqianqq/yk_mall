@@ -288,20 +288,19 @@ class Orders extends Base{
             return WSTReturn("下单失败，请选择有效的库存商品");
         }
 
-
         //检测地址是否有效
-        if (empty($addressId)) {
-            // 如果没有，则是每次都是添加地址
-            $ua = new UserAddress();
-            $addressRes = $ua->add($userId);
+		$address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
+        if (empty($address)) {
+			// 如果没有，则添加地址
+			$ua = new UserAddress();
+			$addressRes = $ua->add($userId);
             if ($addressRes["status"] == 1) {
                 $addressId = $addressRes['data']['addressId'];
-            }
-        }
-        $address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
-        if (empty($address)) {
-            return WSTReturn("无效的用户地址");
-        }
+            }else{
+				return $addressRes;
+			}
+		}
+		
         $areaIds = [];
         $areaMaps = [];
 //        $tmp = explode('_', $address['areaIdPath']);
