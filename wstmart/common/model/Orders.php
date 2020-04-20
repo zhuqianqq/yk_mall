@@ -286,22 +286,26 @@ class Orders extends Base{
         $carts = model('common/carts')->getCarts(true, $userId);
         if (empty($carts['carts'])) {
             return WSTReturn("下单失败，请选择有效的库存商品");
-        }
+		}
 
-
-        //检测地址是否有效
-        if (empty($addressId)) {
+		//检测地址是否有效
+		$address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
+		
+		//检测地址是否有效
+        if (empty($address)) {
             // 如果没有，则是每次都是添加地址
             $ua = new UserAddress();
             $addressRes = $ua->add($userId);
             if ($addressRes["status"] == 1) {
                 $addressId = $addressRes['data']['addressId'];
-            }
-        }
-        $address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
-        if (empty($address)) {
-            return WSTReturn("无效的用户地址");
-        }
+			}else{
+				//新增失败 返回错误信息
+				return $addressRes;
+			}
+			//获取新增的地址信息
+			$address = Db::name('user_address')->where(['userId' => $userId, 'addressId' => $addressId, 'dataFlag' => 1])->find();
+		}
+		
         $areaIds = [];
         $areaMaps = [];
 //        $tmp = explode('_', $address['areaIdPath']);
