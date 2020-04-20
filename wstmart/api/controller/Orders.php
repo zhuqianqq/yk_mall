@@ -86,15 +86,6 @@ class Orders extends Base{
 //                    $recharge['money'] = '1';
                     $wxOrder = $payer->prepay($recharge);
 
-                    $package = urlencode('Sign=WXPay');
-                    $prepayData = [
-                        'appId' => $appId,
-                        'partnerId' => $mchId,
-                        'prepayId' => $wxOrder['prepay_id'],
-                        'nonceStr' => $payer->createNonceString(),
-                        'package' => $package,
-                        'timestamp' => time()
-                    ];
                     $prepayData = [
                         'appId' => $appId,
                         'partnerId' => $mchId,

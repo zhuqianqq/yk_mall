@@ -78,7 +78,7 @@ class WeixinPay
             'appid' => $this->appId,
             'mch_id' => $this->mchId,
             'device_info' => $this->deviceInfo,
-            'body' => 'test',
+            'body' => '映购-购买商品',
             'trade_type' => $tradeType,
             'spbill_create_ip' => $ip,
             'total_fee' => intval(bcmul($record['money'], 100)),
