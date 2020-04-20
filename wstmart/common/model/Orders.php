@@ -261,13 +261,19 @@ class Orders extends Base{
 	public function submit($orderSrc = 0, $uId = 0)
     {
         $addressId = (int)input('post.s_addressId');
-        $deliverType = ((int)input('post.deliverType') != 0) ? 1 : 0;
-        if ($deliverType) {
-            // 1支付宝
-            $payFrom = 'alipays';
-        } else {
-            // 微信
-            $payFrom = 'weixinpays';
+        $deliverType = (int)input('post.deliverType');
+        switch ($deliverType) {
+            case  1:
+                // 1支付宝
+                $payFrom = 'alipays';
+                break;
+            case 2:
+                // 2 小程序
+                $payFrom = 'xcx';
+                break;
+            default:
+                // 微信
+                $payFrom = 'weixinpays';
         }
 
         $payType = ((int)input('post.payType') != 0) ? 1 : 0;
