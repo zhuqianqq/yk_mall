@@ -88,8 +88,8 @@ class Orders extends Base{
                         $jsApiParams['timeStamp'] = $jsApiParams['timestamp'];
                         unset($jsApiParams['timestamp']);
                         $data = [
-                            "params" => $jsApiParams,
-                            'orderunique' => $recharge->id,
+                            "xcx" => $jsApiParams,
+                            'orderunique' => $rs['data'],
                         ];
                         break;
                     default:
