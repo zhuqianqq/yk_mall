@@ -103,7 +103,16 @@ class Weixinpays extends Base
     // 生成回调验证签名+
     private function backSign($data, $channel = false)
     {
-        $key = config('wxpay.key');
+        switch ($channel) {
+            case 'xcx' :
+                // xcx
+                $key = config('wxpay.xcx.key');
+                break;
+            default:
+                // app
+                $key = config('wxpay.app.key');
+                break;
+        }
 
         if (isset($data['sign'])) {
             unset($data['sign']);

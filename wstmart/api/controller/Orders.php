@@ -2,6 +2,8 @@
 namespace wstmart\api\controller;
 use think\facade\Cache;
 use think\Db;
+use util\Tools;
+use wstmart\common\model\Member;
 use wstmart\common\model\Orders as M;
 use wstmart\common\model\Payments;
 use wstmart\common\pay\AliPay;
@@ -48,43 +50,75 @@ class Orders extends Base{
                 $obj["orderNo"] = $orderNo;
                 $obj["isBatch"] = $isBatch;
                 $order = $m->getPayOrders($obj);
-                if ($deliverType == 1) {
-                    // 支付宝
-                    $pay = new  Alipay();
-                    $data = [
-                        'orderunique' => $rs['data'],
-                        'alipay' => $pay->sdkExecute([
-                            'tradeNo' => $rs['data'],
-                            'tradeMoney' =>  bcdiv($order["needPay"], 1 , 2),
-                        ]),
-                    ];
-                } else {
-                    // 微信
-                    $key = config('wxpay.key');
-                    $appId = config('wxpay.app_id');
-                    $mchId = config('wxpay.mch_id');
-                    if (empty($key) || empty($appId) || empty($mchId)) {
-                        throw new \Exception('支付配置错误', 100);
-                    }
-                    $notifyUrl = config('wxpay.notify_url');
-                    $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
-                    $recharge['merOrderId'] = $rs['data'];
-                    $recharge['money'] = $order["needPay"];
-                    $wxOrder = $payer->prepay($recharge);
+                switch ($deliverType) {
+                    case 1:
+                        //支付宝
+                        $pay = new  Alipay();
+                        $data = [
+                            'orderunique' => $rs['data'],
+                            'alipay' => $pay->sdkExecute([
+                                'tradeNo' => $rs['data'],
+                                'tradeMoney' =>  bcdiv($order["needPay"], 1 , 2),
+                            ]),
+                        ];
+                        break;
+                    case 2:
+                        // 小程序
+                        $userId = $this->user_id;
+                        if (empty($userId)) {
+                            throw new \Exception('缺少参数', 100);
+                        }
+                        $appKey = config('wxpay.xcx.key');
+                        $appId = config('wxpay.xcx.app_id');
+                        $mchId = config('wxpay.xcx.mch_id');
+                        if (empty($appKey) || empty($appId) || empty($mchId)) {
+                            throw new \Exception('支付配置错误', 100);
+                        }
+                        $notifyUrl = config('wxpay.xcx.notify_url');
+                        $ip = Tools::getClientIp();
+                        $recharge['merOrderId'] = $rs['data'];
+                        $recharge['money'] = $order["needPay"];
 
-                    $prepayData = [
-                        'appId' => $appId,
-                        'partnerId' => $mchId,
-                        'prepayId' => $wxOrder['prepay_id'],
-                        'nonceStr' => $payer->createNonceString(),
-                        'package' => 'Sign=WXPay',
-                        'timestamp' => time()
-                    ];
-                    $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
+                        $member = Member::where('user_id = ' . $this->user_id)->find();
+                        if (empty($member['openid'])) {
+                            throw new \Exception('获取openid失败', 100);
+                        }
+                        $payer = new WeixinPay($appId, $mchId, $appKey, $notifyUrl, 'JKC_WEIXIN_XCX');
+                        $jsApiParams = $payer->getXcxJsApiParams($recharge, $member['openid'], $ip);
+                        $jsApiParams['timeStamp'] = $jsApiParams['timestamp'];
+                        unset($jsApiParams['timestamp']);
+                        $data = [
+                            "params" => $jsApiParams,
+                            'orderunique' => $recharge->id,
+                        ];
+                        break;
+                    default:
+                        // 微信
+                        $key = config('wxpay.app.key');
+                        $appId = config('wxpay.app.app_id');
+                        $mchId = config('wxpay.app.mch_id');
+                        if (empty($key) || empty($appId) || empty($mchId)) {
+                            throw new \Exception('支付配置错误', 100);
+                        }
+                        $notifyUrl = config('wxpay.app.notify_url');
+                        $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
+                        $recharge['merOrderId'] = $rs['data'];
+                        $recharge['money'] = $order["needPay"];
+                        $wxOrder = $payer->prepay($recharge);
 
-                    $prepayData['sign'] = $payer->sign($signData);
-                    $data['wxpay'] = $prepayData;
-                    $data['orderunique'] = $rs['data'];
+                        $prepayData = [
+                            'appId' => $appId,
+                            'partnerId' => $mchId,
+                            'prepayId' => $wxOrder['prepay_id'],
+                            'nonceStr' => $payer->createNonceString(),
+                            'package' => 'Sign=WXPay',
+                            'timestamp' => time()
+                        ];
+                        $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
+
+                        $prepayData['sign'] = $payer->sign($signData);
+                        $data['wxpay'] = $prepayData;
+                        $data['orderunique'] = $rs['data'];
                 }
                 return $this->outJson(0, "提交成功!", $data);
             }

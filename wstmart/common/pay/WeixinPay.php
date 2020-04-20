@@ -126,14 +126,11 @@ class WeixinPay
      * 生成微信小程序支付js参数
      *
      * @see https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1455784134
-     *
-     * @param RechargeRecord $record
      * @param $openId
      * @param $ip
      * @return array
-     * @throws AppException
      */
-    public function getXcxJsApiParams(RechargeRecord $record, $openId, $ip)
+    public function getXcxJsApiParams($record, $openId, $ip)
     {
         $wxOrder = $this->prepay($record, 'JSAPI', $ip, $openId);
 
