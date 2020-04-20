@@ -237,7 +237,7 @@ class Login extends Base{
             $exist_user = Users::get($userid);
             if(!empty($exist_user) && !empty($exist_user->userPhone)) {
                 // 判断手机号是否一致 如果不一致则直接返回
-                $data = Member::where('user_id',$exist_user->userId)->find();
+                $data = Member::where('user_id', $userid)->find();
                 $data['access_key'] = $exist_user->access_key;
                 $data['userPhone'] = $exist_user->userPhone;
                 Db::commit();
