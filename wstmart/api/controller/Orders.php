@@ -94,7 +94,6 @@ class Orders extends Base{
                     ];
                     $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
 
-                    $prepayData['wxpay']['sign'] = $payer->sign($signData);
                     $prepayData['orderunique'] = $rs['data'];
                     $data = [
                         'wxpay' => [
