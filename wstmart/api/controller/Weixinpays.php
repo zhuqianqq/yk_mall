@@ -68,6 +68,8 @@ class Weixinpays extends Base
             $order = $m->where(['orderunique' => $order_num, 'isPay' => \wstmart\common\model\Orders::IS_PAY_WAIT])->find();
             if (empty($order)) {
                 $this->log('wxpayNotify: 没有该订单');
+                $response = "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
+                echo $response;
                 return false;
             }
 
