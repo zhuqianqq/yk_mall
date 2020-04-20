@@ -2,6 +2,7 @@
 namespace wstmart\common\pay;
 
 use util\Tools;
+use wstmart\common\model\OrderRefunds;
 
 class WeixinPay
 {
@@ -165,6 +166,71 @@ class WeixinPay
         }
 
         return $data;
+    }
+
+    /**
+     * 申请退款
+     * @param OrderRefunds $order
+     * @return array|mixed
+     * @throws \Exception
+     */
+    public function refund(OrderRefunds $order)
+    {
+        $data = [
+            'appid' => $this->appId,
+            'mch_id' => $this->mchId,
+            'nonce_str' => $this->createNonceString(),
+            'out_trade_no' => $order->trade_no,
+            'out_refund_no' => $order->refund_no,
+            'total_fee' => $order->money * 100,
+            'refund_fee' => $order->money * 100,
+        ];
+
+        switch ($order->type) {
+            case OrderRefunds::REFUND_WX_NATIVE:
+                $this->certPath = self::PEM_CERT;
+                $this->keyPath = self::PEM_KEY;
+                break;
+
+            case OrderRefunds::REFUND_WX_JSAPI:
+                $this->certPath = self::PEM_JS_CERT;
+                $this->keyPath = self::PEM_JS_KEY;
+                break;
+        }
+
+        $data['sign'] = $this->sign($data);
+
+        $xml = '<xml>';
+        foreach ($data as $key => $value) {
+            $xml .= "<$key>$value</$key>";
+        }
+        $xml .= '</xml>';
+
+        $xmlResult = $this->refundRequest($xml);
+
+        if (!$xmlResult) {
+            throw new \Exception('请求失败', 7004);
+        }
+
+        $parseResult = $this->xmlToArray($xmlResult);
+
+        if (empty($parseResult)) {
+            throw new \Exception('请求超时', 7004);
+        }
+
+        if ($parseResult['return_code'] != 'SUCCESS') {
+            throw new \Exception('交易失败: ' . $parseResult['return_msg'], 7002);
+        }
+
+        if ($parseResult['sign'] != $this->sign($parseResult)) {
+            throw new \Exception('签名错误', 7004);
+        }
+
+        if ($parseResult['result_code'] != 'SUCCESS') {
+            throw new \Exception('提交业务失败: ' . $parseResult['err_code_des'], 7003);
+        }
+
+        return $parseResult;
     }
 
     /**
