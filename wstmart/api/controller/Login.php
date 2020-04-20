@@ -240,13 +240,11 @@ class Login extends Base{
                 $data = Member::where('user_id', $userid)->find();
                 $data['access_key'] = $exist_user->access_key;
                 $data['userPhone'] = $exist_user->userPhone;
-                echo 222;die;
                 Db::commit();
                 return $this->outJson(0, "登录成功！",$data);
             }
             
             $loginInfo = WechatHelper::getWechatLoginInfo($code, $iv, $encryptedData); //以code换取openid
-            var_dump($loginInfo);die;
             if (empty($loginInfo)) {
                 throw new \Exception("获取信息失败" . json_encode($loginInfo), 100);
             }
@@ -268,7 +266,7 @@ class Login extends Base{
                 'userPhone' => $phone,
             ]);
 
-            $data = Member::where('user_id',$exist_user->userId)->find();
+            $data = Member::where('user_id', $userid)->find();
             Member::setOtherInfo($data);
             $data['userPhone'] = $phone;
             Users::where([
