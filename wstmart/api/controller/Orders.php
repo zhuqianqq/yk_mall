@@ -34,8 +34,6 @@ class Orders extends Base{
             if ($rs["status"] == -1) {
                 throw new \Exception($rs["msg"], 100);
             }
-//            $rs['status'] = 1;
-//            $rs['data'] = rand(1111, 9999);
             if ($rs["status"] == 1) {
                 $pkey = WSTBase64urlEncode($rs["data"] . "@1");
                 $rs["pkey"] = $pkey;
@@ -62,28 +60,16 @@ class Orders extends Base{
                     ];
                 } else {
                     // 微信
-                    $config = Payments::where(['payCode' => 'weixinpays'])->find();
-                    if (empty($config)) {
-                        throw new \Exception('支付配置错误', 100);
-                    }
-
-                    $config = Payments::where(['payCode' => 'weixinpays'])->find();
-                    $payConfig = $config['payConfig'];
-                    if (empty($payConfig)) {
-                        throw new \Exception('支付配置错误', 100);
-                    }
-                    $payConfigData = json_decode($payConfig, true);
-                    $key = $payConfigData['apiKey'];
-                    $appId = $payConfigData['appId'];
-                    $mchId = $payConfigData['mchId']; // 商户号
+                    $key = config('wxpay.key');
+                    $appId = config('wxpay.app_id');
+                    $mchId = config('wxpay.mch_id');
                     if (empty($key) || empty($appId) || empty($mchId)) {
                         throw new \Exception('支付配置错误', 100);
                     }
-                    $notifyUrl = 'https://shop.wengyingwangluo.cn/api/weixinpays/notify';
+                    $notifyUrl = config('wxpay.notify_url');
                     $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
                     $recharge['merOrderId'] = $rs['data'];
                     $recharge['money'] = $order["needPay"];
-//                    $recharge['money'] = '1';
                     $wxOrder = $payer->prepay($recharge);
 
                     $prepayData = [
