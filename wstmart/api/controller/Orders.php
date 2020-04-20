@@ -72,9 +72,9 @@ class Orders extends Base{
                         throw new \Exception('支付配置错误', 100);
                     }
                     $payConfigData = json_decode($payConfig, true);
-                    $key = $payConfigData['apiKey'];
+                    $key = $payConfigData['mchId']; // 商户号
                     $appId = $payConfigData['appId'];
-                    $mchId = $payConfigData['mchId'];
+                    $mchId = $payConfigData['mchId']; // 商户号
                     if (empty($key) || empty($appId) || empty($mchId)) {
                         throw new \Exception('支付配置错误', 100);
                     }
