@@ -94,7 +94,6 @@ class Orders extends Base{
                     ];
                     $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
 
-                    $prepayData['orderunique'] = $rs['data'];
                     $data = [
                         'wxpay' => [
                             'appId' => $appId,
@@ -103,8 +102,9 @@ class Orders extends Base{
                             'nonceStr' => $payer->createNonceString(),
                             'package' => 'Sign=WXPay',
                             'timestamp' => time(),
-                            'sign' => $payer->sign($signData)
-                        ]
+                            'sign' => $payer->sign($signData),
+                        ],
+                        'orderunique' => $rs['data']
                     ];
                 }
                 return $this->outJson(0, "提交成功!", $data);
