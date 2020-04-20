@@ -30,12 +30,12 @@ class Orders extends Base{
     {
         try {
             $m = new M();
-//            $rs = $m->submit(2);
-//            if ($rs["status"] == -1) {
-//                throw new \Exception($rs["msg"], 100);
-//            }
-            $rs['status'] = 1;
-            $rs['data'] = rand(1111, 9999);
+            $rs = $m->submit(2);
+            if ($rs["status"] == -1) {
+                throw new \Exception($rs["msg"], 100);
+            }
+//            $rs['status'] = 1;
+//            $rs['data'] = rand(1111, 9999);
             if ($rs["status"] == 1) {
                 $pkey = WSTBase64urlEncode($rs["data"] . "@1");
                 $rs["pkey"] = $pkey;
@@ -82,8 +82,8 @@ class Orders extends Base{
                     $notifyUrl = 'https://shop.wengyingwangluo.cn/api/weixinpays/notify';
                     $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
                     $recharge['merOrderId'] = $rs['data'];
-//                    $recharge['money'] = $order["needPay"];
-                    $recharge['money'] = '1';
+                    $recharge['money'] = $order["needPay"];
+//                    $recharge['money'] = '1';
                     $wxOrder = $payer->prepay($recharge);
 
                     $package = urlencode('Sign=WXPay');
