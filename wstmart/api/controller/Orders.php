@@ -4,7 +4,6 @@ use think\facade\Cache;
 use think\Db;
 use wstmart\common\model\Orders as M;
 use wstmart\common\model\Payments;
-use wstmart\common\model\TMember;
 use wstmart\common\pay\AliPay;
 use wstmart\common\pay\WeixinPay;
 
@@ -31,10 +30,12 @@ class Orders extends Base{
     {
         try {
             $m = new M();
-            $rs = $m->submit(2);
-            if ($rs["status"] == -1) {
-                throw new \Exception($rs["msg"], 100);
-            }
+//            $rs = $m->submit(2);
+//            if ($rs["status"] == -1) {
+//                throw new \Exception($rs["msg"], 100);
+//            }
+            $rs['status'] = 1;
+            $rs['data'] = rand(1111, 9999);
             if ($rs["status"] == 1) {
                 $pkey = WSTBase64urlEncode($rs["data"] . "@1");
                 $rs["pkey"] = $pkey;
@@ -81,15 +82,17 @@ class Orders extends Base{
                     $notifyUrl = 'https://shop.wengyingwangluo.cn/api/weixinpays/notify';
                     $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
                     $recharge['merOrderId'] = $rs['data'];
-                    $recharge['money'] = $order["needPay"];
+//                    $recharge['money'] = $order["needPay"];
+                    $recharge['money'] = '1';
                     $wxOrder = $payer->prepay($recharge);
 
+                    $package = urlencode('Sign=WXPay');
                     $prepayData = [
                         'appId' => $appId,
                         'partnerId' => $mchId,
                         'prepayId' => $wxOrder['prepay_id'],
                         'nonceStr' => $payer->createNonceString(),
-                        'package' => 'Sign=WXPay',
+                        'package' => $package,
                         'timestamp' => time()
                     ];
                     $signData = array_combine(array_map('strtolower', array_keys($prepayData)), array_values($prepayData));
@@ -100,7 +103,7 @@ class Orders extends Base{
                             'partnerId' => $mchId,
                             'prepayId' => $wxOrder['prepay_id'],
                             'nonceStr' => $payer->createNonceString(),
-                            'package' => 'Sign=WXPay',
+                            'package' => $package,
                             'timestamp' => time(),
                             'sign' => $payer->sign($signData),
                         ],
