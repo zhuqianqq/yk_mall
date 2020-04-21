@@ -297,7 +297,7 @@ class Carts extends Base{
 				$goodsTotalNum+=$v['cartNum'];
 			}
 			if ($v['isCheck'] == 1 ){
-				$goodsIsCheckedNum+=$v['cartNum'];
+				$goodsIsCheckedNum++;
 			}
 
 			$goodsCount++;

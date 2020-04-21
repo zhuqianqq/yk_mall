@@ -82,19 +82,21 @@ class Carts extends Base{
 		//获取省级地区信息
 		$area = model('areas')->listQuery(0);
 		$this->assign('area',$area);
-	
+
 		$ua = new UserAddress();
 		if($addressId>0){
 			$userAddress = $ua->getById($addressId);
 		}else{
 			$userAddress = $ua->getDefaultAddress();
 		}
+		
 		$this->assign('userAddress',$userAddress);
 		//获取支付方式
 		$pa = new Payments();
 		$payments = $pa->getByGroup('2');
 		//获取已选的购物车商品
 		$carts = $m->getCarts(true);
+
 		//商品已经下架
 		// if(isset($carts['status']) && $carts['status']==-1){
 		// 	return "<script> alert('商品已下架！'); window.location.href='/mobile/carts'</script>";

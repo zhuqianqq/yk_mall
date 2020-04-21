@@ -10,6 +10,7 @@ namespace think;
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 // 检测PHP环境
+
 if(version_compare(PHP_VERSION,'5.6.0','<'))  die('require PHP >= 5.6.0 !');
 
 define('DS',DIRECTORY_SEPARATOR);
