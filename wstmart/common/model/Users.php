@@ -21,9 +21,9 @@ class Users extends Base
      * @param $loginName
      * @return array|null
      */
-    public function getUserByPhone($userPhone)
+    public function getUserByPhone($userPhone, $from = 0)
     {
-        $rs = $this->where("userPhone", $userPhone)
+        $rs = $this->where("userPhone = " . $userPhone . " and plat = " . $from)
             ->find();
 
         return $rs;

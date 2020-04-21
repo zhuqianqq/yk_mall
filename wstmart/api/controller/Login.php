@@ -255,7 +255,7 @@ class Login extends Base{
                 throw new \Exception("参数错误", 100);
             }
 
-            $exist_user= Users::where('userPhone', $phone)->find();
+            $exist_user= Users::where('userPhone = ' . $phone . " and plat = 1")->find();
             if($exist_user != null) {
                 return $this->outJson(100, "此手机号已绑定其它账号！");
             }
