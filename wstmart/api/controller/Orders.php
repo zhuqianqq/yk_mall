@@ -271,6 +271,7 @@ class Orders extends Base{
             return $this->outJson(100, "缺少参数");
         }
         $userInfo = Db::name('users')->where("userId = {$user_id}")->field("userName, userPhoto")->find();
+   
         if (empty($userInfo)) {
             return $this->outJson(100, "没有数据");
         }
@@ -285,16 +286,15 @@ class Orders extends Base{
         if ($rsStatus == -1) {
             return $this->outJson(100, $rs['msg']);
         }
-
         $orderStatus = $rs['orderStatus'];
         $rs['pkey'] = $pkey;
         $rs['status'] = WSTLangOrderStatus($orderStatus);
         $rs['payInfo'] = WSTLangPayType($rs['payType']);
         $rs['deliverInfo'] = WSTLangDeliverType($rs['deliverType']);
         $rs['orderCodeTitle'] = WSTOrderModule($rs['orderCode']);
-        foreach($rs['goods'] as $k=>$v){
-            $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
-        }
+        // foreach($rs['goods'] as $k=>$v){
+        //     $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
+        // }
 
         //1为买家  2为卖家
         if ($role == 1) {
