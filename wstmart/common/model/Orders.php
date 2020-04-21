@@ -1189,6 +1189,7 @@ class Orders extends Base{
             $orderId = (int)input('post.id');
 		    $userId = (int)session('WST_USER.userId');
 		}
+
 		$order = $this->alias('o')->join('__SHOPS__ s','o.shopId=s.shopId','left')
 		              ->where(['o.userId'=>$userId,'o.orderId'=>$orderId,'o.orderStatus'=>1])
 		              ->field('o.orderId,o.orderNo,o.payType,s.userId,s.shopId,o.orderScore,o.realTotalMoney,commissionFee')->find();

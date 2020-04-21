@@ -352,9 +352,15 @@ class Orders extends Base{
 	 * 用户确认收货
 	 */
 	public function receive(){
+        $userId = (int)input('post.user_id', 0); //用户id
+        $orderId = (int)input('post.orderId', 0); //订单ID
+        if(empty($userId) || empty($orderId)) {
+            return WSTReturn('缺少参数',-1);
+        }
+
 		$m = new M();
-		$rs = $m->receive();
-		return \json_encode($rs);
+		$rs = $m->receive($orderId, $userId);
+		return $rs;
 	}
 
 	/**
