@@ -231,7 +231,7 @@ class Goods extends Base
         }
         $goodsPrice = $goods['shopPrice'];
         if (bcsub($shopPrice, $goodsPrice) < 0) {
-            return $this->outJson(100, "价格不能低于该商品价格");
+//            return $this->outJson(100, "价格不能低于该商品价格");
         }
 
         $goods_cache_name = config('cachekeys.goods_detail_prefix') . "share:" . $goodsId;
