@@ -20,6 +20,9 @@ class UserAddress extends Base{
 		$m = new M();
 		$where = ['userId'=>(int)input('param.user_id'),'dataFlag'=>1];
 		$addressList = Db::name('user_address')->where($where)->order('isDefault desc, createTime desc')->select();
+		foreach ($addressList as $k => $v) {
+			$addressList[$k]['userPhone'] = WSTAnonymous($v['userPhone']);
+		}
 		return $this->outJson(0, "success", ['addressList'=>$addressList??[]]);
 
 		//获取省级地区信息
