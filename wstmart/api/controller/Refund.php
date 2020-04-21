@@ -73,7 +73,6 @@ class Refund extends Base
                 $refundExist->refundRemark = $refundMark;
                 $refundExist->refundStatus = 1;
                 $refundExist->createTime = date('Y-m-d H:i:s');
-                $refundExist->type = $refundPlat;
                 $refundExist->refundImgs = $refundImgs;
                 $refundExist->lastStatus = $orderStatus;
                 $refundExist->refundNum = $refundNum + 1;
@@ -89,7 +88,6 @@ class Refund extends Base
                 $refund->refundRemark = $refundMark;
                 $refund->refundStatus = 1;
                 $refund->createTime = date('Y-m-d H:i:s');
-                $refund->type = $refundPlat;
                 $refund->refundImgs = $refundImgs;
                 $refund->lastStatus = $orderStatus;
                 $refund->refundNum = 1;
