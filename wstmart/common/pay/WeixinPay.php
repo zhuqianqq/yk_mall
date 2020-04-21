@@ -98,7 +98,7 @@ class WeixinPay
             $xml .= "<$key>$value</$key>";
         }
         $xml .= '</xml>';
-
+        Tools::addLog('xcx', $xml);
         $responseXml = Tools::my_curl(static::API_URL, 'post', $xml);
 
         // 处理数据
