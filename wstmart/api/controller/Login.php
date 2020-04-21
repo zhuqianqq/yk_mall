@@ -380,7 +380,7 @@ class Login extends Base{
             return $this->outJson(100, "验证码无效");
         }
 
-        $exist_user= Users::where('userPhone', $phone)->find();
+        $exist_user= Users::where('userPhone = ' . $phone . ' and plat = 0')->find();
         if($exist_user != null) {
             return $this->outJson(100, "此手机号已绑定其它账号！");
         }
