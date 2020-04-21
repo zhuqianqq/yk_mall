@@ -1,5 +1,6 @@
 <?php
 namespace wstmart\api\controller;
+use util\Tools;
 use wstmart\common\model\Carts as M;
 use wstmart\common\model\UserAddress;
 use wstmart\common\model\Payments;
@@ -113,6 +114,9 @@ class Carts extends Base{
         } else {
             $userAddress = $ua->getDefaultAddress($userId);
 		}
+		if (!empty($userAddress)) {
+            $userAddress['userPhone'] = Tools::maskMobile($userAddress['userPhone']);
+        }
         //$this->assign('userAddress',$userAddress);
 		$result['userAddress'] = (object)$userAddress;
         //获取支付方式
