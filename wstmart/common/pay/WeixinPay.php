@@ -139,7 +139,7 @@ class WeixinPay
         $params = [
             'appId' => $this->appId,
             'timeStamp' => time() . "",
-            'nonceStr' => $this->createNonceString(),
+            'nonceStr' => $wxOrder['nonce_str'],
             'package' => "prepay_id=" . $wxOrder['prepay_id'],
             'signType' => 'MD5',
         ];
