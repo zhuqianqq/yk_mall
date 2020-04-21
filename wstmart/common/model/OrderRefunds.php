@@ -5,6 +5,12 @@ use think\Db;
  * 退款业务处理类
  */
 class OrderRefunds extends Base{
+    // 微信APP退款
+    const REFUND_WX_NATIVE = 1;
+
+    // 微信公众号(小程序)退款
+    const REFUND_WX_JSAPI = 2;
+
 	/**
 	 * 用户申请退款
 	 */

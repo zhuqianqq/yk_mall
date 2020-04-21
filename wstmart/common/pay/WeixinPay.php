@@ -1,13 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: hessian
- * Date: 23/01/2017
- * Time: 17:13
- */
 namespace wstmart\common\pay;
 
 use util\Tools;
+use wstmart\common\model\OrderRefunds;
 
 class WeixinPay
 {
@@ -103,7 +98,7 @@ class WeixinPay
             $xml .= "<$key>$value</$key>";
         }
         $xml .= '</xml>';
-
+//        Tools::addLog('xcx', $xml);
         $responseXml = Tools::my_curl(static::API_URL, 'post', $xml);
 
         // 处理数据
@@ -132,14 +127,11 @@ class WeixinPay
      * 生成微信小程序支付js参数
      *
      * @see https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1455784134
-     *
-     * @param RechargeRecord $record
      * @param $openId
      * @param $ip
      * @return array
-     * @throws AppException
      */
-    public function getXcxJsApiParams(RechargeRecord $record, $openId, $ip)
+    public function getXcxJsApiParams($record, $openId, $ip)
     {
         $wxOrder = $this->prepay($record, 'JSAPI', $ip, $openId);
 
@@ -147,7 +139,7 @@ class WeixinPay
         $params = [
             'appId' => $this->appId,
             'timeStamp' => time() . "",
-            'nonceStr' => $this->createNonceString(),
+            'nonceStr' => $wxOrder['nonce_str'],
             'package' => "prepay_id=" . $wxOrder['prepay_id'],
             'signType' => 'MD5',
         ];
@@ -174,6 +166,71 @@ class WeixinPay
         }
 
         return $data;
+    }
+
+    /**
+     * 申请退款
+     * @param OrderRefunds $order
+     * @return array|mixed
+     * @throws \Exception
+     */
+    public function refund(OrderRefunds $order)
+    {
+        $data = [
+            'appid' => $this->appId,
+            'mch_id' => $this->mchId,
+            'nonce_str' => $this->createNonceString(),
+            'out_trade_no' => $order->trade_no,
+            'out_refund_no' => $order->refund_no,
+            'total_fee' => $order->money * 100,
+            'refund_fee' => $order->money * 100,
+        ];
+
+        switch ($order->type) {
+            case OrderRefunds::REFUND_WX_NATIVE:
+                $this->certPath = self::PEM_CERT;
+                $this->keyPath = self::PEM_KEY;
+                break;
+
+            case OrderRefunds::REFUND_WX_JSAPI:
+                $this->certPath = self::PEM_JS_CERT;
+                $this->keyPath = self::PEM_JS_KEY;
+                break;
+        }
+
+        $data['sign'] = $this->sign($data);
+
+        $xml = '<xml>';
+        foreach ($data as $key => $value) {
+            $xml .= "<$key>$value</$key>";
+        }
+        $xml .= '</xml>';
+
+        $xmlResult = $this->refundRequest($xml);
+
+        if (!$xmlResult) {
+            throw new \Exception('请求失败', 7004);
+        }
+
+        $parseResult = $this->xmlToArray($xmlResult);
+
+        if (empty($parseResult)) {
+            throw new \Exception('请求超时', 7004);
+        }
+
+        if ($parseResult['return_code'] != 'SUCCESS') {
+            throw new \Exception('交易失败: ' . $parseResult['return_msg'], 7002);
+        }
+
+        if ($parseResult['sign'] != $this->sign($parseResult)) {
+            throw new \Exception('签名错误', 7004);
+        }
+
+        if ($parseResult['result_code'] != 'SUCCESS') {
+            throw new \Exception('提交业务失败: ' . $parseResult['err_code_des'], 7003);
+        }
+
+        return $parseResult;
     }
 
     /**

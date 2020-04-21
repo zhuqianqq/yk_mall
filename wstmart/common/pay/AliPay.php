@@ -4,6 +4,7 @@ namespace wstmart\common\pay;
 use wstmart\common\alipay\AlipayTradeRefundContentBuilder;
 use wstmart\common\alipay\AlipayTradeService;
 use wstmart\common\alipay\config;
+use wstmart\common\model\OrderRefunds;
 
 class AliPay
 {
@@ -130,11 +131,11 @@ class AliPay
 
     /**
      * 申请退款
-     * @param UserRefund $order
+     * @param OrderRefunds $order
      * @return string
      * @throws \Exception
      */
-    public function refund(UserRefund $order)
+    public function refund(OrderRefunds $order)
     {
 
         $out_trade_no = $order->trade_no;
@@ -161,12 +162,12 @@ class AliPay
         $result = $Response->Refund($RequestBuilder);
 
         if (!$result) {
-            throw new \Exception('请求失败', Errors::RECHARGE_RETURN_ERROR);
+            throw new \Exception('请求失败', 7002);
         }
 
 
         if ($result->code != '10000' ) {
-            throw new \Exception('交易失败: code:' . $result->code.'msg:'.$result->sub_msg, Errors::RECHARGE_RETURN_ERROR);
+            throw new \Exception('交易失败: code:' . $result->code.'msg:'.$result->sub_msg, 7002);
         }
 
         return json_encode($result);

@@ -237,7 +237,7 @@ class Login extends Base{
             $exist_user = Users::get($userid);
             if(!empty($exist_user) && !empty($exist_user->userPhone)) {
                 // 判断手机号是否一致 如果不一致则直接返回
-                $data = Member::where('user_id',$exist_user->userId)->find();
+                $data = Member::where('user_id', $userid)->find();
                 $data['access_key'] = $exist_user->access_key;
                 $data['userPhone'] = $exist_user->userPhone;
                 Db::commit();
@@ -255,7 +255,7 @@ class Login extends Base{
                 throw new \Exception("参数错误", 100);
             }
 
-            $exist_user= Users::where('userPhone', $phone)->find();
+            $exist_user= Users::where('userPhone = ' . $phone . " and plat = 1")->find();
             if($exist_user != null) {
                 return $this->outJson(100, "此手机号已绑定其它账号！");
             }
@@ -266,7 +266,7 @@ class Login extends Base{
                 'userPhone' => $phone,
             ]);
 
-            $data = Member::where('user_id',$exist_user->userId)->find();
+            $data = Member::where('user_id', $userid)->find();
             Member::setOtherInfo($data);
             $data['userPhone'] = $phone;
             Users::where([
