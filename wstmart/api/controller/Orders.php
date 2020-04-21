@@ -298,7 +298,7 @@ class Orders extends Base{
         $m = new M();
         $pkey = input('pkey') ?? '';
         $role = input('role') ?? 2;
-        $user_id = input('param.mall_user_id'); // 直播用户ID
+        $user_id = input('param.user_id'); // 直播用户ID
         if (empty($user_id)) {
             return $this->outJson(100, "缺少参数");
         }
@@ -394,15 +394,15 @@ class Orders extends Base{
 	 * 用户取消订单
 	 */
 	public function cancellation(){
-		$m = new M();
-		$rs = $m->cancel();
-		return \json_encode($rs);
-	}
+        $m = new M();
+        $rs = $m->cancel();
+        return \json_encode($rs);
+    }
     /**
      * 用户删除订单
      */
     public function deleteOrder(){
-        $user_id = input('param.mall_user_id'); // 直播用户ID
+        $user_id = input('param.user_id'); 
         if (empty($user_id)) {
             return $this->outJson(100, "缺少参数");
         }
@@ -418,7 +418,7 @@ class Orders extends Base{
      * 用户取消订单
      */
     public function cancelOrder(){
-        $user_id = input('param.mall_user_id'); // 直播用户ID
+        $user_id = input('param.user_id');
         if (empty($user_id)) {
             return $this->outJson(100, "缺少参数");
         }

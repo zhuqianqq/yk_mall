@@ -13,7 +13,7 @@ return [
     'API_INDEX_HOTGOODS' => 'API_INDEX_HOTGOODS_YG_NEW',
 
     //商品详情
-    'goods_detail_prefix' => 'goods_detail_key_new:yg_new22'
+    'goods_detail_prefix' => 'goods_detail_key_new:yg_newNEW'
     
 ];
 
