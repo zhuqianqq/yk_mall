@@ -3,6 +3,7 @@ namespace wstmart\common\model;
 use think\Db;
 use Env;
 use think\Loader;
+use util\Tools;
 use wstmart\common\model\LogSms;
 use think\facade\Cache;
 use wstmart\common\model\OrderRefunds as M;
@@ -255,6 +256,7 @@ class Orders extends Base{
             return WSTReturn('提交订单失败',-1);
         }
 	}
+
 	/**
 	 * 正常订单
 	 */
@@ -1865,8 +1867,114 @@ class Orders extends Base{
 			return WSTReturn('订单已支付',-1);
 		}
 	}
-	
-	
+
+    /**
+     * 根据订单获取真实商品信息
+     * @param $orderGoods 商品规格信息
+     * @return mixed
+     */
+    private function getGoodsByOrder($orderGoods)
+    {
+        $goodIDs = [];
+        foreach ($orderGoods as $item) {
+            array_push($goodIDs, $item['goodsId']);
+        }
+
+        // 为了避免循环查询数据库
+        $goods =  \wstmart\api\model\Goods::all($goodIDs)
+            ->visible(['goodsId', 'isSale', 'isSpec', 'dataFlag', 'goodsStock'])
+            ->toArray();
+        return $goods;
+    }
+
+    /**
+     * 根根据订单获取真实商品规格信息
+     * @param $orderGoods 商品规格信息
+     * @return mixed
+     */
+    private function getGoodsSpecByOrder($orderGoods)
+    {
+        $goodSpecIDs = [];
+        foreach ($orderGoods as $item) {
+            array_push($goodSpecIDs, $item['goodsSpecId']);
+        }
+
+        // 为了避免循环查询数据库
+        $goodSpecs = Db::name('goods_specs')->where('id', 'in', $goodSpecIDs)->field(['id', 'goodsId',  'dataFlag', 'specStock'])->select();
+
+        return $goodSpecs;
+    }
+
+    /**
+     * 检查订单状态
+     * @param $userId
+     * @param $orderId
+     * @return array
+     */
+    public function checkOrderStatus($userId,$orderId)
+    {
+        if(empty($userId) || empty($orderId)) {
+            return WSTReturn('缺少参数',-1);
+        }
+
+        //检查是否存在该订单
+        $oneOrder = $this->field('orderId,orderNo,dataFlag,orderStatus,isPay,orderunique')->where(['orderId'=>$orderId,'userId'=>$userId])->find();
+        if (empty($oneOrder)) {
+            return WSTReturn('订单不存在',-1);
+        }
+        if ($oneOrder['dataFlag'] != 1 || $oneOrder['orderStatus'] != -2 || $oneOrder['isPay'] != 0) {
+            return WSTReturn('订单状态有误',-1);
+        }
+
+        //检查库存
+        $orderGoods = Db::name('order_goods')->where(['orderId'=>$orderId])->field('goodsId,goodsNum,goodsSpecId')->select();
+        if (count($orderGoods) <= 0) {
+            return WSTReturn('订单不存在',-1);
+        }
+
+        $goods = $this->getGoodsByOrder($orderGoods);
+        $goodsSpec = $this->getGoodsSpecByOrder($orderGoods);
+        foreach ($orderGoods as $k => $v) {
+            $flag = (int)$v['goodsSpecId'] ? $this->getProductStatus($v['goodsSpecId'], $v['goodsNum'], $goodsSpec, 'specStock') :  $this->getProductStatus($v['goodsId'], $v['goodsNum'], $goods, 'goodsStock');
+            if ($flag == false) {
+                return WSTReturn('库存不足',-1);
+            }
+        }
+
+        return WSTReturn('',1, $oneOrder);
+
+    }
+
+    /**
+     * 检查每个订单单个商品或者规格库存
+     * @param $oPID
+     * @param $count
+     * @param $products
+     * @param $type
+     * @return bool
+     */
+    private function getProductStatus($oPID, $count, $products, $type)
+    {
+        $flag = true;
+        $pIndex = -1;
+        $field = ($type=='specStock') ? 'id' : 'goodsId';
+        for ($i = 0; $i < count($products); $i++) {
+            if ($oPID == $products[$i][$field]) {
+                $pIndex = $i;
+            }
+        }
+
+        if ($pIndex == -1) {
+            $flag = false;
+        } else {
+            $product = $products[$pIndex];
+            if ($product[$type] - $count < 0) {
+                $flag = false;
+            }
+        }
+        return $flag;
+    }
+
 	/**
 	 * 虚拟商品支付处理
 	 */
