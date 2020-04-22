@@ -179,8 +179,13 @@ class Refund extends Base
      */
     public function refundCode()
     {
+        $type = (int)input('post.type'); // 0 退货原因 1 退款原因
+        $catId = 1;
+        if ($type) {
+            $catId = 4;
+        }
         $d = new Datas();
-        $r = $d->where(['dataFlag'=>1, 'catId'=>1])->select();
+        $r = $d->where(['dataFlag' => 1, 'catId' => $catId])->select();
         $refund = [];
         foreach ($r as $v) {
             $refund[] = ['refundCode' => $v['id'], 'refundReason' => $v['dataName']];
