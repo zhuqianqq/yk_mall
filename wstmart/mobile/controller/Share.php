@@ -6,6 +6,6 @@ namespace wstmart\mobile\controller;
 class Share extends Base{
 	public function download()
     {
-        echo 'download';
+        return $this->fetch('download');
     }
 }

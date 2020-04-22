@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>映购，一个就购了</title>
+	<meta id="viewport" name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+	<meta content="telephone=no" name="format-detection" />
+	<meta http-equiv="Cache-Control" content="no-transform" />
+	<meta http-equiv="Cache-Control" content="no-siteapp" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="applicable-device" content="mobile" />
+	<style type="text/css">body{max-width:750px;margin:0px auto;background:#EDF2F5;}</style>
+</head>
+
+<body>
+<a href="javascript:void(0);" id="icode" ><img src="https://boardcast-1257835755.cos.ap-shanghai.myqcloud.com/ygzb202004221016368483.png" border="0" style="width:100%;" /></a>
+</body>
+</html>
+<script type="text/javascript">
+    //移动设备
+    function isMb(){
+        var ua = navigator.userAgent.toLowerCase();
+        var reg = ["android", "iphone", "symbianos", "windows phone", "ipad", "ipod"];
+        for(var v=0; v<reg.length; v++){
+            if(ua.indexOf(reg[v]) > 0) return true;
+        }
+        return false;
+    }
+    //判断ios
+    function isIos(){
+        var ua = navigator.userAgent;
+        var ios = !!ua.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
+        if(ios) return true;
+        else return false;
+    }
+</script>
