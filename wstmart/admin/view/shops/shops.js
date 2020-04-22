@@ -4,10 +4,10 @@ function initGrid(p){
     var cols = [
             {title:'店铺编号', name:'shopSn', width: 30,sortable: true},
             {title:'店铺账号', name:'loginName',width: 60,sortable: true},
-            {title:'店铺名称', name:'shopName',width: 120,sortable: true},
-            {title:'店主姓名', name:'shopkeeper',width: 40,hidden: true,sortable: true},
-            {title:'店主联系电话', name:'telephone',width: 30,hidden: true,sortable: true},
-            {title:'店铺地址', name:'shopAddress',width:300 },
+            {title:'店铺名称', name:'shopName',width: 50,sortable: true},
+            {title:'店主姓名', name:'shopkeeper',width: 40},
+            {title:'店主联系电话', name:'telephone',width: 30},
+            {title:'店铺地址', name:'shopAddress',width:150 },
             {title:'所属公司', name:'shopCompany',width: 60,hidden: true},
             {title:'营业状态', name:'shopAtive' ,width: 20,sortable: true,renderer: function (val,item,rowIndex){
 	        	return (item['shopAtive']==1)?"<span class='statu-yes'><i class='fa fa-check-circle'></i> 营业中</span>":"<span class='statu-wait'><i class='fa fa-coffee'></i> 休息中</span>";

@@ -1126,13 +1126,29 @@ function WSTLangOrderStatus($v){
 /**
  * 买家订单状态
  */
-function WSTLangOrderRefundStatus($v){
-    switch($v){
-        case 2:return '交易失败';
+function WSTLangRefundStatus($v)
+{
+    switch ($v) {
+        case 2:
+            return '交易失败';
         case 1:
         case 3:
-        case 4:return '退款中';
-        default:return '';
+        case 4:
+            return '退款中';
+        default:
+            return '';
+    }
+}
+
+//  1 退款中 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
+function WSTLangOrderRefundStatus($v){
+    switch($v){
+        case 4:
+        case 1:return '退款中';
+        case 3:return '退款失败';
+        case 2:return '退款成功';
+        case 5:return '退款关闭';
+
     }
 }
 
