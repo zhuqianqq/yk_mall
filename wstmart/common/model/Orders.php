@@ -1305,7 +1305,11 @@ class Orders extends Base{
 	 * 
 	 */
 	public function deleteOrder($uid=0){
-		$orderId = (int)input('post.id');
+		$orderId = (int)input('param.id');
+		$orderStatus = self::where(['orderId'=>$orderId])->value('orderStatus');
+		if (in_array($orderStatus,[-2,-1,0,1])){
+			return WSTReturn('操作失败，该订单状态不允许删除操作');
+		}
 		self::where(['orderId'=>$orderId])->update(['orderStatus'=>7]);
 		return WSTReturn('操作成功',1);
 	}
@@ -1383,7 +1387,7 @@ class Orders extends Base{
 	            return WSTReturn('操作失败',-1);
 	        }
 		}
-		return WSTReturn('操作成功',1);
+		return WSTReturn('操作失败，请确认订单状态');
 	}
 
 	
