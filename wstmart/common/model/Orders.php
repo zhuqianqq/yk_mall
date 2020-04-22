@@ -852,11 +852,12 @@ class Orders extends Base{
 	    	 	$v['shotGoodsSpecNames'] = implode('，',$shotGoodsSpecNames);
 	    	 	$v['goodsSpecNames'] = str_replace('@@_@@','、',$v['goodsSpecNames']);
 
-	    	 	//获取每笔订单商品的交易状态，如果存在refundId则表示有退款
+	    	 	 //获取每笔订单商品的交易状态，如果存在refundId则表示有退款
+                 //目前逻辑是单个商品的状态取订单的状态，
 	    	 	if (empty($v['refundId'])) {
-                    $v['statusName'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
+                    $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
 	    	 	}else
-                    $v['statusName'] = $v['refundStatus']==1 ? '退款中' : '交易失败';
+                    $v['status'] = $v['refundStatus']==1 ? '退款中' : '交易失败';
                  $goodsMap[$v['orderId']][] = $v;
 
 	    	 }
