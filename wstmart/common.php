@@ -1124,6 +1124,19 @@ function WSTLangOrderStatus($v){
 }
 
 /**
+ * 买家订单状态
+ */
+function WSTLangOrderRefundStatus($v){
+    switch($v){
+        case 2:return '交易失败';
+        case 1:
+        case 3:
+        case 4:return '退款中';
+        default:return '';
+    }
+}
+
+/**
  * 卖家订单状态
  */
 function WSTLangOrderStatusSeller($v){
