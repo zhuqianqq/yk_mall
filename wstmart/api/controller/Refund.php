@@ -226,13 +226,6 @@ class Refund extends Base
         }
         $m = new \wstmart\common\model\OrderRefunds();
         $rs = $m->refundPageQuery();
-
-        foreach ($rs['data'] as $k=>$v) {
-            if (empty($v['list'])) continue;
-            foreach($v['list'] as $k1=>$v1){
-                $rs['data'][$k]['list'][$k1]['goodsImg'] = WSTImg($v1['goodsImg'],3);
-            }
-        }
         return $this->outJson(0, "success", $rs);
     }
 

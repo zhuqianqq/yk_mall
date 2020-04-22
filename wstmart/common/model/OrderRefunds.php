@@ -218,4 +218,87 @@ class OrderRefunds extends Base{
             }
         }
     }
+
+    /**
+     * 获取用户退款订单列表
+     */
+    public function refundPageQuery()
+    {
+        $where = [];
+        $where[] = ['o.dataFlag', '=', 1];
+        $where[] = ['isRefund', '=', 1];
+
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
+        $page = Db::name('orders')->alias('o')
+            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4)')
+            ->where($where)
+            ->field('orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.refundRemark,isRefund,orf.createTime,o.orderCode')
+            ->order('orf.createTime', 'desc')
+            ->paginate(input('limit/d'))->toArray();
+        $orderIds = [];
+        $list = [];
+        if (!empty($page['data'])) {
+            foreach ($page['data'] as $key => $v){
+                $orderId = $v['orderId'];
+                $orderIds[] = $orderId;
+            }
+            $orderIds = array_unique($orderIds);
+            $ids = implode(',', $orderIds);
+            $list = Db::name('order_goods')->alias('og')
+                ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+                ->where("og.orderId in (" . $ids . ") and og.refundStatus > 0")
+                ->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
+                ->order('orf.createTime', 'desc')
+                ->paginate(input('limit/d'))->toArray();
+            if (!empty($list['data'])) {
+                foreach ($list['data'] as $k => $v) {
+                    $list['data'][$k]['refundMoney'] = bcmul($v['goodsNum'], $v['goodsPrice'], 2);
+                    $list['data'][$k]['refundStatusText'] = WSTLangOrderRefundStatus($v['refundStatus']);
+                }
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * 获取退款资料
+     */
+    public function getInfoByRefund(){
+        $where = [['orf.id','=',(int)input('get.id')],
+            ['isRefund','=',0],
+            ['orderStatus','in',[-1,-3]],
+            ['refundStatus','=',1]];
+        $serviceId = (int)input('serviceId');
+        if($serviceId>0){
+            $where = [
+                'serviceId'=>$serviceId,
+                'isRefund'=>0,
+                'orf.id'=>(int)input('get.id'),
+                'orderStatus'=>2,
+                'refundStatus'=>1
+            ];
+        }
+        $rs = $this->alias('orf')->join('__ORDERS__ o','orf.orderId=o.orderId')
+            ->where($where)
+            ->field('orf.id refundId,orderNo,o.orderId,goodsMoney,refundReson,refundOtherReson,totalMoney,realTotalMoney,deliverMoney,payType,payFrom,backMoney,o.useScore,o.scoreMoney,tradeNo')
+            ->find();
+        if($serviceId>0 && $rs['useScore']>0){
+            $rs['serviceId'] = $serviceId;
+            // 替换数据
+            $osData = Db::name('order_services')
+                ->field('refundScore,useScoreMoney,getScoreMoney,refundableMoney')
+                ->where(['id'=>$serviceId])
+                ->find();
+            // 退还积分
+            $rs['useScore'] = $osData['refundScore'];
+            // 积分可抵扣金额
+            $rs['scoreMoney'] = $osData['useScoreMoney'];
+            // 获得的积分可抵扣金额
+            $rs['getScoreMoney'] = $osData['getScoreMoney'];
+
+            // 售后单总金额 = 售后单可退款金额+获得的积分可抵扣金额
+            $rs['totalMoney'] = $osData['refundableMoney'] + $osData['getScoreMoney'];
+        }
+        return $rs;
+    }
 }
