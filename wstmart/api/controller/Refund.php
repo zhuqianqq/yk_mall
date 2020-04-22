@@ -19,6 +19,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsStatus = (int)input('post.goodsStatus');
         $refundType = (int)input('post.refundType', 1); // 1 退货退款 2 仅退款
         $refundCode = (int)input('post.refundCode'); // 退款CODE
         $refundReason = (string)input('post.refundReason'); // 退款原因
@@ -103,6 +104,7 @@ class Refund extends Base
                 $refund->createTime = date('Y-m-d H:i:s');
                 $refund->refundImgs = $refundImgs;
                 $refund->lastStatus = $orderStatus;
+                $refund->goodsStatus = $goodsStatus;
                 $refund->save();
             }
             $order->orderStatus = -3;
