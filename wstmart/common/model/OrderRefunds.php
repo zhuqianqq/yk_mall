@@ -230,7 +230,7 @@ class OrderRefunds extends Base{
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
         $page = Db::name('orders')->alias('o')
-            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4)')
+            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4, 5)')
             ->where($where)
             ->field('orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.refundRemark,isRefund,orf.createTime,o.orderCode')
             ->order('orf.createTime', 'desc')

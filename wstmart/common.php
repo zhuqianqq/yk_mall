@@ -1129,11 +1129,11 @@ function WSTLangOrderStatus($v){
 function WSTLangOrderRefundStatus($v){
     //  1 退款中 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
     switch($v){
-        case 0:return '待发货';
+        case 4:
         case 1:return '退款中';
         case 3:return '退款失败';
         case 2:return '退款成功';
-        case 4:return '退货退款同意';
+        case 5:return '退款关闭';
     }
 }
 
