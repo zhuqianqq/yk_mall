@@ -44,7 +44,9 @@ class Refund extends Base
             return $this->outJson(100, "没有数据!");
         }
         $orderStatus = $order['orderStatus']; // -3：退款/拒收 -2：待付款 -1：已取消 0：待发货 1：待收货 2：待评价/已完成 6：取消订单 7：删除订单
-        if (!in_array($orderStatus, [1, 0])) {
+        // 0初始 1 退款中 2 退款成功 3 退款失败
+        $orderGoodsStatus = $orderGoods['refundStatus'];
+        if (!in_array($orderGoodsStatus, [0])) {
             return $this->outJson(100, "不可操作!");
         }
         if (1 == $refundType) {
@@ -53,19 +55,19 @@ class Refund extends Base
                 return $this->outJson(100, "不可操作");
             }
         }
-        $realTotalMoney = $order['realTotalMoney'];
+        $realTotalMoney = bcmul($orderGoods['goodsPrice'], $orderGoods['goodsNum'], 2);
         if (0 == $order['orderStatus']) {
             // 未发货订单只能申请仅退款，退款金额不可修改
             $refundMoney = $realTotalMoney;
         } else {
             $rmoney = bcsub($refundMoney, $realTotalMoney);
-            if ($rmoney) {
+            if ($rmoney < 0) {
                 return $this->outJson(100, "最多只能退款" . $realTotalMoney);
             }
         }
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId)->find();
+            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
             // 订单号
             $refundNo = WSTOrderQnique();
             if (!empty($refundExist)) {
@@ -107,8 +109,12 @@ class Refund extends Base
                 $refund->goodsStatus = $goodsStatus;
                 $refund->save();
             }
-            $order->orderStatus = -3;
+            $order->isRefund = 1;
             $order->save();
+
+            // 0初始 1 退款中 2 退款成功 3 退款失败
+            $orderGoods->refundStatus =  1;
+            $orderGoods->save();
             Db::commit();
             return $this->outJson(0,  '提交成功');
         } catch (\Exception $e) {
@@ -136,8 +142,14 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderStatus = $order['orderStatus']; // -3：退款/拒收 -2：待付款 -1：已取消 0：待发货 1：待收货 2：待评价/已完成 6：取消订单 7：删除订单
-        if (!in_array($orderStatus, [-3])) {
+        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if (empty($orderGoods)) {
+            return $this->outJson(100, "没有数据!");
+        }
+//        $orderStatus = $order['orderStatus']; // -3：退款/拒收 -2：待付款 -1：已取消 0：待发货 1：待收货 2：待评价/已完成 6：取消订单 7：删除订单
+        // 0初始 1 退款中 2 退款成功 3 退款失败
+        $orderGoodsStatus = $orderGoods['refundStatus'];
+        if (!in_array($orderGoodsStatus, [1])) {
             return $this->outJson(100, "不可操作!");
         }
 
@@ -150,7 +162,7 @@ class Refund extends Base
             if (!empty($refundExist)) {
                 // 如果存在
                 $refundNum = (int)$refundExist['refundNum']; // 操作的次数
-                $refundStatus = $refundExist['refundStatus']; // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意
+                $refundStatus = $refundExist['refundStatus']; // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
 
                 if (in_array($refundStatus, [2])) {
                     // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意
@@ -165,8 +177,10 @@ class Refund extends Base
                 $refundExist->refundNum = $refundNum + 1;
                 $refundExist->save();
             }
-            $order->orderStatus = $refundExist['lastStatus'];
-            $order->save();
+
+            // 0初始 1 退款中 2 退款成功 3 退款失败
+            $orderGoods->refundStatus =  0;
+            $orderGoods->save();
             Db::commit();
             return $this->outJson(0,  '提交成功');
         } catch (\Exception $e) {
@@ -193,5 +207,105 @@ class Refund extends Base
             $refund[] = ['refundCode' => $v['id'], 'refundReason' => $v['dataName']];
         }
         return $this->outJson(0, '查询成功', $refund);
+    }
+
+    /**
+     * 订单列表-退款
+     */
+    public function getRefundList()
+    {
+        $userId = $this->user_id;
+        if (empty($userId)) {
+            return $this->outJson(100, "缺少参数");
+        }
+        $m = new \wstmart\common\model\OrderRefunds();
+        $rs = $m->refundPageQuery();
+
+        foreach ($rs['data'] as $k=>$v) {
+            if (empty($v['list'])) continue;
+            foreach($v['list'] as $k1=>$v1){
+                $rs['data'][$k]['list'][$k1]['goodsImg'] = WSTImg($v1['goodsImg'],3);
+            }
+        }
+        return $this->outJson(0, "success", $rs);
+    }
+
+    /**
+     * 订单详情
+     */
+    public function getDetail(){
+        $m = new M();
+        $rs = $m->getByView((int)input('id'));
+        $rs['status'] = WSTLangOrderStatus($rs['orderStatus']);
+        $rs['payInfo'] = WSTLangPayType($rs['payType']);
+        $rs['deliverInfo'] = WSTLangDeliverType($rs['deliverType']);
+        $rs['orderCodeTitle'] = WSTOrderModule($rs['orderCode']);
+        foreach($rs['goods'] as $k=>$v){
+            $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
+        }
+        // 优惠券钩子
+        hook('mobileDocumentOrderSummaryView',['rs'=>&$rs]);
+        // 满就送钩子
+        hook('mobileDocumentOrderViewGoodsPromotion',['rs'=>&$rs]);
+        return \json_encode($rs);
+    }
+
+    /**
+     * 获取订单详情
+     */
+
+    public function getOrderDetail()
+    {
+        $m = new M();
+        $pkey = input('pkey') ?? '';
+        $role = input('role') ?? 2;
+        $user_id = input('param.user_id'); // 直播用户ID
+        if (empty($user_id)) {
+            return $this->outJson(100, "缺少参数");
+        }
+        $userInfo = Db::name('users')->where("userId = {$user_id}")->field("userName, userPhoto")->find();
+
+        if (empty($userInfo)) {
+            return $this->outJson(100, "没有数据");
+        }
+        $shop = Db::name('shops')->where("userId = {$user_id}")->field("shopId")->find();
+        // if (empty($shop)) {
+        //     return $this->outJson(100, "没有数据");
+        // }
+        $shopId = $shop['shopId'] ?? '';
+
+        $rs = $m->getByView((int)input('id'), $user_id, $shopId);
+        $rsStatus = isset($rs['status']) ? $rs['status'] : 1;
+        if ($rsStatus == -1) {
+            return $this->outJson(100, $rs['msg']);
+        }
+        $orderStatus = $rs['orderStatus'];
+        $rs['pkey'] = $pkey;
+        $rs['status'] = WSTLangOrderStatus($orderStatus);
+        $rs['payInfo'] = WSTLangPayType($rs['payType']);
+        $rs['deliverInfo'] = WSTLangDeliverType($rs['deliverType']);
+        $rs['orderCodeTitle'] = WSTOrderModule($rs['orderCode']);
+        // foreach($rs['goods'] as $k=>$v){
+        //     $rs['goods'][$k]['goodsImg'] = WSTImg($v['goodsImg'],3);
+        // }
+
+        //1为买家  2为卖家
+        if ($role == 1) {
+            $userInfo = Db::name('users')->where("userId = {$rs['shopUserId']}")->field("userName, userPhoto")->find();
+            $express = [];
+        } else {
+            $express = model('Express')->listQuery();
+        }
+        $redisKey = "SHOP:UPDATE:EXPRESS:ORDERID:" . (int)input('id');
+        $rs['userInfo'] = (object)$userInfo;
+        $rs['express'] = (object)$express;
+        $isUpdate = 1;
+        if (1 == $orderStatus) {
+            // 已发货的才有修改的功能
+            $isUpdate = (int)Cache::get($redisKey);
+        }
+        $rs['isUpdate'] = $isUpdate;
+
+        return $this->outJson(0, "查询成功", $rs);
     }
 }
