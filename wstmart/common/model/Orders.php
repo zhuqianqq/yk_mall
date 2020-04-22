@@ -4,6 +4,7 @@ use think\Db;
 use Env;
 use think\Loader;
 use util\Tools;
+use wstmart\api\controller\Refund;
 use wstmart\common\model\LogSms;
 use think\facade\Cache;
 use wstmart\common\model\OrderRefunds as M;
@@ -856,10 +857,14 @@ class Orders extends Base{
                  //目前逻辑是单个商品的状态取订单的状态，
 	    	 	if (empty($v['refundId'])) {
                     $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
-	    	 	}else
-                    $v['status'] = $v['refundStatus']==1 ? '退款中' : '交易失败';
-                 $goodsMap[$v['orderId']][] = $v;
+	    	 	}else{
+	    	 	    if ($v['refundStatus'] == Refund::REFUND_CANCEL) {
+                        $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
+                    } else
+                        $v['status'] = $v['refundStatus']==Refund::REFUND_SUCCESS ? '交易失败' : '退款中';
+                }
 
+                 $goodsMap[$v['orderId']][] = $v;
 	    	 }
 
              // 查询一个订单下是否有物流包裹
