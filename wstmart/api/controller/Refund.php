@@ -10,6 +10,12 @@ use wstmart\common\model\OrderGoods;
 
 class Refund extends Base
 {
+    CONST REFUND_APPLICATION = 1;
+    CONST REFUND_SUCCESS = 2;
+    CONST REFUND_FAIL = 3;
+    CONST REFUND_AGREE = 4;
+    CONST REFUND_CANCEL = 5;
+
     /**
      * 申请退款
      * @return array
