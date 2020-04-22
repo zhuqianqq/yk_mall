@@ -196,7 +196,6 @@ class Login extends Base{
         try {
             $code = $this->request->post("code", '', "trim");
             $loginInfo = WechatHelper::getOpenidByCode($code); // 以code换取openid
-            var_dump($loginInfo);die;
             $openId = isset($loginInfo['openid']) ? $loginInfo['openid'] : '';
             if (empty($openId)) {
                 return $this->outJson(200, "获取微信openId失败！");
