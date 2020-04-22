@@ -861,7 +861,7 @@ class Orders extends Base{
 	    	 	    if ($v['refundStatus'] == Refund::REFUND_CANCEL) {
                         $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
                     } else
-                        $v['status'] = $v['refundStatus']==Refund::REFUND_SUCCESS ? '交易失败' : '退款中';
+                        $v['status'] = WSTLangRefundStatus($v['refundStatus']);
                 }
 
                  $goodsMap[$v['orderId']][] = $v;
