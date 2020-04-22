@@ -230,6 +230,21 @@ class Refund extends Base
     }
 
     /**
+     * 订单详情-退款
+     */
+    public function getRefundDetail()
+    {
+        $orderId = input('param.orderId','');
+        $goodsId = input('param.goodsId','');
+        if (empty($orderId)||empty($goodsId)) {
+            return $this->outJson(100, "缺少参数");
+        }
+        $m = new \wstmart\common\model\OrderRefunds();
+        $rs = $m->orderDetailrefund();
+        return $this->outJson(0, "success", $rs);
+    }
+
+    /**
      * 订单详情
      */
     public function getDetail(){

@@ -4,7 +4,6 @@ use think\Db;
 use Env;
 use think\Loader;
 use util\Tools;
-use wstmart\api\controller\Refund;
 use wstmart\common\model\LogSms;
 use think\facade\Cache;
 use wstmart\common\model\OrderRefunds as M;
@@ -857,14 +856,10 @@ class Orders extends Base{
                  //目前逻辑是单个商品的状态取订单的状态，
 	    	 	if (empty($v['refundId'])) {
                     $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
-	    	 	}else{
-	    	 	    if ($v['refundStatus'] == Refund::REFUND_CANCEL) {
-                        $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
-                    } else
-                        $v['status'] = WSTLangRefundStatus($v['refundStatus']);
-                }
-
+	    	 	}else
+                    $v['status'] = $v['refundStatus']==1 ? '退款中' : '交易失败';
                  $goodsMap[$v['orderId']][] = $v;
+
 	    	 }
 
              // 查询一个订单下是否有物流包裹
@@ -1310,11 +1305,7 @@ class Orders extends Base{
 	 * 
 	 */
 	public function deleteOrder($uid=0){
-		$orderId = (int)input('param.id');
-		$orderStatus = self::where(['orderId'=>$orderId])->value('orderStatus');
-		if (in_array($orderStatus,[-2,-1,0,1])){
-			return WSTReturn('操作失败，该订单状态不允许删除操作');
-		}
+		$orderId = (int)input('post.id');
 		self::where(['orderId'=>$orderId])->update(['orderStatus'=>7]);
 		return WSTReturn('操作成功',1);
 	}
@@ -1392,7 +1383,7 @@ class Orders extends Base{
 	            return WSTReturn('操作失败',-1);
 	        }
 		}
-		return WSTReturn('操作失败，请确认订单状态');
+		return WSTReturn('操作成功',1);
 	}
 
 	

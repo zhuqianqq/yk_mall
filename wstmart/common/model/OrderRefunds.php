@@ -258,6 +258,33 @@ class OrderRefunds extends Base{
             }
         }
         return $list;
+	}
+	
+
+	/**
+     * 获取用户退款订单详情
+     */
+    public function orderDetailrefund()
+    {
+		$where = [];
+        $where[] = ['og.orderId', '=', (int)input('param.orderId')];
+		$where[] = ['og.goodsId', '=', (int)input('param.goodsId')];
+		
+		$orderDetail = Db::name('order_goods')->alias('og')
+		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
+		->where($where)
+		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg,
+		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.logisticNum,orf.logisticInfo,orf.createTime,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
+		->order('orf.createTime', 'desc')
+		->find() ?? [];
+
+		if($orderDetail){
+			$orderDetail['refundMoney'] = bcmul($orderDetail['goodsNum'], $orderDetail['goodsPrice'], 2);
+			$orderDetail['refundStatusText'] = WSTLangOrderDetailRefundStatus($orderDetail['refundStatus']);
+			$orderDetail['expressInfo'] = Db::name('express')->where("dataFlag = 1")->select()??[];
+		}
+		return $orderDetail;
     }
 
     /**
