@@ -255,7 +255,7 @@ class Orders extends Base{
 				$status=[2];
 				break;
 			default:
-				$status=[-2,0,1,2,6];
+				$status=[-2,-1,0,1,2,6];
 				break;
 		}
 		$m = new M();

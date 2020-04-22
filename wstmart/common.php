@@ -1114,11 +1114,12 @@ function WSTLangOrderStatus($v){
 	switch($v){
 		case -3:return '用户拒收';
 		case -2:return '待支付';
-		case -1:return '已取消';
 		case 0:return '待发货';
 		case 1:return '待收货';
 		case 2:return '已收货';
-		case 6:return '交易失败';
+        case -7:
+        case -1:
+        case 6:return '交易失败';
 	}
 }
 
