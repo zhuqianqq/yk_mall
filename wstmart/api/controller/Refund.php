@@ -5,6 +5,7 @@
 namespace wstmart\api\controller;
 
 use think\Db;
+use wstmart\admin\model\Datas;
 use wstmart\common\model\OrderGoods;
 
 class Refund extends Base
@@ -170,5 +171,20 @@ class Refund extends Base
             Db::rollback();
             return $this->outJson(100, $e->getMessage() ?? '接口异常');
         }
+    }
+
+    /**
+     * 退换货原因
+     * @return array
+     */
+    public function refundCode()
+    {
+        $d = new Datas();
+        $r = $d->where(['dataFlag'=>1, 'catId'=>1])->select();
+        $refund = [];
+        foreach ($r as $v) {
+            $refund[] = ['refundCode' => $v['id'], 'refundReason' => $v['dataName']];
+        }
+        return $this->outJson(0, '查询成功', $refund);
     }
 }
