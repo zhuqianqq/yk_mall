@@ -141,13 +141,13 @@ class AliPay
         $out_trade_no = $order->trade_no;
 
         //退款金额，必填
-        $refund_amount = $order->money;
+        $refund_amount = $order->backMoney;
 
         //退款说明
         $refund_reason = '';
 
         //退款单号
-        $out_request_no = $order->refund_no;
+        $out_request_no = $order->refundTradeNo;
 
         $RequestBuilder = new AlipayTradeRefundContentBuilder();
         $RequestBuilder->setOutTradeNo($out_trade_no);

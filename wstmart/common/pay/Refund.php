@@ -19,14 +19,16 @@ class Refund
         Db::startTrans();
         try {
             // 调用第三方退款接口
-            $payer = $this->getPayer($refund->type);
+            $payer = $this->getPayer($refund->refundTo);
             $payerClass = get_class($payer);
             $result = $payer->refund($refund);
             Tools::addLog('refund_succ', "#Record {$refund->id} 退款成功 $payerClass:" . var_export($result, true));
             Db::commit();
+            return true;
         } catch (\Exception $e) {
             Db::rollback();
             Tools::addLog('refund_fail', "#Record {$refund->id} 退款失败: " .  $e->getMessage());
+            return false;
         }
     }
 
