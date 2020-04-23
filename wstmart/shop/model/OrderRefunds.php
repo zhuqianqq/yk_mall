@@ -1,5 +1,5 @@
 <?php
-namespace wstmart\admin\model;
+namespace wstmart\shop\model;
 use think\Db;
 use Env;
 /**

@@ -230,7 +230,7 @@ class OrderRefunds extends Base{
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
         $page = Db::name('orders')->alias('o')
-            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4,5)')
+            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4,5,7)')
             ->where($where)
             ->field('orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.refundRemark,isRefund,orf.createTime,o.orderCode')
             ->order('orf.createTime', 'desc')
@@ -246,7 +246,7 @@ class OrderRefunds extends Base{
             $ids = implode(',', $orderIds);
             $list = Db::name('order_goods')->alias('og')
                 ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
-                ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5)")
+                ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
                 ->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
                 ->order('orf.createTime', 'desc')
                 ->paginate(input('limit/d'))->toArray();
@@ -259,6 +259,54 @@ class OrderRefunds extends Base{
         }
         return $list;
 	}
+
+    /**
+     * 获取用户退款订单列表
+     */
+    public function refundPageQueryShop()
+    {
+        $startDate = input('startDate');
+        $endDate = input('endDate');
+        $where = [];
+        $trade_no = input('trade_no'); // 订单编号
+        $refundTo = (int)input('refundTo',-1); // 支付方式
+        $refundStatus = (int)input('refundStatus',-1); // 退款状态
+        if($trade_no != '') $where[] = ['orf.trade_no','like','%'.$trade_no.'%'];
+
+        if($refundTo != -1) $where[] = ['orf.refundTo', '=', $refundTo];
+        if($refundStatus != -1) {
+            // 1 未退款 2 已退款
+            if ($refundStatus == 1) {
+                $where[] = ['orf.refundStatus', 'in', [1,3,4,5,6,7]];
+            } else {
+                $where[] = ['orf.refundStatus', '=', 2];
+            }
+        }
+
+        if($startDate!='' && $endDate!=''){
+            $where[] = ['orf.createTime', 'between', [$startDate.' 00:00:00',$endDate.' 23:59:59']];
+        } else if($startDate != '') {
+            $where[] = ['orf.createTime','>=',$startDate.' 00:00:00'];
+        } else if($endDate!=''){
+            $where[] = ['orf.createTime','<=',$endDate.' 23:59:59'];
+        }
+
+        $shopId = session("WST_USER.shopId"); // 店铺ID
+        if (empty($shopId)) {
+            return [];
+        }
+        $where[] = ['o.shopId', '=', $shopId];
+        $where[] = ['o.isRefund', '=', 1];
+
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
+        $page = Db::name('orders')->alias('o')
+            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId', 'left')
+            ->where($where)
+            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus')
+            ->order('orf.createTime', 'desc')
+            ->paginate(input('limit/d'))->toArray();
+        return $page;
+    }
 	
 
 	/**
