@@ -1108,7 +1108,7 @@ function WSTLangDeliverType($v){
 	}
 }
 /**
- * 买家订单状态
+ * 买家订单商品详细状态
  */
 function WSTLangOrderStatus($v){
 	switch($v){
@@ -1121,6 +1121,16 @@ function WSTLangOrderStatus($v){
         case -1:
         case 6:return '交易失败';
 	}
+}
+
+/**
+ * 买家订单状态
+ */
+function WSTLangOrderFinalStatus($v){
+    switch($v){
+        case 1:return '交易成功';
+        case 0:return '交易关闭';
+    }
 }
 
 /**

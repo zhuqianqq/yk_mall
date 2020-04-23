@@ -836,19 +836,24 @@ class Orders extends Base{
                  ->field('og.*,orf.id as refundId,orf.refundStatus')
                  ->select();
 	    	 $goodsMap = [];
+
+	    	 $orderStatusFinal = [];//订单总状态
+             $successStatus = [OrderGoods::STATUS_INITION, OrderGoods::STATUS_REFUND_FAIL];
+
 	    	 foreach ($goods as $v) {
-	    	 	$v['goodsName'] = WSTStripTags($v['goodsName']);
-	    	 	$shotGoodsSpecNames = [];
-	    	 	if ($v['goodsSpecNames'] != "") {
-	    	 		$v['goodsSpecNames'] = str_replace('：',':',$v['goodsSpecNames']);
-	    	 		$goodsSpecNames = explode('@@_@@',$v['goodsSpecNames']);
-	    	 		
-		    	 	foreach ($goodsSpecNames as $key => $spec) {
+	    	     $orderStatusFinal[$v['orderId']]['status'] = 0;
+                $v['goodsName'] = WSTStripTags($v['goodsName']);
+                $shotGoodsSpecNames = [];
+                if ($v['goodsSpecNames'] != "") {
+                    $v['goodsSpecNames'] = str_replace('：',':',$v['goodsSpecNames']);
+                    $goodsSpecNames = explode('@@_@@',$v['goodsSpecNames']);
+
+                    foreach ($goodsSpecNames as $key => $spec) {
                         if(strpos($spec, ':') !== FALSE) {
                             $obj = explode(":", $spec);
                             $shotGoodsSpecNames[] = $obj[1];
                         }
-		    	 	}
+                    }
 	    	 	}
 	    	 	$v['shotGoodsSpecNames'] = implode('，',$shotGoodsSpecNames);
 	    	 	$v['goodsSpecNames'] = str_replace('@@_@@','、',$v['goodsSpecNames']);
@@ -862,6 +867,11 @@ class Orders extends Base{
                         $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
                     } else
                         $v['status'] = WSTLangRefundStatus($v['refundStatus']);
+                }
+
+                 //订单商品中有一个商品不退款就代表订单交易成功
+                if (in_array($v['refundStatus'], $successStatus)) {
+                    $orderStatusFinal[$v['orderId']]['status'] = 1;
                 }
 
                  $goodsMap[$v['orderId']][] = $v;
@@ -887,7 +897,8 @@ class Orders extends Base{
 	    	 	 $page['data'][$key]['payTypeName'] = WSTLangPayType($v['payType']);
 	    	 	 $page['data'][$key]['deliverTypeName'] = WSTLangDeliverType($v['deliverType'] == 1);
 	    		 $page['data'][$key]['orderCodeTitle'] = WSTOrderModule($v['orderCode']);
-
+                 $page['data'][$key]['orderStausName'] = WSTLangOrderFinalStatus($orderStatusFinal);
+                 $page['data'][$key]['status'] = $orderStatusFinal[$v['orderId']]['status'];
 	    	 	 if ($v["orderStatus"] == -2) {
 					$page['data'][$key]['pkey'] = WSTBase64urlEncode($v["orderNo"] . "@0");
 				}
@@ -918,6 +929,7 @@ class Orders extends Base{
 	    	 }
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
+	    print_r($page);die;
 	    return $page;
 	}
 	
