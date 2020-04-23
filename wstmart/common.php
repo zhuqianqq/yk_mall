@@ -1175,7 +1175,10 @@ function WSTLangOrderDetailRefundStatus($v){
 		case 2:return '退款成功';
 		case 4:return '商家已同意退款,请及时退回商品';
         case 5:return '退款关闭';
-    }
+        case 6:return '删除订单';
+        case 7:return '等待商家收货';
+	}
+	
 }
 
 
