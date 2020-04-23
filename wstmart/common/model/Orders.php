@@ -1738,6 +1738,8 @@ class Orders extends Base{
 
 			//orderStatus 为0：待发货 1：待收货 2：待评价/已完成 （已完成的售后15天之内） 并且该订单对应的商品没有过退款申请
 			if(!$v['refundStatus']){
+				//如果$v['refundStatus']为空 返回前端为0
+				$orders['goods'][$key]['refundStatus'] = 0;
 
 				if ($orders['orderStatus'] == 0 || $orders['orderStatus'] == 1){
 
@@ -1757,7 +1759,7 @@ class Orders extends Base{
 			}
 
 			$isAllCanRefund = $isAllCanRefund&&$v['refundStatus'];
-			
+
 		}
 
 		//如果该订单商品全部申请了退款 修改订单状态为-3 退款的状态
