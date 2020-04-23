@@ -98,15 +98,14 @@ function orderRefund(id){
         	params.id = id;
         	ll = WST.msg('正在处理数据，请稍候...');
 		    $.post(WST.U('shop/orderrefunds/orderRefund'),params,function(data){
-		    	layer.close(ll);
-		    	var json = WST.toAdminJson(data);
-				if(json.status==1){
+		    	layer.close();
+				if(data.status==1){
                     layer.close(w);
-					WST.msg(json.msg, {icon: 1,time:2500},function(){
+                    WST.msg(data.msg, {icon: 1,time:2500},function(){
                         loadRefundGrid(WST_CURR_PAGE);
                     });
 				}else{
-					WST.msg(json.msg, {icon: 2});
+					WST.msg(data.msg, {icon: 2});
 				}
 		   });
 		}

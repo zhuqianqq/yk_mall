@@ -101,6 +101,27 @@ class OrderRefunds extends Base{
 	    return WSTReturn('操作失败',-1);
 	}
 
+    /**
+     * 退款
+     */
+    public function orderRefund()
+    {
+        $id = (int)input('post.id');
+        if($id==0)return WSTReturn("操作失败!");
+        $refund = $this->get($id);
+        if(empty($refund) || $refund->refundStatus!=1)return WSTReturn("该退款订单不存在或已退款!");
+        $rs = array();
+        $order = model('orders')->get($refund->orderId);
+        $orderRefund = \wstmart\common\model\OrderRefunds::get($id);
+        $refund = new \wstmart\common\pay\Refund();
+        $rs = $refund->refund($orderRefund);
+        if (-1 == $rs['status']) {
+            return WSTReturn("退款失败:" . $rs['msg'],-1);
+        }
+        // 成功进行逻辑处理
+        return WSTReturn("退款成功",1);
+    }
+
 	/**
 	 * 获取订单价格以及申请退款价格
 	 */
