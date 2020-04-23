@@ -107,7 +107,7 @@ function orderRefund(id){
 				}else{
 					WST.msg(data.msg, {icon: 2});
 				}
-                window.parent.location.reload();
+                window.location.reload();
 		   });
 		}
     })
