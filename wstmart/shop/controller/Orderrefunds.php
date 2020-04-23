@@ -35,7 +35,7 @@ class Orderrefunds extends Base{
         $m = new M();
         $object = $m->getInfoByRefund();
         $this->assign("object",$object);
-        return $this->fetch("box_refund");
+        return $this->fetch("orderrefunds/box_refund");
     }
     /**
      * 退款

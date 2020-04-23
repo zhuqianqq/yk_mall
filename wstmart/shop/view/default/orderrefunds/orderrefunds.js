@@ -53,8 +53,8 @@ function initRefundGrid(p){
         {title:'退款备注', name:'refundRemark',hidden: true},
         {title:'操作', name:'op' ,width:120, align:'center', renderer: function(val,item,rowIndex){
             var h = '';
-            if((item['serviceId']==0 && item['isRefund']==0) || (item['serviceId']>0 && item['isServiceRefund']==0)){
-                if(WST.GRANT.TKDD_04)h += "<a class='btn btn-blue' href='javascript:toRefund(" + item['refundId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>退款</a> ";
+            if((item['serviceId']==0 && (item['refundStatus'] == 1 || item['refundStatus'] == 4 || item['refundStatus'] == 7)) || (item['serviceId'] >0 && item['isServiceRefund']==0)){
+                h += "<a class='btn btn-blue' href='javascript:toRefund(" + item['refundId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>退款</a> ";
             }
             h += "<a class='btn btn-blue' href='javascript:toView(" + item['orderId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>详情</a> ";
             return h;

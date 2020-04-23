@@ -342,22 +342,21 @@ class OrderRefunds extends Base{
      */
     public function getInfoByRefund(){
         $where = [['orf.id','=',(int)input('get.id')],
-            ['isRefund','=',0],
-            ['orderStatus','in',[-1,-3]],
+            ['isRefund','=',1],
             ['refundStatus','=',1]];
         $serviceId = (int)input('serviceId');
-        if($serviceId>0){
+        if ($serviceId > 0) {
             $where = [
                 'serviceId'=>$serviceId,
                 'isRefund'=>0,
                 'orf.id'=>(int)input('get.id'),
-                'orderStatus'=>2,
-                'refundStatus'=>1
+                'orderStatus'=> 2,
+                'refundStatus' => 1
             ];
         }
         $rs = $this->alias('orf')->join('__ORDERS__ o','orf.orderId=o.orderId')
             ->where($where)
-            ->field('orf.id refundId,orderNo,o.orderId,goodsMoney,refundReson,refundOtherReson,totalMoney,realTotalMoney,deliverMoney,payType,payFrom,backMoney,o.useScore,o.scoreMoney,tradeNo')
+            ->field('orf.id refundId,orderNo,o.orderId,goodsMoney,refundReson,refundOtherReson,o.totalMoney,realTotalMoney,deliverMoney,payType,payFrom,backMoney,o.useScore,o.scoreMoney,tradeNo')
             ->find();
         if($serviceId>0 && $rs['useScore']>0){
             $rs['serviceId'] = $serviceId;
