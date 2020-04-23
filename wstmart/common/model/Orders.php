@@ -1724,7 +1724,8 @@ class Orders extends Base{
 							->field('og.*,g.goodsSn,orf.refundStatus')->order('id asc')
 							->select();
 
-		$isAllCanRefund = true; //是否该订单商品全部申请了退款的标志  默认为true
+
+		$refundStatusArr = []; //商品退款状态数组
 
 		foreach ($orders['goods'] as $key => $v) {
 		 	$orders['goods'][$key]['goodsName'] = WSTStripTags($v['goodsName']);
@@ -1751,6 +1752,8 @@ class Orders extends Base{
 
 			//orderStatus 为0：待发货 1：待收货 2：待评价/已完成 （已完成的售后15天之内） 并且该订单对应的商品没有过退款申请
 			if(!$v['refundStatus']){
+				//如果$v['refundStatus']为空 返回前端为0
+				$orders['goods'][$key]['refundStatus'] = $v['refundStatus']= 0;
 
 				if ($orders['orderStatus'] == 0 || $orders['orderStatus'] == 1){
 
@@ -1769,13 +1772,31 @@ class Orders extends Base{
 				
 			}
 
-			$isAllCanRefund = $isAllCanRefund&&$v['refundStatus'];
-			
+			$refundStatusArr[] = $v['refundStatus'];
+
 		}
 
-		//如果该订单商品全部申请了退款 修改订单状态为-3 退款的状态
-		if($isAllCanRefund){
-			$orders['orderStatus'] = -3;
+		//判定退款状态
+		$refundStatusArr = array_unique($refundStatusArr);
+		if(count($refundStatusArr)>1){
+			$orders['statusSubText'] = '';
+		}else{
+			// 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+			if($refundStatusArr[0] != 0 ){
+				$orders['orderStatus'] = -3;
+			}
+			// 状态统一时才有信息
+			// 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
+			switch($refundStatusArr[0]){
+				case 1: $orders['statusSubText'] = '退款中,等待商家审核'; break;
+				case 2: $orders['statusSubText'] = '已退款';$orders['orderStatus'] = 7;break; 
+				case 3: $orders['statusSubText'] = '退款失败';break;
+				case 4: $orders['statusSubText'] = '商家已同意退款,请及时退回商品';break;
+				case 5: $orders['statusSubText']= '退款关闭';break;
+				case 6: $orders['statusSubText'] ='删除订单';break;
+				case 7: $orders['statusSubText'] ='等待商家收货';break;
+				default: $orders['statusSubText'] ='';break;
+			}
 		}
 	
         // 发货时间与快递单号
