@@ -1112,12 +1112,12 @@ function WSTLangDeliverType($v){
  */
 function WSTLangOrderStatus($v){
 	switch($v){
-		case -3:return '用户拒收';
+		case -3:return '退款中';
 		case -2:return '待支付';
 		case 0:return '待发货';
 		case 1:return '待收货';
-		case 2:return '已收货';
-        case -7:
+		case 2:return '交易成功';
+        case 7:
         case -1:
         case 6:return '交易失败';
 	}
