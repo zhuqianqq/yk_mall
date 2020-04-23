@@ -1724,7 +1724,7 @@ class Orders extends Base{
 							->field('og.*,g.goodsSn,orf.refundStatus')->order('id asc')
 							->select();
 
-		$isAllCanRefund = true; //是否该订单商品全部申请了退款的标志  默认为true
+
 		$refundStatusArr = []; //商品退款状态数组
 
 		foreach ($orders['goods'] as $key => $v) {
@@ -1772,14 +1772,8 @@ class Orders extends Base{
 				
 			}
 
-			$isAllCanRefund = $isAllCanRefund&&$v['refundStatus'];
 			$refundStatusArr[] = $v['refundStatus'];
 
-		}
-
-		//如果该订单商品全部申请了退款 修改订单状态为-3 退款的状态
-		if($isAllCanRefund){
-			$orders['orderStatus'] = -3;
 		}
 
 		//判定退款状态
@@ -1787,6 +1781,10 @@ class Orders extends Base{
 		if(count($refundStatusArr)>1){
 			$orders['statusSubText'] = '';
 		}else{
+			// 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+			if($refundStatusArr[0] != 0 ){
+				$orders['orderStatus'] = -3;
+			}
 			// 状态统一时才有信息
 			// 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
 			switch($refundStatusArr[0]){
