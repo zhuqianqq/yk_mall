@@ -163,6 +163,7 @@ class OrderRefunds extends Base{
         try {
             // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
             $orderRefund->refundStatus = 2;
+            $orderRefund->refundTime = date('Y-m-d H:i:s');
             $orderRefund->save();
 
             $orderId = $orderRefund->orderId;
