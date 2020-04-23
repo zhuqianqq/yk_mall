@@ -299,6 +299,23 @@ class Refund extends Base
         return $this->outJson(0, "success", $rs);
     }
 
+
+    /**
+     * 填写用户的退款物流信息
+     */
+    public function setlogisticInfo()
+    {
+        $orderId = input('param.orderId','');
+        $goodsId = input('param.goodsId','');
+        $logisticInfo = input('param.logisticInfo','');
+        $logisticNum = input('param.logisticNum','');
+        if (!$logisticInfo||!$logisticNum||!$orderId||!$goodsId) {
+            return $this->outJson(100, "缺少参数");
+        }
+        Db::name('order_refunds')->where(['orderId'=>$orderId,'goodsId'=>$goodsId])->update(['logisticInfo'=>$logisticInfo,'logisticNum'=>$logisticNum]);
+        return $this->outJson(0, "success");
+    }
+
     /**
      * 订单详情
      */
