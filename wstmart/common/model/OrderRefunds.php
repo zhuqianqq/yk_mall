@@ -354,11 +354,14 @@ class OrderRefunds extends Base{
         if($refundTo != -1) $where[] = ['orf.refundTo', '=', $refundTo];
         if($refundStatus != -1) {
             // 1 未退款 2 已退款
+            // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
             if ($refundStatus == 1) {
-                $where[] = ['orf.refundStatus', 'in', [1,3,4,5,6,7]];
+                $where[] = ['orf.refundStatus', 'in', [1,3,4,7]];
             } else {
                 $where[] = ['orf.refundStatus', '=', 2];
             }
+        } else {
+            $where[] = ['orf.refundStatus', 'in', [1,3,4,7]];
         }
 
         if($startDate!='' && $endDate!=''){
@@ -421,7 +424,7 @@ class OrderRefunds extends Base{
     public function getInfoByRefund(){
         $where = [['orf.id','=',(int)input('get.id')],
             ['isRefund','=',1],
-            ['refundStatus','=',1]];
+            ['refundStatus','in', [1, 7]]];
         $serviceId = (int)input('serviceId');
         if ($serviceId > 0) {
             $where = [
