@@ -841,7 +841,7 @@ class Orders extends Base{
              $successStatus = [OrderGoods::STATUS_INITION, OrderGoods::STATUS_REFUND_FAIL];
 
 	    	 foreach ($goods as $v) {
-	    	     $orderStatusFinal[$v['orderId']]['status'] = 0;
+	    	     $orderStatusFinal[$v['orderId']]['orderStatus'] = 0;
                 $v['goodsName'] = WSTStripTags($v['goodsName']);
                 $shotGoodsSpecNames = [];
                 if ($v['goodsSpecNames'] != "") {
@@ -862,6 +862,7 @@ class Orders extends Base{
                  //目前逻辑是单个商品的状态取订单的状态，
 	    	 	if (empty($v['refundId'])) {
                     $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
+
 	    	 	}else{
 	    	 	    if ($v['refundStatus'] == Refund::REFUND_CANCEL) {
                         $v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
@@ -871,7 +872,7 @@ class Orders extends Base{
 
                  //订单商品中有一个商品不退款就代表订单交易成功
                 if (in_array($v['refundStatus'], $successStatus)) {
-                    $orderStatusFinal[$v['orderId']]['status'] = 1;
+                    $orderStatusFinal[$v['orderId']]['orderStatus'] = 1;
                 }
 
                  $goodsMap[$v['orderId']][] = $v;
@@ -897,8 +898,7 @@ class Orders extends Base{
 	    	 	 $page['data'][$key]['payTypeName'] = WSTLangPayType($v['payType']);
 	    	 	 $page['data'][$key]['deliverTypeName'] = WSTLangDeliverType($v['deliverType'] == 1);
 	    		 $page['data'][$key]['orderCodeTitle'] = WSTOrderModule($v['orderCode']);
-                 $page['data'][$key]['orderStausName'] = WSTLangOrderFinalStatus($orderStatusFinal);
-                 $page['data'][$key]['status'] = $orderStatusFinal[$v['orderId']]['status'];
+                 $page['data'][$key]['orderStausName'] = WSTLangOrderFinalStatus($orderStatusFinal[$v['orderId']]['orderStatus']);
 	    	 	 if ($v["orderStatus"] == -2) {
 					$page['data'][$key]['pkey'] = WSTBase64urlEncode($v["orderNo"] . "@0");
 				}
@@ -929,7 +929,7 @@ class Orders extends Base{
 	    	 }
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
-	    print_r($page);die;
+
 	    return $page;
 	}
 	
@@ -1322,11 +1322,7 @@ class Orders extends Base{
 	 * 
 	 */
 	public function deleteOrder($uid=0){
-		$orderId = (int)input('param.id');
-		$orderStatus = self::where(['orderId'=>$orderId])->value('orderStatus');
-		if (in_array($orderStatus,[-2,-1,0,1])){
-			return WSTReturn('操作失败，该订单状态不允许删除操作');
-		}
+		$orderId = (int)input('post.id');
 		self::where(['orderId'=>$orderId])->update(['orderStatus'=>7]);
 		return WSTReturn('操作成功',1);
 	}
@@ -1404,7 +1400,7 @@ class Orders extends Base{
 	            return WSTReturn('操作失败',-1);
 	        }
 		}
-		return WSTReturn('操作失败，请确认订单状态');
+		return WSTReturn('操作成功',1);
 	}
 
 	

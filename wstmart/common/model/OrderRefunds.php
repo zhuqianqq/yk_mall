@@ -230,7 +230,7 @@ class OrderRefunds extends Base{
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
         $page = Db::name('orders')->alias('o')
-            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4, 5)')
+            ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4,5)')
             ->where($where)
             ->field('orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.refundRemark,isRefund,orf.createTime,o.orderCode')
             ->order('orf.createTime', 'desc')
@@ -246,7 +246,7 @@ class OrderRefunds extends Base{
             $ids = implode(',', $orderIds);
             $list = Db::name('order_goods')->alias('og')
                 ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
-                ->where("og.orderId in (" . $ids . ") and og.refundStatus > 0")
+                ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5)")
                 ->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
                 ->order('orf.createTime', 'desc')
                 ->paginate(input('limit/d'))->toArray();
@@ -258,7 +258,36 @@ class OrderRefunds extends Base{
             }
         }
         return $list;
-    }
+	}
+	
+
+	/**
+     * 获取用户退款订单详情
+     */
+    public function orderDetailrefund()
+    {
+		$where = [];
+        $where[] = ['og.orderId', '=', (int)input('param.orderId')];
+		$where[] = ['og.goodsId', '=', (int)input('param.goodsId')];
+		
+		$orderDetail = Db::name('order_goods')->alias('og')
+		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
+		->where($where)
+		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg,
+		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.logisticNum,orf.logisticInfo,orf.createTime,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
+		->order('orf.createTime', 'desc')
+		->find() ?? [];
+
+		if($orderDetail){
+			$orderDetail['refundMoney'] = bcmul($orderDetail['goodsNum'], $orderDetail['goodsPrice'], 2);
+			$orderDetail['refundStatusText'] = WSTLangOrderDetailRefundStatus($orderDetail['refundStatus']);
+			$orderDetail['expressInfo'] = Db::name('express')->where("dataFlag = 1")->select()??[];
+			//店铺退货地址信息
+			$orderDetail['shopInfo'] = Db::name('shops')->field('shopkeeper,shopTel,shopAddress')->where("shopId",$orderDetail['shopId'])->find();
+		}
+		return $orderDetail;
+	}
 
     /**
      * 获取退款资料

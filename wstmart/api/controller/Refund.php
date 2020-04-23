@@ -113,6 +113,7 @@ class Refund extends Base
                 $refund->refundImgs = $refundImgs;
                 $refund->lastStatus = $orderStatus;
                 $refund->goodsStatus = $goodsStatus;
+                $refund->trade_no = $order['orderunique'];
                 $refund->save();
             }
             $order->isRefund = 1;
@@ -195,6 +196,61 @@ class Refund extends Base
         }
     }
 
+    /***
+     * 删除退款
+     * @return array
+     */
+    public function delRefund()
+    {
+        $userId = (int)$this->user_id;
+        $orderId = (int)input('post.orderId');
+        $goodsId = (int)input('post.goodsId');
+        if (empty($userId) || empty($orderId)) {
+            return $this->outJson(100, "缺少参数!");
+        }
+        $order = \wstmart\common\model\Orders::get($orderId);
+        if (empty($order)) {
+            return $this->outJson(100, "没有数据!");
+        }
+        if ($order['userId'] != $userId) {
+            return $this->outJson(100, "没有数据!");
+        }
+        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if (empty($orderGoods)) {
+            return $this->outJson(100, "没有数据!");
+        }
+        // 0初始 1 退款中 2 退款成功 3 退款失败
+        $orderGoodsStatus = $orderGoods['refundStatus'];
+        if (!in_array($orderGoodsStatus, [2])) {
+            return $this->outJson(100, "不可操作!");
+        }
+
+        Db::startTrans();
+        try {
+            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if (empty($refundExist)) {
+                throw new \Exception('没有数据', 100);
+            }
+            $refundStatus = $refundExist['refundStatus']; // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单
+
+            if (!in_array($refundStatus, [2])) {
+                // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意
+                throw new \Exception('不可操作', 100);
+            }
+            $refundExist->refundStatus = 6;
+            $refundExist->save();
+
+            // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
+            $orderGoods->refundStatus =  4;
+            $orderGoods->save();
+            Db::commit();
+            return $this->outJson(0,  '提交成功');
+        } catch (\Exception $e) {
+            Db::rollback();
+            return $this->outJson(100, $e->getMessage() ?? '接口异常');
+        }
+    }
+
     /**
      * 退换货原因
      * @return array
@@ -227,6 +283,38 @@ class Refund extends Base
         $m = new \wstmart\common\model\OrderRefunds();
         $rs = $m->refundPageQuery();
         return $this->outJson(0, "success", $rs);
+    }
+
+    /**
+     * 订单详情-退款
+     */
+    public function getRefundDetail()
+    {
+        $orderId = input('param.orderId','');
+        $goodsId = input('param.goodsId','');
+        if (empty($orderId)||empty($goodsId)) {
+            return $this->outJson(100, "缺少参数");
+        }
+        $m = new \wstmart\common\model\OrderRefunds();
+        $rs = $m->orderDetailrefund();
+        return $this->outJson(0, "success", $rs);
+    }
+
+
+    /**
+     * 填写用户的退款物流信息
+     */
+    public function setlogisticInfo()
+    {
+        $orderId = input('param.orderId','');
+        $goodsId = input('param.goodsId','');
+        $logisticInfo = input('param.logisticInfo','');
+        $logisticNum = input('param.logisticNum','');
+        if (!$logisticInfo||!$logisticNum||!$orderId||!$goodsId) {
+            return $this->outJson(100, "缺少参数");
+        }
+        Db::name('order_refunds')->where(['orderId'=>$orderId,'goodsId'=>$goodsId])->update(['logisticInfo'=>$logisticInfo,'logisticNum'=>$logisticNum]);
+        return $this->outJson(0, "success");
     }
 
     /**

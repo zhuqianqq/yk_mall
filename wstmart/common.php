@@ -1162,6 +1162,24 @@ function WSTLangOrderRefundStatus($v){
     }
 }
 
+
+/**
+ * 买家订单详情中的退款状态
+ */
+function WSTLangOrderDetailRefundStatus($v){
+    //  1 退款中 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
+    switch($v){
+       
+        case 1:return '退款中,等待商家审核';
+        case 3:return '退款失败';
+		case 2:return '退款成功';
+		case 4:return '商家已同意退款,请及时退回商品';
+        case 5:return '退款关闭';
+    }
+}
+
+
+
 /**
  * 卖家订单状态
  */
