@@ -973,7 +973,7 @@ class Orders extends Base{
 
 		$page = $this->alias('o')->where($where)->where($condition)
 		      ->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId and refundStatus=0','left')
-		      ->field('o.orderRemarks,o.noticeDeliver,o.orderId,orderNo,goodsMoney,totalMoney,realTotalMoney,orderStatus,deliverType,deliverMoney,isAppraise,isRefund,o.deliverType deliverTypes
+		      ->field('o.orderRemarks,o.noticeDeliver,o.orderId,orderNo,goodsMoney,o.totalMoney,realTotalMoney,orderStatus,deliverType,deliverMoney,isAppraise,isRefund,o.deliverType deliverTypes
 		              ,payType,payFrom,userAddress,orderStatus,isPay,isAppraise,userName,orderSrc,o.createTime,orf.id refundId,o.orderCode')
 			  ->order('o.createTime', 'desc')
 			  ->paginate()->toArray();
