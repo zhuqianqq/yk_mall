@@ -181,12 +181,12 @@ class WeixinPay
             'mch_id' => $this->mchId,
             'nonce_str' => $this->createNonceString(),
             'out_trade_no' => $order->trade_no,
-            'out_refund_no' => $order->refund_no,
-            'total_fee' => $order->money * 100,
-            'refund_fee' => $order->money * 100,
+            'out_refund_no' => $order->refundTradeNo,
+            'total_fee' => $order->totalMoney * 100,
+            'refund_fee' => $order->backMoney * 100,
         ];
 
-        switch ($order->type) {
+        switch ($order->refundTo) {
             case OrderRefunds::REFUND_WX_NATIVE:
                 $this->certPath = self::PEM_CERT;
                 $this->keyPath = self::PEM_KEY;
