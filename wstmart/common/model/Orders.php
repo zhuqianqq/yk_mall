@@ -1701,7 +1701,7 @@ class Orders extends Base{
 		               ->join('__ORDER_COMPLAINS__ oc','oc.orderId=o.orderId','left')
 		               ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId','left')
 		               ->where('o.dataFlag=1 and o.orderId='.$orderId.' and ( o.userId='.$userId.' or o.shopId='.$shopId.')')
-		               ->field('o.*,s.userId shopUserId,s.areaId shopAreaId,s.shopAddress,s.shopTel,s.shopName,s.shopQQ,s.shopWangWang,orf.id refundId,orf.refundRemark,orf.refundStatus,orf.refundTime,orf.backMoney,orf.backMoney,oc.complainId')->find();
+		               ->field('o.*,s.userId shopUserId,s.areaId shopAreaId,s.shopKeeper,s.shopAddress,s.shopTel,s.shopName,s.shopQQ,s.shopWangWang,orf.id refundId,orf.refundRemark,orf.refundStatus,orf.refundTime,orf.backMoney,orf.backMoney,oc.complainId')->find();
 		if(empty($orders))return WSTReturn("无效的订单信息");
 		// 获取店铺地址
 		$orders['shopAddr'] = model('common/areas')->getParentNames($orders['shopAreaId']);
@@ -1717,7 +1717,15 @@ class Orders extends Base{
 			$logFilter[] = $v['orderStatus'];
 		}
 		//获取订单商品
-		$orders['goods'] = Db::name('order_goods')->alias('og')->join('__GOODS__ g','g.goodsId=og.goodsId','left')->where('orderId',$orderId)->field('og.*,g.goodsSn')->order('id asc')->select();
+		$orders['goods'] = Db::name('order_goods')->alias('og')
+							->join('__GOODS__ g','g.goodsId=og.goodsId','left')
+							->join('__ORDER_REFUNDS__ orf ','og.orderId=orf.orderId','left')
+							->where('og.orderId',$orderId)
+							->field('og.*,g.goodsSn,orf.refundStatus')->order('id asc')
+							->select();
+
+		$isAllCanRefund = true; //是否该订单商品全部申请了退款的标志  默认为true
+
 		foreach ($orders['goods'] as $key => $v) {
 		 	$orders['goods'][$key]['goodsName'] = WSTStripTags($v['goodsName']);
 			//如果是虚拟商品
@@ -1736,9 +1744,40 @@ class Orders extends Base{
 	    	 	}
 		 	}
 		 	$orders['goods'][$key]['shotGoodsSpecNames'] = implode('，',$shotGoodsSpecNames);
-		 	$orders['goods'][$key]['goodsSpecNames'] = $goodsSpecNamesReplace;
+			$orders['goods'][$key]['goodsSpecNames'] = $goodsSpecNamesReplace;
+
+			//商品是否可以申请退款
+			$orders['goods'][$key]['allowRefund'] = 0;
+
+			//orderStatus 为0：待发货 1：待收货 2：待评价/已完成 （已完成的售后15天之内） 并且该订单对应的商品没有过退款申请
+			if(!$v['refundStatus']){
+
+				if ($orders['orderStatus'] == 0 || $orders['orderStatus'] == 1){
+
+					$orders['goods'][$key]['allowRefund'] = 1;
+	
+				}else if($orders['orderStatus'] == 2){
+	
+					$now = time();
+					// 售后结束日期
+					$endTime = strtotime($orders['afterSaleEndTime']);
+					$_rs = ($now <= $endTime);
+					if($_rs){
+						$orders['goods'][$key]['allowRefund'] = 1;
+					}
+				}
+				
+			}
+
+			$isAllCanRefund = $isAllCanRefund&&$v['refundStatus'];
+			
 		}
-		
+
+		//如果该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+		if($isAllCanRefund){
+			$orders['orderStatus'] = -3;
+		}
+	
         // 发货时间与快递单号
         $orderExpressNos = Db::name('order_express')->where([['orderId', '=', $orderId]])->field("expressNo, expressId")->find();
 		$expressId = '';
@@ -1772,15 +1811,18 @@ class Orders extends Base{
 			}
 		}
 
-		$orders['allowRefund'] = 0;
-	 	//只要是已支付的，并且没有退款的，都可以申请退款操作
-	 	if ($orders['payType'] == 1 && $orders['isRefund']==0 && $orders['refundId'] == '' && ($orders['isPay'] ==1 || $orders['useScore'] > 0)){
-              $orders['allowRefund'] = 1;
-	 	}
-	 	//货到付款中使用了积分支付的也可以申请退款
-	 	if ($orders['payType'] == 0 && $orders['useScore'] > 0 && $orders['refundId'] == '' && $orders['isRefund'] == 0) {
-              $orders['allowRefund'] = 1;
-	 	}
+		$orders['isAllowRefund'] = $orders['isClosed'] == 1 ? 0 : 1;
+
+		//$orders['allowRefund'] = 0;
+	 	// //只要是已支付的，并且没有退款的，都可以申请退款操作
+	 	// if ($orders['payType'] == 1 && $orders['isRefund']==0 && $orders['refundId'] == '' && ($orders['isPay'] ==1 || $orders['useScore'] > 0)){
+        //       $orders['allowRefund'] = 1;
+	 	// }
+	 	// //货到付款中使用了积分支付的也可以申请退款
+	 	// if ($orders['payType'] == 0 && $orders['useScore'] > 0 && $orders['refundId'] == '' && $orders['isRefund'] == 0) {
+        //       $orders['allowRefund'] = 1;
+		// }
+		 
 		// 是否可申请售后
 		$orders['canAfterSale'] = false;
 		// 订单已确认收货

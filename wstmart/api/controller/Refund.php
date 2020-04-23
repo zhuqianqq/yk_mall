@@ -18,6 +18,14 @@ class Refund extends Base
     CONST REFUND_DELETE = 6;//删除订单
     CONST REFUND_WAIT_RECIVE = 7;//等待商家收货
 
+//    public function test()
+//    {
+//        $refundId = 21;
+//        $orderRefund = \wstmart\common\model\OrderRefunds::get($refundId);
+//        $refund = new \wstmart\common\pay\Refund();
+//        $refund->refund($orderRefund);
+//    }
+
     /**
      * 申请退款
      * @return array
@@ -52,6 +60,13 @@ class Refund extends Base
             return $this->outJson(100, "没有数据!");
         }
         $orderStatus = $order['orderStatus']; // -3：退款/拒收 -2：待付款 -1：已取消 0：待发货 1：待收货 2：待评价/已完成 6：取消订单 7：删除订单
+        if (!in_array($orderStatus, [0, 1, 2])) {
+            return $this->outJson(100, "不可操作!");
+        }
+        // 0未关闭 1 已关闭
+        if (1 == $order['isClosed']) {
+            return $this->outJson(100, "不可操作!");
+        }
         // 0初始 1 退款中 2 退款成功 3 退款失败
         $orderGoodsStatus = $orderGoods['refundStatus'];
         if (!in_array($orderGoodsStatus, [0])) {
@@ -101,6 +116,20 @@ class Refund extends Base
                 $refundExist->lastStatus = $orderStatus;
                 $refundExist->save();
             } else {
+                // 1wxapp 2 xcx 3alipay
+                switch ($order['payFrom']) {
+                    case 'alipays':
+                        $refundTo = 3;
+                        break;
+                    case 'xcx':
+                        $refundTo = 2;
+                        break;
+                    case 'weixinpays':
+                        $refundTo = 1;
+                        break;
+                    default:
+                        $refundTo = 0;
+                }
                 // 不存在
                 $refund = new \wstmart\common\model\OrderRefunds();
                 $refund->orderId = $orderId;
@@ -108,6 +137,7 @@ class Refund extends Base
                 $refund->refundReson = $refundCode;
                 $refund->refundOtherReson = $refundReason;
                 $refund->backMoney = bcdiv($refundMoney, 1, 2);
+                $refund->totalMoney = bcdiv($order['realTotalMoney'], 1, 2);
                 $refund->refundTradeNo = $refundNo;
                 $refund->refundRemark = $refundMark;
                 $refund->refundStatus = 1;
@@ -115,6 +145,7 @@ class Refund extends Base
                 $refund->refundImgs = $refundImgs;
                 $refund->lastStatus = $orderStatus;
                 $refund->goodsStatus = $goodsStatus;
+                $refund->refundTo = $refundTo;
                 $refund->trade_no = $order['orderunique'];
                 $refund->save();
             }
