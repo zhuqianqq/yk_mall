@@ -113,6 +113,7 @@ class Refund extends Base
                 $refund->refundImgs = $refundImgs;
                 $refund->lastStatus = $orderStatus;
                 $refund->goodsStatus = $goodsStatus;
+                $refund->trade_no = $order['orderunique'];
                 $refund->save();
             }
             $order->isRefund = 1;
