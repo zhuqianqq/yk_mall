@@ -109,17 +109,74 @@ class OrderRefunds extends Base{
         $id = (int)input('post.id');
         if($id==0)return WSTReturn("操作失败!");
         $refund = $this->get($id);
-        if(empty($refund) || $refund->refundStatus!=1)return WSTReturn("该退款订单不存在或已退款!");
-        $rs = array();
-        $order = model('orders')->get($refund->orderId);
+        if(empty($refund) || !in_array($refund->refundStatus, [1, 4, 7]))return WSTReturn("该退款订单不存在或已退款!");
+
         $orderRefund = \wstmart\common\model\OrderRefunds::get($id);
         $refund = new \wstmart\common\pay\Refund();
         $rs = $refund->refund($orderRefund);
+
         if (-1 == $rs['status']) {
+            // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
+            $this->fail($orderRefund, $rs['msg']);
             return WSTReturn("退款失败:" . $rs['msg'],-1);
         }
+        $this->success($orderRefund);
         // 成功进行逻辑处理
         return WSTReturn("退款成功",1);
+    }
+
+    /**
+     * 退款失败更新数据库
+     * @param OrderRefunds $orderRefund
+     * @param $msg
+     */
+    public function fail(OrderRefunds $orderRefund, $msg)
+    {
+        Db::startTrans();
+        try {
+            // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
+            $orderRefund->refundStatus = 3;
+            $orderRefund->failReason = $msg;
+            $orderRefund->save();
+
+            $orderId = $orderRefund->orderId;
+            $goodsId = $orderRefund->goodsId;
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if (!empty($orderGoods)) {
+                // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
+                $orderGoods->refundStatus = 3;
+                $orderGoods->save();
+            }
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+        }
+    }
+
+    /**
+     * 退款成功进行操作
+     * @param OrderRefunds $orderRefund
+     */
+    public function success(OrderRefunds $orderRefund)
+    {
+        Db::startTrans();
+        try {
+            // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
+            $orderRefund->refundStatus = 2;
+            $orderRefund->save();
+
+            $orderId = $orderRefund->orderId;
+            $goodsId = $orderRefund->goodsId;
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if (!empty($orderGoods)) {
+                // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
+                $orderGoods->refundStatus = 2;
+                $orderGoods->save();
+            }
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+        }
     }
 
 	/**
