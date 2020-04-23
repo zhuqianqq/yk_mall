@@ -1126,10 +1126,15 @@ function WSTLangOrderStatus($v){
 /**
  * 买家订单状态
  */
-function WSTLangOrderFinalStatus($v){
+function WSTLangOrderListStatus($v){
     switch($v){
-        case 1:return '交易成功';
-        case 0:return '交易关闭';
+        case -2:return '待支付';
+        case 0:return '待发货';
+        case 1:return '待收货';
+        case 2:return '交易成功';
+        case -7:
+        case -1:
+        case 6:return '交易失败';
     }
 }
 

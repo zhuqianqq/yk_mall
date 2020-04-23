@@ -837,8 +837,8 @@ class Orders extends Base{
                  ->select();
 	    	 $goodsMap = [];
 
-	    	 $orderStatusFinal = [];//订单总状态
-             $successStatus = [OrderGoods::STATUS_INITION, OrderGoods::STATUS_REFUND_FAIL];
+	    	 //$orderStatusFinal = [];//订单总状态
+             //$successStatus = [OrderGoods::STATUS_INITION, OrderGoods::STATUS_REFUND_FAIL];
 
 	    	 foreach ($goods as $v) {
 	    	     $orderStatusFinal[$v['orderId']]['orderStatus'] = 0;
@@ -871,9 +871,9 @@ class Orders extends Base{
                 }
 
                  //订单商品中有一个商品不退款就代表订单交易成功
-                if (in_array($v['refundStatus'], $successStatus)) {
+                /*if (in_array($v['refundStatus'], $successStatus)) {
                     $orderStatusFinal[$v['orderId']]['orderStatus'] = 1;
-                }
+                }*/
 
                  $goodsMap[$v['orderId']][] = $v;
 	    	 }
@@ -898,7 +898,8 @@ class Orders extends Base{
 	    	 	 $page['data'][$key]['payTypeName'] = WSTLangPayType($v['payType']);
 	    	 	 $page['data'][$key]['deliverTypeName'] = WSTLangDeliverType($v['deliverType'] == 1);
 	    		 $page['data'][$key]['orderCodeTitle'] = WSTOrderModule($v['orderCode']);
-                 $page['data'][$key]['orderStausName'] = WSTLangOrderFinalStatus($orderStatusFinal[$v['orderId']]['orderStatus']);
+                 //$page['data'][$key]['orderStausName'] = WSTLangOrderFinalStatus($orderStatusFinal[$v['orderId']]['orderStatus']);
+                 $page['data'][$key]['orderStausName'] = WSTLangOrderListStatus($v['orderStatus']);
 	    	 	 if ($v["orderStatus"] == -2) {
 					$page['data'][$key]['pkey'] = WSTBase64urlEncode($v["orderNo"] . "@0");
 				}
