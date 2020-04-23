@@ -228,7 +228,7 @@ class OrderRefunds extends Base{
         $where[] = ['o.dataFlag', '=', 1];
         $where[] = ['isRefund', '=', 1];
 
-        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
         $page = Db::name('orders')->alias('o')
             ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId and orf.refundStatus in (1,2,3,4,5)')
             ->where($where)
