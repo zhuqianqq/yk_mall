@@ -10,11 +10,13 @@ use wstmart\common\model\OrderGoods;
 
 class Refund extends Base
 {
-    CONST REFUND_APPLICATION = 1;
-    CONST REFUND_SUCCESS = 2;
-    CONST REFUND_FAIL = 3;
-    CONST REFUND_AGREE = 4;
-    CONST REFUND_CANCEL = 5;
+    CONST REFUND_APPLICATION = 1; //申请退款
+    CONST REFUND_SUCCESS = 2; //2退款成功
+    CONST REFUND_FAIL = 3;//退款失败
+    CONST REFUND_AGREE = 4;//退货退款同意
+    CONST REFUND_CANCEL = 5;//撤销退款
+    CONST REFUND_DELETE = 6;//删除订单
+    CONST REFUND_WAIT_RECIVE = 7;//等待商家收货
 
     /**
      * 申请退款
