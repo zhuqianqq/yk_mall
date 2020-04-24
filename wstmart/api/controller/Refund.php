@@ -35,6 +35,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsSpecId = (int)input('post.goodsSpecId');
         $goodsStatus = (int)input('post.goodsStatus');
         $refundType = (int)input('post.refundType', 1); // 1 退货退款 2 仅退款
         $refundCode = (int)input('post.refundCode'); // 退款CODE
@@ -55,7 +56,11 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if ($goodsSpecId) {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+        } else {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        }
         if (empty($orderGoods)) {
             return $this->outJson(100, "没有数据!");
         }
@@ -134,6 +139,7 @@ class Refund extends Base
                 $refund = new \wstmart\common\model\OrderRefunds();
                 $refund->orderId = $orderId;
                 $refund->goodsId = $goodsId;
+                $refund->goodsSpecId = $goodsSpecId;
                 $refund->refundReson = $refundCode;
                 $refund->refundOtherReson = $refundReason;
                 $refund->backMoney = bcdiv($refundMoney, 1, 2);
@@ -172,6 +178,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsSpecId = (int)input('post.goodsSpecId');
         if (empty($userId) || empty($orderId)) {
             return $this->outJson(100, "缺少参数!");
         }
@@ -182,7 +189,11 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if ($goodsSpecId) {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+        } else {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        }
         if (empty($orderGoods)) {
             return $this->outJson(100, "没有数据!");
         }
