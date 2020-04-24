@@ -781,7 +781,29 @@ class Orders extends Base{
 		}
 		return $data;
 	}
-	
+
+    /**
+     * 获取用户订单各状态数量
+     */
+	public function getUserOrderCount($orderStatus, $userId){
+        $where = ['o.userId' => $userId, 'o.dataFlag' => 1];
+        $condition = [];
+        if (is_array($orderStatus)) {
+            $condition[] = ['orderStatus', 'in', $orderStatus];
+        } else {
+            $where['orderStatus'] = $orderStatus;
+        }
+
+        $order = $this->alias('o');
+        if ($orderStatus == 'refund') {
+            $order = $order->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId and orf.refundStatus in (1,2,3,4,5,7)','left');
+        }else
+            $order = $order->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId','left');
+        $count = $order->where($where)->where($condition)->group('o.orderId') ->count();
+
+        return $count;
+    }
+
 	/**
 	 * 获取用户订单列表
 	 */

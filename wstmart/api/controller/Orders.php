@@ -223,6 +223,35 @@ class Orders extends Base{
 		return $this->fetch("users/orders/orders_list");
 	}
 
+    /**
+     * 获取不同状态的订单数
+     */
+	public function getOrderStatusCount(){
+        $userId = input('param.user_id');
+        if (empty($userId)) {
+            return $this->outJson(100, "缺少参数");
+        }
+
+        $status = [
+            'waitPay' => [-2], //待支付
+            'waitDeliver' => [0,1],//代发货
+            'waitReceive' => [1,0],//待收货
+            'finish' => [2],//待评价/已完成
+            'refund' => [-9999],//待评价/已完成
+            'all' => [-2,-1,0,1,2,6],//全部订单
+        ];
+
+        $m = new M();
+        $rs['all'] = $m->getUserOrderCount($status['waitPay'],$userId);
+        $rs['waitDeliver'] = $m->getUserOrderCount($status['waitReceive'],$userId);
+        $rs['waitReceive'] = $m->getUserOrderCount($status['waitReceive'],$userId);
+        $rs['finish'] = $m->getUserOrderCount($status['finish'],$userId);
+        $rs['refund'] = $m->getUserOrderCount($status['refund'],$userId);
+        $rs['all'] = $m->getUserOrderCount($status['all'],$userId);
+
+        return $this->outJson(0, "success", $rs);
+    }
+
 	/**
 	* 订单列表
 	*/
