@@ -360,7 +360,10 @@ class Orders extends Base{
 
 		$m = new M();
 		$rs = $m->receive($orderId, $userId);
-		return $rs;
+        if ($rs['status'] == -1) {
+            return $this->outJson(100, $rs['msg']);
+        }
+        return $this->outJson(0, '操作成功', $rs);
 	}
 
 	/**
