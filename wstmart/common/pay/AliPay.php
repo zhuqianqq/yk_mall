@@ -137,14 +137,13 @@ class AliPay
      */
     public function refund(OrderRefunds $order)
     {
-
         $out_trade_no = $order->trade_no;
 
         //退款金额，必填
-        $refund_amount = $order->backMoney;
+        $refund_amount = bcdiv($order->backMoney, 1, 2);
 
         //退款说明
-        $refund_reason = '';
+        $refund_reason = '退款';
 
         //退款单号
         $out_request_no = $order->refundTradeNo;
@@ -179,31 +178,31 @@ class AliPay
      */
     private function getAlipayConfig()
     {
-        $configObj = new config();
+//        $configObj = new config();
         $config = array (
             //应用ID,您的APPID。
-            'app_id' => $configObj->appId,
+            'app_id' => $this->appId,
 
             //商户私钥，您的原始格式RSA私钥
-            'merchant_private_key' => $configObj->merchant_private_key,
+            'merchant_private_key' => $this->rsaPrivateKey,
 
             //异步通知地址
-            'notify_url' => $configObj->notify_url,
+            'notify_url' => $this->notifyUrl,
 
             //同步跳转
-            'return_url' => $configObj->return_url,
+            'return_url' => "",
 
             //编码格式
-            'charset' => $configObj->charset,
+            'charset' => $this->fileCharset,
 
             //签名方式
-            'sign_type' => $configObj->sign_type,
+            'sign_type' => $this->signType,
 
             //支付宝网关
-            'gatewayUrl' => $configObj->gatewayUrl,
+            'gatewayUrl' => $this->gatewayUrl,
 
             //支付宝公钥,查看地址：https://openhome.alipay.com/platform/keyManage.htm 对应APPID下的支付宝公钥。
-            'alipay_public_key' => $configObj->alipay_public_key,
+            'alipay_public_key' => $this->rsaPublicKey,
 
 
         );

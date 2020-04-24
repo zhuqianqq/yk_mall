@@ -141,7 +141,12 @@ class OrderRefunds extends Base{
 
             $orderId = $orderRefund->orderId;
             $goodsId = $orderRefund->goodsId;
-            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            $goodsSpecId = $orderRefund->goodsSpecId;
+            if ($goodsSpecId) {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId =" . $goodsSpecId)->find();
+            } else {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            }
             if (!empty($orderGoods)) {
                 // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
                 $orderGoods->refundStatus = 3;
@@ -168,7 +173,12 @@ class OrderRefunds extends Base{
 
             $orderId = $orderRefund->orderId;
             $goodsId = $orderRefund->goodsId;
-            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            $goodsSpecId = $orderRefund->goodsSpecId;
+            if ($goodsSpecId) {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId =" . $goodsSpecId)->find();
+            } else {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            }
             if (!empty($orderGoods)) {
                 // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
                 $orderGoods->refundStatus = 2;
@@ -404,7 +414,7 @@ class OrderRefunds extends Base{
 		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
 		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
 		->where($where)
-		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg,
+		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,
 		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.logisticNum,orf.logisticInfo,orf.createTime,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
 		->order('orf.createTime', 'desc')
 		->find() ?? [];
