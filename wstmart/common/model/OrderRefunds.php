@@ -411,7 +411,7 @@ class OrderRefunds extends Base{
 		$where = [];
         $where[] = ['og.orderId', '=', (int)input('param.orderId')];
 		$where[] = ['og.goodsId', '=', (int)input('param.goodsId')];
-		
+
 		if(input('param.goodsSpecId','')){
 			$where[] = ['og.goodsSpecId', '=', (int)input('param.goodsSpecId','')];
 		}
@@ -420,8 +420,8 @@ class OrderRefunds extends Base{
 		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
 		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
 		->where($where)
-		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,
-		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.logisticNum,orf.logisticInfo,orf.createTime,o.orderStatus,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
+		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,orf.refundTo,
+		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.logisticNum,orf.logisticInfo,orf.createTime,orf.refundTime,o.orderStatus,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
 		->order('orf.createTime', 'desc')
 		->find() ?? [];
 
