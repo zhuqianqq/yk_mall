@@ -311,10 +311,11 @@ class OrderRefunds extends Base{
     /**
      * 获取用户退款订单列表
      */
-    public function refundPageQuery()
+    public function refundPageQuery($userId = 0)
     {
         $where = [];
         $where[] = ['o.dataFlag', '=', 1];
+        $where[] = ['o.userId', '=', $userId];
         $where[] = ['isRefund', '=', 1];
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
