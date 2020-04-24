@@ -329,7 +329,7 @@ class Refund extends Base
             return $this->outJson(100, "缺少参数");
         }
         $m = new \wstmart\common\model\OrderRefunds();
-        $rs = $m->refundPageQuery();
+        $rs = $m->refundPageQuery($userId);
         return $this->outJson(0, "success", $rs);
     }
 
