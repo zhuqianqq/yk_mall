@@ -383,7 +383,11 @@ function toBack(p){
     location.href=WST.U('shop/ordercomplains/shopcomplain','p='+p);
 }
 function toBacks(p,src){
-    location.href=WST.U('shop/orders/'+src,'p='+p);
+    if(src=='orders'){
+        location.href=WST.U('admin/orders/index','p='+p);
+    }else{
+        location.href=WST.U('shop/orderrefunds/refund','p='+p);
+    }
 }
 function toRespond(id){
   location.href=WST.U('shop/ordercomplains/respond','id='+id+'&p='+WST_CURR_PAGE);

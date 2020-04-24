@@ -24,11 +24,17 @@ class Refund
             $result = $payer->refund($refund);
             Tools::addLog('refund_succ', "#Record {$refund->id} 退款成功 $payerClass:" . var_export($result, true));
             Db::commit();
-            return true;
+            return [
+                'status' => 1,
+                'data' => []
+            ];
         } catch (\Exception $e) {
             Db::rollback();
             Tools::addLog('refund_fail', "#Record {$refund->id} 退款失败: " .  $e->getMessage());
-            return false;
+            return [
+                'status' => -1,
+                'msg' => $e->getMessage()
+            ];
         }
     }
 
