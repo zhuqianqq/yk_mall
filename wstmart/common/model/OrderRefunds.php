@@ -412,6 +412,10 @@ class OrderRefunds extends Base{
         $where[] = ['og.orderId', '=', (int)input('param.orderId')];
 		$where[] = ['og.goodsId', '=', (int)input('param.goodsId')];
 		
+		if(input('param.goodsSpecId','')){
+			$where[] = ['og.goodsSpecId', '=', (int)input('param.goodsSpecId','')];
+		}
+		
 		$orderDetail = Db::name('order_goods')->alias('og')
 		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
 		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
