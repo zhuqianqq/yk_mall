@@ -16,42 +16,14 @@ use util\WechatHelper;
 class Common extends Base
 {
     protected $checkLogin = false;
-    /**
-     * @name 将二进制流变化成图片
-     * @Author: 岳晓通
-     * @ $imgs 二进制流格式的图片
-     * @ $new_file 返回的是图片的路径
-     * @data 2018年3月14日 15:18:27
-     */
-    public function change_picture($imgs){
-        $path="/www/";
-        if(!is_dir($path)){
-            mkdir($path);
-        }
-        $new_file = "/www/" . time().".png"; //生成图片的名字
-        if(!empty($imgs)){
-            $file = fopen($new_file,"w");//打开文件准备写入
-            fwrite($file,$imgs);//写入
-            fclose($file);//关闭
-        }
-        return $new_file;
-    }
-    function base64EncodeImage ($image_file) {
-        $image_info = getimagesize($image_file);
-        $image_data = fread(fopen($image_file, 'r'), filesize($image_file));
-        $base64_image = 'data:' . $image_info['mime'] . ';base64,' . chunk_split(base64_encode($image_data));
-        return $base64_image;
-    }
+
     /**
      * 图片上传-多图 仅支持base64
      */
     public function multiUpload()
     {
-//        $img = $this->change_picture('blob:http://172.16.2.185:10087/a87e2d67-1ffd-43b8-a6f4-25cfe9abf042');
-//        echo $this->base64EncodeImage($img);die;
         if ($this->request->isPost()) {
             set_time_limit(0);
-            $zip_size = 500 * 1024;
             $max_size = 10 * 1024 * 1024;
             $type_arr = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif'];
             $base64_data = $this->request->post('file');
@@ -89,56 +61,6 @@ class Common extends Base
             $file_return = $ret['data']['url'];
             $data['url'] = $file_return;
             return $this->outJson(0, "成功", $data);
-
-            $base64_data_arr = $this->request->post('file');
-            if (empty($base64_data_arr)) {
-                return $this->outJson(100, '参数错误');
-            }
-
-            $upload_type = "base64";
-            if ($upload_type == "base64") {
-                if (count($base64_data_arr) > 3) {
-                    return $this->outJson(100, '最多只能传3张');
-                }
-                $file_return = '';
-                foreach ($base64_data_arr as $base64_data) {
-                    if (!preg_match('/^(data:\s*(image\/\w+);base64,)/', $base64_data, $result)) {
-                        return $this->outJson(100, "图片数据不是base64格式");
-                    }
-                    $file_type = $result[2];
-                    if (!in_array($file_type, $type_arr)) {
-                        return $this->outJson(100, '图片格式不正确，只允许jpg,jpeg,png或gif格式');
-                    }
-
-                    $file_data = base64_decode(str_replace($result[1], '', $base64_data)); //去掉data:image/jpeg;base64,
-                    if ($file_data === false) {//解码失败
-                        return $this->outJson(100, "解码base64图片数据失败");
-                    }
-                    if (strlen($file_data) <= 0) {
-                        return $this->outJson(100, '文件大小不能为空');
-                    }
-                    if (strlen($file_data) > $max_size) {
-                        return $this->outJson(100, '图片大小不能超过10Mb');
-                    }
-
-                    $file_path = $this->getSavePath();
-                    $len = file_put_contents($file_path, $file_data);
-
-                    if (!$len) {
-                        return $this->outJson(200, "写入图片数据失败");
-                    }
-
-                    $ret = CosHelper::upload($file_path);
-                    if ($ret['code'] != 0) {
-                        return $this->outJson(200, "上传失败");
-                    }
-                    @unlink($file_path);
-                    $file_return .= $ret['data']['url'] . ',';
-                }
-                $file_return = rtrim($file_return, ',');
-                $data['url'] = $file_return;
-                return $this->outJson(0, "成功", $data);
-            }
         }
         return $this->outJson(-1, "非法请求");
     }
