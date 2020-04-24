@@ -46,7 +46,7 @@ class Refund extends Base
         if ($refundType != 1) {
             $refundType = 2;
         }
-        if (empty($userId) || empty($orderId) || empty($goodsId)) {
+        if (empty($userId) || empty($orderId) || empty($goodsId) || empty($refundCode) || empty($refundReason)) {
             return $this->outJson(100, "缺少参数!");
         }
         $order = \wstmart\common\model\Orders::get($orderId);
@@ -95,7 +95,11 @@ class Refund extends Base
         }
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            if ($goodsSpecId) {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+            } else {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            }
             // 订单号
             $refundNo = WSTOrderQnique();
             if (!empty($refundExist)) {
