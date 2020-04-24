@@ -7,6 +7,7 @@
  * 以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
  */
 namespace  wstmart\common\alipay;
+use util\Tools;
 use   wstmart\common\alipay\config;
 use wstmart\common\alipay\AlipayTradeQueryRequest;
 
@@ -198,11 +199,9 @@ class AlipayTradeService {
 	function writeLog($text) {
 		// $text=iconv("GBK", "UTF-8//IGNORE", $text);
 		//$text = characet ( $text );
-        $filename = '/www/logs/alipay_web.log';
-		file_put_contents ( $filename, date ( "Y-m-d H:i:s" ) . "  " . $text . "\r\n", FILE_APPEND );
+//        $filename = '/www/logs/alipay_web.log';
+        Tools::addLog('alipay_web', date ( "Y-m-d H:i:s" ) . "  " . $text . "\r\n");
 	}
-	
-
 }
 
 ?>
