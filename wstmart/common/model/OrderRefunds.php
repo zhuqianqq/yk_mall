@@ -311,10 +311,12 @@ class OrderRefunds extends Base{
     /**
      * 获取用户退款订单列表
      */
-    public function refundPageQuery()
+    public function refundPageQuery($userId = 0)
     {
         $where = [];
         $where[] = ['o.dataFlag', '=', 1];
+        // todo
+//        $where[] = ['o.userId', '=', $userId];
         $where[] = ['isRefund', '=', 1];
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
@@ -336,7 +338,7 @@ class OrderRefunds extends Base{
             $list = Db::name('order_goods')->alias('og')
                 ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
                 ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
-                ->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
+                ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
                 ->order('orf.createTime', 'desc')
                 ->paginate(input('limit/d'))->toArray();
             if (!empty($list['data'])) {
