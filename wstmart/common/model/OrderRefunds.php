@@ -141,7 +141,12 @@ class OrderRefunds extends Base{
 
             $orderId = $orderRefund->orderId;
             $goodsId = $orderRefund->goodsId;
-            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            $goodsSpecId = $orderRefund->goodsSpecId;
+            if ($goodsSpecId) {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId =" . $goodsSpecId)->find();
+            } else {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            }
             if (!empty($orderGoods)) {
                 // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
                 $orderGoods->refundStatus = 3;
@@ -168,7 +173,12 @@ class OrderRefunds extends Base{
 
             $orderId = $orderRefund->orderId;
             $goodsId = $orderRefund->goodsId;
-            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            $goodsSpecId = $orderRefund->goodsSpecId;
+            if ($goodsSpecId) {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId =" . $goodsSpecId)->find();
+            } else {
+                $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            }
             if (!empty($orderGoods)) {
                 // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
                 $orderGoods->refundStatus = 2;
