@@ -35,6 +35,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsSpecId = (int)input('post.goodsSpecId');
         $goodsStatus = (int)input('post.goodsStatus');
         $refundType = (int)input('post.refundType', 1); // 1 退货退款 2 仅退款
         $refundCode = (int)input('post.refundCode'); // 退款CODE
@@ -45,7 +46,7 @@ class Refund extends Base
         if ($refundType != 1) {
             $refundType = 2;
         }
-        if (empty($userId) || empty($orderId) || empty($goodsId)) {
+        if (empty($userId) || empty($orderId) || empty($goodsId) || empty($refundCode) || empty($refundReason)) {
             return $this->outJson(100, "缺少参数!");
         }
         $order = \wstmart\common\model\Orders::get($orderId);
@@ -55,7 +56,11 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if ($goodsSpecId) {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+        } else {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        }
         if (empty($orderGoods)) {
             return $this->outJson(100, "没有数据!");
         }
@@ -90,7 +95,11 @@ class Refund extends Base
         }
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            if ($goodsSpecId) {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+            } else {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            }
             // 订单号
             $refundNo = WSTOrderQnique();
             if (!empty($refundExist)) {
@@ -134,6 +143,7 @@ class Refund extends Base
                 $refund = new \wstmart\common\model\OrderRefunds();
                 $refund->orderId = $orderId;
                 $refund->goodsId = $goodsId;
+                $refund->goodsSpecId = $goodsSpecId;
                 $refund->refundReson = $refundCode;
                 $refund->refundOtherReson = $refundReason;
                 $refund->backMoney = bcdiv($refundMoney, 1, 2);
@@ -172,6 +182,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsSpecId = (int)input('post.goodsSpecId');
         if (empty($userId) || empty($orderId)) {
             return $this->outJson(100, "缺少参数!");
         }
@@ -182,7 +193,11 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if ($goodsSpecId) {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+        } else {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        }
         if (empty($orderGoods)) {
             return $this->outJson(100, "没有数据!");
         }
