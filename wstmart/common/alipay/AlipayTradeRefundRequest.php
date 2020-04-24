@@ -5,7 +5,7 @@
  * @author auto create
  * @since 1.0, 2016-12-06 16:07:23
  */
-namespace common\alipay;
+namespace wstmart\common\alipay;
 class AlipayTradeRefundRequest
 {
 	/** 

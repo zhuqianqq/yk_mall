@@ -8,8 +8,6 @@
  */
 namespace  wstmart\common\alipay;
 use util\Tools;
-use   wstmart\common\alipay\config;
-use wstmart\common\alipay\AlipayTradeQueryRequest;
 
 class AlipayTradeService {
 
@@ -132,7 +130,6 @@ class AlipayTradeService {
 		return $result;
 	}
 
-
 	
 	/**
 	 * alipay.trade.refund (统一收单交易退款接口)
@@ -197,11 +194,6 @@ class AlipayTradeService {
     }
 	//请确保项目文件有可写权限，不然打印不了日志。
 	function writeLog($text) {
-		// $text=iconv("GBK", "UTF-8//IGNORE", $text);
-		//$text = characet ( $text );
-//        $filename = '/www/logs/alipay_web.log';
         Tools::addLog('alipay_web', date ( "Y-m-d H:i:s" ) . "  " . $text . "\r\n");
 	}
 }
-
-?>
