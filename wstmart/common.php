@@ -1162,6 +1162,7 @@ function WSTLangGoodsRefundStatus($v)
 function WSTLangOrderRefundStatus($v){
     switch($v){
         case 4:
+        case 7:
         case 1:return '退款中';
         case 3:return '退款失败';
         case 2:return '退款成功';
