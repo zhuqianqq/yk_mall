@@ -1728,6 +1728,12 @@ class Orders extends Base{
 		// 获取店铺地址
 		$orders['shopAddr'] = model('common/areas')->getParentNames($orders['shopAreaId']);
 		$orders['shopAddress'] = implode('',$orders['shopAddr']).$orders['shopAddress'];
+		$orders['receiveTime'] = $orders['receiveTime'] ?  $orders['receiveTime'] : '';
+		$orders['deliveryTime'] = $orders['deliveryTime'] ?  $orders['deliveryTime'] : '';
+		$orders['payTime'] = $orders['payTime'] ?  $orders['payTime'] : '';
+		$orders['refundTime'] = $orders['refundTime'] ?  $orders['refundTime'] : '';
+		$orders['afterSaleEndTime'] = $orders['afterSaleEndTime'] ?  $orders['afterSaleEndTime'] : '';
+		
 		unset($orders['shopAddr']);
 		//获取订单信息
 		$log = Db::name('log_orders')->where('orderId',$orderId)->order('logId asc')->select();
