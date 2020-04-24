@@ -1733,7 +1733,22 @@ class Orders extends Base{
 		$orders['payTime'] = $orders['payTime'] ?  $orders['payTime'] : '';
 		$orders['refundTime'] = $orders['refundTime'] ?  $orders['refundTime'] : '';
 		$orders['afterSaleEndTime'] = $orders['afterSaleEndTime'] ?  $orders['afterSaleEndTime'] : '';
-		
+
+		$orders['countDown'] = 0;
+		//买家24小时付款的倒计时
+		if($orders['orderStatus'] == -2){
+			$countDown = strtotime($orders['createTime'])+ 86400 - strtotime("now");
+			if($countDown>0){
+				$orders['countDown'] = $countDown;
+			}
+		//买家确认收货的15天倒计时	
+		}else if($orders['orderStatus'] == 1){
+			$countDown = strtotime($orders['deliveryTime'])+ (86400*15) - strtotime("now");
+			if($countDown>0){
+				$orders['countDown'] = $countDown;
+			}
+		}
+
 		unset($orders['shopAddr']);
 		//获取订单信息
 		$log = Db::name('log_orders')->where('orderId',$orderId)->order('logId asc')->select();
