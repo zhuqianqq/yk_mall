@@ -1764,11 +1764,10 @@ class Orders extends Base{
 		//获取订单商品
 		$orders['goods'] = Db::name('order_goods')->alias('og')
 							->join('__GOODS__ g','g.goodsId=og.goodsId','left')
-							->join('__ORDER_REFUNDS__ orf ','og.orderId=orf.orderId','left')
+							->join('__ORDER_REFUNDS__ orf ','og.orderId=orf.orderId and og.goodsSpecId=orf.goodsSpecId','left')
 							->where('og.orderId',$orderId)
 							->field('og.*,g.goodsSn,orf.refundStatus')->order('id asc')
 							->select();
-
 
 		$refundStatusArr = []; //商品退款状态数组
 
