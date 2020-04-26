@@ -2,6 +2,8 @@
 namespace addons\cron\model;
 use think\addons\BaseModel as Base;
 use think\Db;
+use util\Tools;
+
 /**
  * 计划任务业务处理
  */
@@ -145,6 +147,7 @@ class Crons extends Base{
 	        $domain = request()->root(true);
 	        $domain = $domain."/".$cron->cronUrl;
 	        $data = $this->http($domain);
+	        Tools::addLog('cron', $data);
 	        $data = json_decode($data,true);
 	        $cron->isRunning = 0;
 	        if($data['status']==1){
