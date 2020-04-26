@@ -854,7 +854,7 @@ class Orders extends Base{
 	    	 }
 
 	    	 $goods = Db::name('order_goods')->alias('og')
-                 ->join('__ORDER_REFUNDS__ orf','orf.orderId=og.orderId and orf.goodsId=og.goodsId','left')
+                 ->join('__ORDER_REFUNDS__ orf','orf.orderId=og.orderId and orf.goodsId=og.goodsId and orf.goodsSpecId=og.goodsSpecId','left')
                  ->where([['og.orderId', 'in', $orderIds]])
                  ->field('og.*,orf.id as refundId,orf.refundStatus as goodsStatus')
                  ->select();
