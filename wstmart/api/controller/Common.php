@@ -18,6 +18,54 @@ class Common extends Base
     protected $checkLogin = false;
 
     /**
+     * 图片上传-多图 仅支持base64
+     */
+    public function multiUpload()
+    {
+        if ($this->request->isPost()) {
+            set_time_limit(0);
+            $max_size = 10 * 1024 * 1024;
+            $type_arr = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif'];
+            $base64_data = $this->request->post('file');
+            if (!preg_match('/^(data:\s*(image\/\w+);base64,)/', $base64_data, $result)) {
+                return $this->outJson(100, "图片数据不是base64格式");
+            }
+            $file_type = $result[2];
+            if (!in_array($file_type, $type_arr)) {
+                return $this->outJson(100, '图片格式不正确，只允许jpg,jpeg,png或gif格式');
+            }
+
+            $file_data = base64_decode(str_replace($result[1], '', $base64_data)); //去掉data:image/jpeg;base64,
+            if ($file_data === false) {//解码失败
+                return $this->outJson(100, "解码base64图片数据失败");
+            }
+            if (strlen($file_data) <= 0) {
+                return $this->outJson(100, '文件大小不能为空');
+            }
+            if (strlen($file_data) > $max_size) {
+                return $this->outJson(100, '图片大小不能超过10Mb');
+            }
+
+            $file_path = $this->getSavePath();
+            $len = file_put_contents($file_path, $file_data);
+
+            if (!$len) {
+                return $this->outJson(200, "写入图片数据失败");
+            }
+
+            $ret = CosHelper::upload($file_path);
+            if ($ret['code'] != 0) {
+                return $this->outJson(200, "上传失败");
+            }
+            @unlink($file_path);
+            $file_return = $ret['data']['url'];
+            $data['url'] = $file_return;
+            return $this->outJson(0, "成功", $data);
+        }
+        return $this->outJson(-1, "非法请求");
+    }
+
+    /**
      * 图片上传
      */
     public function upload()

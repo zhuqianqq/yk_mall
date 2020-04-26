@@ -23,8 +23,8 @@ class CronJobs extends Base{
 	 */
 	public function autoCancelNoPay(){
 		$autoCancelNoPayDays = (int)WSTConf('CONF.autoCancelNoPayDays');
-		// 超过1440分钟(24小时)的订单取消
-	 	$autoCancelNoPayDays = ($autoCancelNoPayDays>0)?$autoCancelNoPayDays:1440;
+	 	// $autoCancelNoPayDays = ($autoCancelNoPayDays>0)?$autoCancelNoPayDays:1440;
+	 	$autoCancelNoPayDays = 1440; 	// 超过1440分钟(24小时)的订单取消
 	 	$lastDay = date("Y-m-d H:i:s",strtotime("-".$autoCancelNoPayDays." minutes"));
 	 	$orders = Db::name('orders')->alias('o')->join('__SHOPS__ s','o.shopId=s.shopId','left')->where([['o.createTime','<',$lastDay],['o.orderStatus','=',-2],['o.dataFlag','=',1],['o.payType','=',1],['o.isPay','=',0]])->field("o.orderId,o.orderNo,o.userId,o.shopId,o.useScore,s.userId shopUserId,orderCode")->select();
 	 	if(!empty($orders)){
@@ -226,7 +226,8 @@ class CronJobs extends Base{
 	 */
 	public function autoReceive(){
 	 	$autoReceiveDays = (int)WSTConf('CONF.autoReceiveDays');
-	 	$autoReceiveDays = ($autoReceiveDays>0)?$autoReceiveDays:10;//避免有些客户没有设置值
+	 	//$autoReceiveDays = ($autoReceiveDays>0)?$autoReceiveDays:10;//避免有些客户没有设置值
+	 	$autoReceiveDays = 15;//15天自动确认收货
 	 	$lastDay = date("Y-m-d 00:00:00",strtotime("-".$autoReceiveDays." days"));
 	 	$rs = model('orders')->where([['deliveryTime','<',$lastDay],['orderStatus','=',1],['dataFlag','=',1]])->field("orderId,orderNo,shopId,userId,shopId,orderScore,commissionFee")->select();
 	 	if(!empty($rs)){
@@ -570,4 +571,81 @@ class CronJobs extends Base{
 	 	}
 		return WSTReturn('清除成功',1);
 	}
+
+    /**
+     * 自动同意退款-未发货2天 已发货5天
+     */
+    public function autoAgreeRefund()
+    {
+        $autoRefundDaysY = 5; // 已发货
+        $autoRefundDaysN = 2; // 未发货
+        // 退款
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
+
+        // 订单
+        // -3：退款/拒收 -2：待付款 -1：已取消 0：待发货 1：待收货 2：待评价/已完成 6：取消订单 7：删除订单
+        $refundStatusArr = [1, 4, 7];
+        $rs = model('order_refunds')
+            ->alias('orf')
+            ->join('__ORDERS__ o', 'orf.orderId = o.orderId','left')
+            ->where([['orf.refundStatus', 'in', $refundStatusArr], ['o.orderStatus', 'in', [0, 1, 2]], ['o.dataFlag', '=', 1]])
+            ->field("orf.id, orf.createTime, o.orderStatus, o.afterSaleEndTime, o.userId, o.orderId")
+            ->select();
+
+        $nowTime = time();
+        if(!empty($rs)){
+            Db::startTrans();
+            try{
+                foreach ($rs as $key => $order){
+                    $orderStatus = $order['orderStatus'];
+                    $refundId = $order['id'];
+                    // 申请退款时间
+                    $refundAddDate = $order['createTime'];
+                    $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                    switch ($orderStatus) {
+                        case 2:
+                            $afterSaleEndTime = $order['afterSaleEndTime'];
+                            if (strtotime($afterSaleEndTime) < $nowTime) {
+                                // 不可退款
+                                continue;
+                            }
+                            // 已完成 ,则需要判断是否过了15天
+                            // 可退款，则自动退款为5天
+                            $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                            break;
+                        case 1:
+                            // 已发货
+                            $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                            break;
+                        default:
+                            // 未发货
+                            $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysN days");
+                    }
+                    if ($nowTime < $lastDayTime) {
+                        // 如果时间还未到，则不退款
+                        continue;
+                    }
+                    $m = new \wstmart\common\model\OrderRefunds();
+                    $rsStatus =  $m->orderRefund($refundId);
+                    if(1 == $rsStatus['status']){
+                        //新增订单日志
+                        $logOrder = [];
+                        $logOrder['orderId'] = $order['orderId'];
+                        $logOrder['orderStatus'] = $orderStatus;
+                        $logOrder['logContent'] = "系统自动退款" ;
+                        $logOrder['logUserId'] = $order->userId;
+                        $logOrder['logType'] = 0;
+                        $logOrder['logTime'] = date('Y-m-d H:i:s');
+                        Db::name('log_orders')->insert($logOrder);
+                    }
+                }
+                Db::commit();
+                return WSTReturn('操作成功',1);
+            }catch (\Exception $e) {
+                Db::rollback();
+                return WSTReturn('操作失败',-1);
+            }
+        }
+        return WSTReturn('操作成功',1);
+    }
 }

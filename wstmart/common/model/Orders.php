@@ -1047,6 +1047,8 @@ class Orders extends Base{
         $selectOrderGoodsIds = WSTFormatIn(',',input('post.selectOrderGoodsIds'));
         $shopId = $sId;
         $userId = $uId;
+        if (!$shopId) $shopId = (int)session('WST_USER.shopId');
+        if (!$userId) $userId = (int)session('WST_USER.userId');
         $deliverType = (int)input('post.deliverType');
         $order = $this->where(['shopId' => $shopId, 'orderId '=> $orderId, 'orderStatus' => 0])->field('orderId,orderNo,userId,deliverType')->find();
         if(empty($order))return WSTReturn('操作失败，请检查订单状态是否已改变');
@@ -1730,6 +1732,27 @@ class Orders extends Base{
 		// 获取店铺地址
 		$orders['shopAddr'] = model('common/areas')->getParentNames($orders['shopAreaId']);
 		$orders['shopAddress'] = implode('',$orders['shopAddr']).$orders['shopAddress'];
+		$orders['receiveTime'] = $orders['receiveTime'] ?  $orders['receiveTime'] : '';
+		$orders['deliveryTime'] = $orders['deliveryTime'] ?  $orders['deliveryTime'] : '';
+		$orders['payTime'] = $orders['payTime'] ?  $orders['payTime'] : '';
+		$orders['refundTime'] = $orders['refundTime'] ?  $orders['refundTime'] : '';
+		$orders['afterSaleEndTime'] = $orders['afterSaleEndTime'] ?  $orders['afterSaleEndTime'] : '';
+
+		$orders['countDown'] = 0;
+		//买家24小时付款的倒计时
+		if($orders['orderStatus'] == -2){
+			$countDown = strtotime($orders['createTime'])+ 86400 - strtotime("now");
+			if($countDown>0){
+				$orders['countDown'] = $countDown;
+			}
+		//买家确认收货的15天倒计时	
+		}else if($orders['orderStatus'] == 1){
+			$countDown = strtotime($orders['deliveryTime'])+ (86400*15) - strtotime("now");
+			if($countDown>0){
+				$orders['countDown'] = $countDown;
+			}
+		}
+
 		unset($orders['shopAddr']);
 		//获取订单信息
 		$log = Db::name('log_orders')->where('orderId',$orderId)->order('logId asc')->select();
@@ -1743,11 +1766,10 @@ class Orders extends Base{
 		//获取订单商品
 		$orders['goods'] = Db::name('order_goods')->alias('og')
 							->join('__GOODS__ g','g.goodsId=og.goodsId','left')
-							->join('__ORDER_REFUNDS__ orf ','og.orderId=orf.orderId','left')
+							->join('__ORDER_REFUNDS__ orf ','og.orderId=orf.orderId and og.goodsSpecId=orf.goodsSpecId','left')
 							->where('og.orderId',$orderId)
 							->field('og.*,g.goodsSn,orf.refundStatus')->order('id asc')
 							->select();
-
 
 		$refundStatusArr = []; //商品退款状态数组
 

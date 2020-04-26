@@ -72,6 +72,13 @@ class Refund extends Base
         if (1 == $order['isClosed']) {
             return $this->outJson(100, "不可操作!");
         }
+        // 已完成 超过15天也不能进行申请退款
+        $afterSaleEndTime = $order['afterSaleEndTime'];
+        if (!empty($afterSaleEndTime)) {
+            if (strtotime($afterSaleEndTime) < time()) {
+                return $this->outJson(100, "不可操作!");
+            }
+        }
         // 0初始 1 退款中 2 退款成功 3 退款失败
         $orderGoodsStatus = $orderGoods['refundStatus'];
         if (!in_array($orderGoodsStatus, [0])) {
@@ -119,6 +126,7 @@ class Refund extends Base
                 $refundExist->backMoney = bcdiv($refundMoney, 1, 2);
                 $refundExist->refundTradeNo = $refundNo;
                 $refundExist->refundRemark = $refundMark;
+                $refundExist->createTime = date('Y-m-d H:i:s');
                 $refundExist->refundStatus = 1;
                 $refundExist->createTime = date('Y-m-d H:i:s');
                 $refundExist->refundImgs = $refundImgs;
@@ -210,7 +218,11 @@ class Refund extends Base
 
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if ($goodsSpecId) {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+            } else {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            }
             if (empty($refundExist)) {
                 throw new \Exception('没有数据', 100);
             }
@@ -253,6 +265,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsSpecId = (int)input('post.goodsSpecId');
         if (empty($userId) || empty($orderId)) {
             return $this->outJson(100, "缺少参数!");
         }
@@ -263,7 +276,11 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if ($goodsSpecId) {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+        } else {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        }
         if (empty($orderGoods)) {
             return $this->outJson(100, "没有数据!");
         }
@@ -275,7 +292,11 @@ class Refund extends Base
 
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if ($goodsSpecId) {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+            } else {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            }
             if (empty($refundExist)) {
                 throw new \Exception('没有数据', 100);
             }
@@ -306,7 +327,7 @@ class Refund extends Base
     public function refundCode()
     {
         $type = (int)input('post.type'); // 0 退货原因 1 退款原因
-        $catId = 1;
+        $catId = 19;
         if ($type) {
             $catId = 4;
         }
@@ -329,7 +350,7 @@ class Refund extends Base
             return $this->outJson(100, "缺少参数");
         }
         $m = new \wstmart\common\model\OrderRefunds();
-        $rs = $m->refundPageQuery();
+        $rs = $m->refundPageQuery($userId);
         return $this->outJson(0, "success", $rs);
     }
 
@@ -354,14 +375,13 @@ class Refund extends Base
      */
     public function setlogisticInfo()
     {
-        $orderId = input('param.orderId','');
-        $goodsId = input('param.goodsId','');
+        $refundId = input('param.refundId','');
         $logisticInfo = input('param.logisticInfo','');
         $logisticNum = input('param.logisticNum','');
-        if (!$logisticInfo||!$logisticNum||!$orderId||!$goodsId) {
+        if (!$logisticInfo||!$logisticNum||!$refundId) {
             return $this->outJson(100, "缺少参数");
         }
-        Db::name('order_refunds')->where(['orderId'=>$orderId,'goodsId'=>$goodsId])->update(['logisticInfo'=>$logisticInfo,'logisticNum'=>$logisticNum,'refundStatus'=>7]);
+        Db::name('order_refunds')->where(['id'=>$refundId])->update(['logisticInfo'=>$logisticInfo,'logisticNum'=>$logisticNum,'refundStatus'=>7]);
         return $this->outJson(0, "success");
     }
 }

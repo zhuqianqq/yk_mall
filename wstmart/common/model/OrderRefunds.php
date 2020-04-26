@@ -104,12 +104,15 @@ class OrderRefunds extends Base{
     /**
      * 退款
      */
-    public function orderRefund()
+    public function orderRefund($refundId = 0)
     {
         $id = (int)input('post.id');
-        if($id==0)return WSTReturn("操作失败!");
+        if ($refundId) {
+            $id = $refundId;
+        }
+        if ($id == 0) return WSTReturn("操作失败!", -1);
         $refund = $this->get($id);
-        if(empty($refund) || !in_array($refund->refundStatus, [1, 4, 7]))return WSTReturn("该退款订单不存在或已退款!");
+        if (empty($refund) || !in_array($refund->refundStatus, [1, 4, 7])) return WSTReturn("该退款订单不存在或已退款!", -1);
 
         $orderRefund = \wstmart\common\model\OrderRefunds::get($id);
         $refund = new \wstmart\common\pay\Refund();
@@ -311,10 +314,11 @@ class OrderRefunds extends Base{
     /**
      * 获取用户退款订单列表
      */
-    public function refundPageQuery()
+    public function refundPageQuery($userId = 0)
     {
         $where = [];
         $where[] = ['o.dataFlag', '=', 1];
+        $where[] = ['o.userId', '=', $userId];
         $where[] = ['isRefund', '=', 1];
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
@@ -336,7 +340,7 @@ class OrderRefunds extends Base{
             $list = Db::name('order_goods')->alias('og')
                 ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
                 ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
-                ->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
+                ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
                 ->order('orf.createTime', 'desc')
                 ->paginate(input('limit/d'))->toArray();
             if (!empty($list['data'])) {
@@ -409,13 +413,17 @@ class OrderRefunds extends Base{
 		$where = [];
         $where[] = ['og.orderId', '=', (int)input('param.orderId')];
 		$where[] = ['og.goodsId', '=', (int)input('param.goodsId')];
+
+		if(input('param.goodsSpecId','')){
+			$where[] = ['og.goodsSpecId', '=', (int)input('param.goodsSpecId','')];
+		}
 		
 		$orderDetail = Db::name('order_goods')->alias('og')
 		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
 		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
 		->where($where)
-		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,
-		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.logisticNum,orf.logisticInfo,orf.createTime,o.orderStatus,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
+		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,orf.id as refundId,orf.refundTo,
+		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.refundOtherReson,orf.refundRemark,orf.logisticNum,orf.logisticInfo,orf.createTime,orf.refundTime,o.orderStatus,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
 		->order('orf.createTime', 'desc')
 		->find() ?? [];
 
