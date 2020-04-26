@@ -589,13 +589,10 @@ class CronJobs extends Base{
             ->alias('orf')
             ->join('__ORDERS__ o', 'orf.orderId = o.orderId','left')
             ->where([['orf.refundStatus', 'in', $refundStatusArr], ['o.orderStatus', 'in', [0, 1, 2]], ['o.dataFlag', '=', 1]])
-            ->field("orf.id, orf.createTime, o.orderStatus")
+            ->field("orf.id, orf.createTime, o.orderStatus, o.afterSaleEndTime, o.userId, o.orderId")
             ->select();
-        $lastDayY = date("Y-m-d 00:00:00", strtotime("-" . $autoRefundDaysY . " days"));
-        $lastDayN = date("Y-m-d 00:00:00", strtotime("-" . $autoRefundDaysN . " days"));
-        $lastDayTimeY = strtotime($lastDayY);
-        $lastDayTimeN = strtotime($lastDayN);
 
+        $nowTime = time();
         if(!empty($rs)){
             Db::startTrans();
             try{
@@ -603,75 +600,43 @@ class CronJobs extends Base{
                     $orderStatus = $order['orderStatus'];
                     $refundId = $order['id'];
                     // 申请退款时间
-                    $refundAddTime = strtotime($order['createTime']);
+                    $refundAddDate = $order['createTime'];
+                    $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
                     switch ($orderStatus) {
                         case 2:
-                            // 已完成
-
-                    }
-                    if (0 == $orderStatus) {
-                        // 未发货
-                        $lastDayTime = $lastDayTimeY;
-                    } else {
-                        // 已发货
-                        $lastDayTime = $lastDayTimeN;
+                            $afterSaleEndTime = $order['afterSaleEndTime'];
+                            if (strtotime($afterSaleEndTime) < $nowTime) {
+                                // 不可退款
+                                continue;
+                            }
+                            // 已完成 ,则需要判断是否过了15天
+                            // 可退款，则自动退款为5天
+                            $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                            break;
+                        case 1:
+                            // 已发货
+                            $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                            break;
+                        default:
+                            // 未发货
+                            $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysN days");
                     }
                     if ($nowTime < $lastDayTime) {
+                        // 如果时间还未到，则不退款
                         continue;
                     }
-                    die;
-                    $order->afterSaleEndTime = $afterSaleEndTime;
-                    $order->receiveTime = date('Y-m-d 00:00:00');
-                    $order->orderStatus = 2;
-                    $rsStatus = $order->save();
-                    if(false !== $rsStatus){
-
-                        //修改商品成交量
-                        $goodss = Db::name('order_goods')->where('orderId',$order['orderId'])->field('goodsId,goodsNum,goodsSpecId')->select();
-                        foreach($goodss as $key =>$v){
-                            Db::name('goods')->where('goodsId',$v['goodsId'])->update([
-                                'saleNum'=>Db::raw('saleNum+'.$v['goodsNum'])
-                            ]);
-                            if($v['goodsSpecId']>0){
-                                Db::name('goods_specs')->where('id',$v['goodsSpecId'])->update([
-                                    'saleNum'=>Db::raw('saleNum+'.$v['goodsNum'])
-                                ]);
-                            }
-                        }
-
-                        hook('afterUserReceive',['orderId'=>$order->orderId]);
-
-                        //修改商家未计算订单数
-                        $torder = Db::name('orders')->where("orderId",$order->orderId)->field("orderId,commissionFee")->find();
-                        Db::name('shops')->where('shopId',$order->shopId)->update([
-                            'noSettledOrderNum'=>Db::raw('noSettledOrderNum+1'),
-                            'noSettledOrderFee'=>Db::raw('noSettledOrderFee-'.$torder['commissionFee'])
-                        ]);
-
-
+                    $m = new \wstmart\common\model\OrderRefunds();
+                    $rsStatus =  $m->orderRefund($refundId);
+                    if(1 == $rsStatus['status']){
                         //新增订单日志
                         $logOrder = [];
-                        $logOrder['orderId'] = $order->orderId;
-                        $logOrder['orderStatus'] = 2;
-                        $logOrder['logContent'] = "系统自动确认收货";
+                        $logOrder['orderId'] = $order['orderId'];
+                        $logOrder['orderStatus'] = $orderStatus;
+                        $logOrder['logContent'] = "系统自动退款" ;
                         $logOrder['logUserId'] = $order->userId;
                         $logOrder['logType'] = 0;
                         $logOrder['logTime'] = date('Y-m-d H:i:s');
                         Db::name('log_orders')->insert($logOrder);
-
-                        //发送一条商家信息
-                        $tpl = WSTMsgTemplates('ORDER_ATUO_RECEIVE');
-                        if( $tpl['tplContent']!='' && $tpl['status']=='1'){
-                            $find = ['${ORDER_NO}'];
-                            $replace = [$order['orderNo']];
-                            $msg = array();
-                            $msg["shopId"] = $order['shopId'];
-                            $msg["tplCode"] = $tpl["tplCode"];
-                            $msg["msgType"] = 1;
-                            $msg["content"] = str_replace($find,$replace,$tpl['tplContent']) ;
-                            $msg["msgJson"] = ['from'=>1,'dataId'=>$order->orderId];
-                            model("common/MessageQueues")->add($msg);
-                        }
                     }
                 }
                 Db::commit();
