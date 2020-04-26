@@ -37,6 +37,15 @@ class Cronjobs extends Base{
         return json($rs);
 	}
 
+    /**
+     * 自动同意退款
+     */
+    public function autoAgreeRefund(){
+        $m = new M();
+        $rs = $m->autoAgreeRefund();
+        return json($rs);
+    }
+
 	/**
 	 * 发送队列消息
 	 */
