@@ -210,7 +210,11 @@ class Refund extends Base
 
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if ($goodsSpecId) {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+            } else {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            }
             if (empty($refundExist)) {
                 throw new \Exception('没有数据', 100);
             }
@@ -253,6 +257,7 @@ class Refund extends Base
         $userId = (int)$this->user_id;
         $orderId = (int)input('post.orderId');
         $goodsId = (int)input('post.goodsId');
+        $goodsSpecId = (int)input('post.goodsSpecId');
         if (empty($userId) || empty($orderId)) {
             return $this->outJson(100, "缺少参数!");
         }
@@ -263,7 +268,11 @@ class Refund extends Base
         if ($order['userId'] != $userId) {
             return $this->outJson(100, "没有数据!");
         }
-        $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        if ($goodsSpecId) {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+        } else {
+            $orderGoods = OrderGoods::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+        }
         if (empty($orderGoods)) {
             return $this->outJson(100, "没有数据!");
         }
@@ -275,7 +284,11 @@ class Refund extends Base
 
         Db::startTrans();
         try {
-            $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId . " AND goodsId = " . $goodsId)->find();
+            if ($goodsSpecId) {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId . " AND goodsSpecId = " . $goodsSpecId)->find();
+            } else {
+                $refundExist = \wstmart\common\model\OrderRefunds::where("orderId = " . $orderId .  ' and goodsId =' . $goodsId)->find();
+            }
             if (empty($refundExist)) {
                 throw new \Exception('没有数据', 100);
             }
