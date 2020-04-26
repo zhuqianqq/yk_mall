@@ -1819,7 +1819,7 @@ class Orders extends Base{
 			}
 			//如果refundStatus为5  撤销退款状态 ，可以撤销三次
 			if($v['refundStatus']==5 && $v['refundNum']<3){
-				$v['refundStatus']=0;
+				$orders['goods'][$key]['refundStatus'] = 0;
 				$orders['goods'][$key]['allowRefund'] = 1;
 			}
 
