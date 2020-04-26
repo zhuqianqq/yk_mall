@@ -35,6 +35,9 @@ class Orders extends Base{
         $orderId = (int)input('post.orderId', 0); //订单ID
         $orderM = new \wstmart\common\model\Orders();
         $rs = $orderM->checkOrderStatus($userId,$orderId);
+        if ($rs["status"] == -1) {
+            return $this->outJson(100, $rs['msg']);
+        }
         if ($rs['status'] == 1) {
             try {
                 $m = new M();
