@@ -23,8 +23,8 @@ class CronJobs extends Base{
 	 */
 	public function autoCancelNoPay(){
 		$autoCancelNoPayDays = (int)WSTConf('CONF.autoCancelNoPayDays');
-		// 超过1440分钟(24小时)的订单取消
-	 	$autoCancelNoPayDays = ($autoCancelNoPayDays>0)?$autoCancelNoPayDays:1440;
+	 	// $autoCancelNoPayDays = ($autoCancelNoPayDays>0)?$autoCancelNoPayDays:1440;
+	 	$autoCancelNoPayDays = 1440; 	// 超过1440分钟(24小时)的订单取消
 	 	$lastDay = date("Y-m-d H:i:s",strtotime("-".$autoCancelNoPayDays." minutes"));
 	 	$orders = Db::name('orders')->alias('o')->join('__SHOPS__ s','o.shopId=s.shopId','left')->where([['o.createTime','<',$lastDay],['o.orderStatus','=',-2],['o.dataFlag','=',1],['o.payType','=',1],['o.isPay','=',0]])->field("o.orderId,o.orderNo,o.userId,o.shopId,o.useScore,s.userId shopUserId,orderCode")->select();
 	 	if(!empty($orders)){
@@ -226,7 +226,8 @@ class CronJobs extends Base{
 	 */
 	public function autoReceive(){
 	 	$autoReceiveDays = (int)WSTConf('CONF.autoReceiveDays');
-	 	$autoReceiveDays = ($autoReceiveDays>0)?$autoReceiveDays:10;//避免有些客户没有设置值
+	 	//$autoReceiveDays = ($autoReceiveDays>0)?$autoReceiveDays:10;//避免有些客户没有设置值
+	 	$autoReceiveDays = 15;//15天自动确认收货
 	 	$lastDay = date("Y-m-d 00:00:00",strtotime("-".$autoReceiveDays." days"));
 	 	$rs = model('orders')->where([['deliveryTime','<',$lastDay],['orderStatus','=',1],['dataFlag','=',1]])->field("orderId,orderNo,shopId,userId,shopId,orderScore,commissionFee")->select();
 	 	if(!empty($rs)){
