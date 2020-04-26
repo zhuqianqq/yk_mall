@@ -1766,7 +1766,7 @@ class Orders extends Base{
 							->join('__GOODS__ g','g.goodsId=og.goodsId','left')
 							->join('__ORDER_REFUNDS__ orf ','og.orderId=orf.orderId and og.goodsSpecId=orf.goodsSpecId','left')
 							->where('og.orderId',$orderId)
-							->field('og.*,g.goodsSn,orf.refundStatus')->order('id asc')
+							->field('og.*,g.goodsSn,orf.refundStatus,orf.refundNum')->order('id asc')
 							->select();
 
 		$refundStatusArr = []; //商品退款状态数组
@@ -1814,6 +1814,11 @@ class Orders extends Base{
 					}
 				}
 				
+			}
+			//如果refundStatus为5  撤销退款状态 ，可以撤销三次
+			if($v['refundStatus']==5 && $v['refundNum']<3){
+				$v['refundStatus']=0;
+				$orders['goods'][$key]['allowRefund'] = 1;
 			}
 
 			$refundStatusArr[] = $v['refundStatus'];
