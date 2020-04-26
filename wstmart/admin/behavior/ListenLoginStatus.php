@@ -19,6 +19,7 @@ class ListenLoginStatus
         			 'admin/cronjobs/autodealorderservice',
                      'admin/cronjobs/autoshopsettlement',
                      'admin/cronjobs/autoinvitesettlement',
+                     'admin/CronJobs/autoAgreeRefund',
                      'admin/cronjobs/clearposter',
                      'admin/orderrefunds/wxrefundnodify',
                      'admin/orderrefunds/wxapprefundnodify'
