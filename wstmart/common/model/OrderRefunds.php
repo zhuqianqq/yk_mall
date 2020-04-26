@@ -104,12 +104,15 @@ class OrderRefunds extends Base{
     /**
      * 退款
      */
-    public function orderRefund()
+    public function orderRefund($refundId = 0)
     {
         $id = (int)input('post.id');
-        if($id==0)return WSTReturn("操作失败!");
+        if ($refundId) {
+            $id = $refundId;
+        }
+        if ($id == 0) return WSTReturn("操作失败!", -1);
         $refund = $this->get($id);
-        if(empty($refund) || !in_array($refund->refundStatus, [1, 4, 7]))return WSTReturn("该退款订单不存在或已退款!");
+        if (empty($refund) || !in_array($refund->refundStatus, [1, 4, 7])) return WSTReturn("该退款订单不存在或已退款!", -1);
 
         $orderRefund = \wstmart\common\model\OrderRefunds::get($id);
         $refund = new \wstmart\common\pay\Refund();
@@ -315,8 +318,7 @@ class OrderRefunds extends Base{
     {
         $where = [];
         $where[] = ['o.dataFlag', '=', 1];
-        // todo
-//        $where[] = ['o.userId', '=', $userId];
+        $where[] = ['o.userId', '=', $userId];
         $where[] = ['isRefund', '=', 1];
 
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
