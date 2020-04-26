@@ -126,6 +126,7 @@ class Refund extends Base
                 $refundExist->backMoney = bcdiv($refundMoney, 1, 2);
                 $refundExist->refundTradeNo = $refundNo;
                 $refundExist->refundRemark = $refundMark;
+                $refundExist->createTime = date('Y-m-d H:i:s');
                 $refundExist->refundStatus = 1;
                 $refundExist->createTime = date('Y-m-d H:i:s');
                 $refundExist->refundImgs = $refundImgs;
