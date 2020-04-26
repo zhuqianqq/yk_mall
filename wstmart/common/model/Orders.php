@@ -854,7 +854,7 @@ class Orders extends Base{
 	    	 }
 
 	    	 $goods = Db::name('order_goods')->alias('og')
-                 ->join('__ORDER_REFUNDS__ orf','orf.orderId=og.orderId and orf.goodsId=og.goodsId','left')
+                 ->join('__ORDER_REFUNDS__ orf','orf.orderId=og.orderId and orf.goodsId=og.goodsId and orf.goodsSpecId=og.goodsSpecId','left')
                  ->where([['og.orderId', 'in', $orderIds]])
                  ->field('og.*,orf.id as refundId,orf.refundStatus as goodsStatus')
                  ->select();
@@ -921,8 +921,7 @@ class Orders extends Base{
 
                  if ($v['isRefund'] == 1) {//有退款的情况
                      if (count($item)>1) {
-                         $page['data'][$key]['orderStatusName'] = '';
-
+                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      } else {
                          // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
                          if (in_array($item[0], $refundingStatus)) {
