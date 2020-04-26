@@ -831,7 +831,8 @@ class Orders extends Base{
 		}
 		$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
-            $orderSort = ['o.orderStatus' => 'desc', 'o.createTime' => 'desc'];
+            //$orderSort = ['o.orderStatus' => 'desc', 'o.createTime' => 'desc'];
+            $orderSort = ['o.createTime' => 'desc'];
 		}
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
@@ -846,7 +847,6 @@ class Orders extends Base{
 			         ->group('o.orderId')
 					 ->paginate(input('pagesize/d'))->toArray();
 
-        $formartOrder = array_column($page['data'],null, 'orderId');
 	    if (count($page['data']) > 0) {
 	    	 $orderIds = [];
 	    	 foreach ($page['data'] as $v) {
@@ -860,9 +860,9 @@ class Orders extends Base{
                  ->select();
 	    	 $goodsMap = [];
 
-	    	 $orderRefundStatus = [];//订单总状态
              $refundingStatus = [OrderGoods::STATUS_INITION,OrderGoods::STATUS_REFUNDING,OrderGoods::STATUS_REFUND_FAIL];//退款中
-
+             $refundFinshed = [OrderGoods::STATUS_REFUND_SUCCESS];//退款完成
+            $refundStatusArr = [];
 	    	 foreach ($goods as $v) {
                 $v['goodsName'] = WSTStripTags($v['goodsName']);
                 $shotGoodsSpecNames = [];
@@ -887,17 +887,13 @@ class Orders extends Base{
                     //$v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
 	    	 	}else{
 	    	 	    if ($v['goodsStatus'] == Refund::REFUND_CANCEL) {
-                        //$v['statusName'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
+                        //$v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
                     } else
-                        $v['status'] = WSTLangOrderRefundStatus($v['refundStatus']);
-                }
-
-                 $orderRefundStatus[$v['orderId']] = 1;
-                if (!in_array($v['refundStatus'], $refundingStatus)) {
-                    $orderRefundStatus[$v['orderId']] = 0;
+                        $v['status'] = WSTLangOrderRefundStatus($v['goodsStatus']);
                 }
 
                  $goodsMap[$v['orderId']][] = $v;
+                 $refundStatusArr[$v['orderId']][] = $v['goodsStatus'];
 	    	 }
 
              // 查询一个订单下是否有物流包裹
@@ -921,17 +917,23 @@ class Orders extends Base{
 	    	 	 $page['data'][$key]['deliverTypeName'] = WSTLangDeliverType($v['deliverType'] == 1);
 	    		 $page['data'][$key]['orderCodeTitle'] = WSTOrderModule($v['orderCode']);
 
+	    		 $item = array_unique($refundStatusArr[$v['orderId']]);
+
                  if ($v['isRefund'] == 1) {//有退款的情况
-                    if ($orderRefundStatus[$v['orderId']] == 1) { //所有商品都再退款中
-                        $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
-                        $page['data'][$key]['orderStatus'] = -3;
-                    } /*else {
-                        if (in_array($v['refundStatus'],[Refund::REFUND_CANCEL])) {
-                            $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
-                        } else
-                            $page['data'][$key]['orderStatusName'] = WSTLangRefundStatus($v['refundStatus']);
-                    }*/
-                     $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+                     if (count($item)>1) {
+                         $page['data'][$key]['orderStatusName'] = '';
+
+                     } else {
+                         // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+                         if (in_array($item[0], $refundingStatus)) {
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
+                             $page['data'][$key]['orderStatus'] = -3;
+                         }
+                         if (in_array($item[0], $refundFinshed)) {
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-7);//退款完成
+                             $page['data'][$key]['orderStatus'] = -7;
+                         }
+                     }
                  }else
                      $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
 
