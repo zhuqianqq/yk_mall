@@ -2083,7 +2083,7 @@ class Orders extends Base{
         if (empty($oneOrder)) {
             return WSTReturn('订单不存在',-1);
         }
-        if ($oneOrder['dataFlag'] != 1 || $oneOrder['orderStatus'] != -2 || $oneOrder['isPay'] != 0) {
+        if ($oneOrder['dataFlag'] != 1) {
             return WSTReturn('订单状态有误',-1);
         }
 
