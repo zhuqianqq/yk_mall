@@ -330,7 +330,10 @@ class Refund extends Base
         $orderStatus = (int)input('post.orderStatus', 1); // 0 未发货 1 已发货
         $catId = 19;
         if ($type) {
-            $catId = 4;
+            $catId = 22;
+            if ($orderStatus == 0) {
+                $catId = 4;
+            }
         } else {
             if ($orderStatus == 0) {
                 $catId = 21;
