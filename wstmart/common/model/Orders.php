@@ -921,8 +921,7 @@ class Orders extends Base{
 
                  if ($v['isRefund'] == 1) {//有退款的情况
                      if (count($item)>1) {
-                         $page['data'][$key]['orderStatusName'] = '';
-
+                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      } else {
                          // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
                          if (in_array($item[0], $refundingStatus)) {
