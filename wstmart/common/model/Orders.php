@@ -831,8 +831,7 @@ class Orders extends Base{
 		}
 		$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
-            //$orderSort = ['o.orderStatus' => 'desc', 'o.createTime' => 'desc'];
-            $orderSort = ['o.createTime' => 'desc'];
+            $orderSort = ['o.orderStatus' => 'asc', 'o.payTime' => 'desc'];
 		}
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
