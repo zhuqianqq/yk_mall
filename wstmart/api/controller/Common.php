@@ -120,7 +120,7 @@ class Common extends Base
 //                    return $this->outJson(100, '图片格式不正确，只允许jpg,jpeg,png或gif格式');
                 }
                 if ($file['size'] <= 0) {
-                    return $this->outJson(100, '文件大小不能为空');
+//                    return $this->outJson(100, '文件大小不能为空');
                 }
                 if ($file['size'] > $max_size) {
                     return $this->outJson(100, '图片大小不能超过10Mb');
