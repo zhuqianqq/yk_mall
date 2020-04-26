@@ -44,11 +44,7 @@
   </tr>
   <tr>
      <th>退款原因：</th>
-     <td>
-     {php}
-     $rs = WSTDatas('REFUND_TYPE',$object['refundReson']);
-     echo $rs['dataName'].(($object['refundOtherReson']!='')?"：".$object['refundOtherReson']:"");
-     {/php}</td>
+     <td>{$object['refundOtherReson']}</td>
   </tr>
   <tr>
      <th>申请退款：</th>
