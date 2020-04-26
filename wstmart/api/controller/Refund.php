@@ -72,6 +72,13 @@ class Refund extends Base
         if (1 == $order['isClosed']) {
             return $this->outJson(100, "不可操作!");
         }
+        // 已完成 超过15天也不能进行申请退款
+        $afterSaleEndTime = $order['afterSaleEndTime'];
+        if (!empty($afterSaleEndTime)) {
+            if (strtotime($afterSaleEndTime) < time()) {
+                return $this->outJson(100, "不可操作!");
+            }
+        }
         // 0初始 1 退款中 2 退款成功 3 退款失败
         $orderGoodsStatus = $orderGoods['refundStatus'];
         if (!in_array($orderGoodsStatus, [0])) {
