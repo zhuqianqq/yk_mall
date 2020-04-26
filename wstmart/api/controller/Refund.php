@@ -327,7 +327,7 @@ class Refund extends Base
     public function refundCode()
     {
         $type = (int)input('post.type'); // 0 退货原因 1 退款原因
-        $orderStatus = (int)input('post.orderStatus'); // 0 未发货 1 已发货
+        $orderStatus = (int)input('post.orderStatus', 1); // 0 未发货 1 已发货
         $catId = 19;
         if ($type) {
             $catId = 4;
