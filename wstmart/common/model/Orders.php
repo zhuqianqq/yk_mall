@@ -1045,6 +1045,8 @@ class Orders extends Base{
         $selectOrderGoodsIds = WSTFormatIn(',',input('post.selectOrderGoodsIds'));
         $shopId = $sId;
         $userId = $uId;
+        if (!$shopId) $shopId = (int)session('WST_USER.shopId');
+        if (!$userId) $userId = (int)session('WST_USER.userId');
         $deliverType = (int)input('post.deliverType');
         $order = $this->where(['shopId' => $shopId, 'orderId '=> $orderId, 'orderStatus' => 0])->field('orderId,orderNo,userId,deliverType')->find();
         if(empty($order))return WSTReturn('操作失败，请检查订单状态是否已改变');
