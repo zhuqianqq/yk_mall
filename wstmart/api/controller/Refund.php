@@ -390,7 +390,7 @@ class Refund extends Base
         if (!$logisticInfo||!$logisticNum||!$refundId) {
             return $this->outJson(100, "缺少参数");
         }
-        Db::name('order_refunds')->where(['id'=>$refundId])->update(['logisticInfo'=>$logisticInfo,'logisticNum'=>$logisticNum,'refundStatus'=>7]);
+        Db::name('order_refunds')->where(['id'=>$refundId])->update(['logisticTime'=>date('Y-m-d H:i:s',time()),'logisticInfo'=>$logisticInfo,'logisticNum'=>$logisticNum,'refundStatus'=>7]);
         return $this->outJson(0, "success");
     }
 }
