@@ -21,17 +21,28 @@ class Crawl extends Base{
     public function index()
     {
         $type = input('type', 1);
-        // 1 淘宝天猫
         $url = input('url');
-        parse_str(parse_url($url)['query'], $query_arr);
-        $id = $query_arr['id'];
-        $url = "http://api.onebound.cn/taobao/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=QQ1597063760&secret";
+        switch ($type) {
+            case 1:
+                $domain = 'taobao';
+                // 1 淘宝天猫
+                parse_str(parse_url($url)['query'], $query_arr);
+                $id = $query_arr['id'];
+                break;
+            case 2:
+                $domain = '1688';
+                $id = $url;
+                break;
+            default:
+                $domain = 'taobao';
+        }
+
+        $url = "http://api.onebound.cn/" . $domain . "/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=QQ1597063760&secret";
         $info = file_get_contents($url);
-//       $file = file_get_contents('test.json');
+//        $info = file_get_contents('/www/test.json');
         $arr = json_decode($info, true);
 
         $goodsInfo = $arr['item'];
-        $props = $goodsInfo['props'];
         $skus = $goodsInfo['skus']['sku'];//库存
         $isSpec = 0;
         if (count($skus) > 1) {
@@ -39,29 +50,57 @@ class Crawl extends Base{
         }
 
         $data['isSpec'] = $isSpec;
-        $shopId = 118; // 御泥坊 45  绝艺鸭脖 44 天然工坊 43 白又白 118
+        $shopId = 119; // 御泥坊 45  绝艺鸭脖 44 天然工坊 43 白又白 118 天门市小潮服装有限公司119
         $data['goodsName'] = $goodsName = $goodsInfo['title'];// 标题
-        $data['goodsAttr'] = json_encode($props);
-        $data['goodsImg'] = $goodsImg = $this->getSelfImg('http:' . $goodsInfo['pic_url']);// 封面图
+        if (!empty($goodsInfo['props'])) {
+            $props = $goodsInfo['props'];
+            $data['goodsAttr'] = json_encode($props);
+        }
+
+        if ($this->urlParse($goodsInfo['pic_url'])) {
+            $picUrl = $goodsInfo['pic_url'];
+        } else {
+            $picUrl = 'http:' . $goodsInfo['pic_url'];
+        }
+        $data['goodsImg'] = $goodsImg = $this->getSelfImg($picUrl);// 封面图
         $data['goodsDesc'] = $goodsDesc = $this->getDesc($goodsInfo['desc']);// 描述
         $data['goodsSn'] = $goodsSn = WSTGoodsNo();
         $data['productNo'] = $productNo = WSTGoodsNo();
         $data['productNo'] = $productNo = WSTGoodsNo();
         $data['goodsCatId'] = $goodsCatId = 365;
+        $data['goodsStatus'] = 1;
         $data['goodsCatIdPath'] =  '365_';
         $data['goodsType'] = $goodsType = 0;
         $data['weight'] = $weight = 0;
         $data['marketPrice'] = $marketPrice = bcmul($goodsInfo['orginal_price'], 1.5, 2);
         $data['shopPrice'] = $shopPrice = bcmul($goodsInfo['price'], 1.5, 2);
+
        $img = $goodsInfo['item_imgs'];
        $gallery = '';
        foreach ($img as $v) {
-           $imgUrl = $this->getSelfImg('http:' . $v['url']);
+           if ($this->urlParse($v['url'])) {
+               $url = $v['url'];
+           } else {
+               $url = 'http:' . $v['url'];
+           }
+           $imgUrl = $this->getSelfImg($url);
            $gallery .= $imgUrl . ',';
        }
         $data['gallery'] = $gallery = rtrim($gallery, ','); // 图片
         $data['skus'] = $skus;
         $this->addTo($data, $shopId);
+    }
+
+    public function urlParse($url)
+    {
+        $preg = "/^http(s)?:\\/\\/.+/";
+        if(preg_match($preg,$url))
+        {
+            return true;
+        }else
+        {
+            return false;
+        }
     }
 
     public function addTo($data, $shopId)
@@ -162,7 +201,7 @@ class Crawl extends Base{
     //取得页面所有的图片地址
     function getimages($str)
     {
-        $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg]))[\'|\"].*?[\/]?>/";
+        $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.jpg]))[\'|\"].*?[\/]?>/";
         preg_match_all($pattern,$str,$match);
         return $match[1];
     }
@@ -180,7 +219,12 @@ class Crawl extends Base{
             if (empty($v)) {
                 continue;
             }
-            $selfImg = $this->getSelfImg('http:' . $v);
+            if ($this->urlParse($v)) {
+                $url = $v;
+            } else {
+                $url = 'http:' . $v;
+            }
+            $selfImg = $this->getSelfImg($url);
             $imgData[] = ['old' => $v, 'new' => $selfImg];
         }
         foreach ($imgData as $v) {

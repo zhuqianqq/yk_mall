@@ -74,7 +74,7 @@ class Common extends Base
             set_time_limit(0);
 
             $upload_type = $this->request->param("upload_type",'',"trim");
-            $zip_size = 500 * 1024;
+            $zip_size = 5 * 1024 * 1024;
             $max_size = 10 * 1024 * 1024;
             $type_arr = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif'];
             if($upload_type == "base64"){
