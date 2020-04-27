@@ -1866,8 +1866,8 @@ class Orders extends Base{
 		if(count($refundStatusArr)>1){
 			$orders['statusSubText'] = '';
 		}else{
-			// 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
-			if($refundStatusArr[0] != 0 ){
+			// 状态统一且不为0 与 5 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+			if($refundStatusArr[0] != 0 && $refundStatusArr[0] != 5){
 				$orders['orderStatus'] = -3;
 			}
 			// 状态统一时才有信息
@@ -1877,7 +1877,7 @@ class Orders extends Base{
 				case 2: $orders['statusSubText'] = '已退款';$orders['orderStatus'] = 7;break; 
 				case 3: $orders['statusSubText'] = '退款失败';break;
 				case 4: $orders['statusSubText'] = '商家已同意退款,请及时退回商品';break;
-				case 5: $orders['statusSubText']= '退款关闭';$orders['orderStatus'] = 7;break;
+				case 5: $orders['statusSubText']= '';break;
 				case 6: $orders['statusSubText'] ='删除订单';break;
 				case 7: $orders['statusSubText'] ='等待商家收货';break;
 				default: $orders['statusSubText'] ='';break;

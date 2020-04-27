@@ -30,6 +30,11 @@ class Goods extends Base
         $goods_share_cache = Cache::get($goods_cache_name_share, 0);
         if ($goods_cache) {
             $goods_cache['shareNum'] = $goods_share_cache;
+            //商品库存实时读数据库信息
+            $m = model('goods');
+            $_goods = $m->getGoodsStock(input('goodsId/d'));
+            $goods_cache['goodsStock'] = $_goods['goodsStock'];
+            $goods_cache['saleSpec'] = $_goods['saleSpec'];
             return $this->outJson(0,"查找成功！",$goods_cache);
         }
 
@@ -71,7 +76,7 @@ class Goods extends Base
 
         return $this->outJson(0,"查找成功！",$goods);
       
-	}
+    }
 
     /**
      * 猜你喜欢

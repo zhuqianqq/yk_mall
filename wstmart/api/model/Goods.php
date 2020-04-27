@@ -151,6 +151,28 @@ class Goods extends CGoods{
     }
 
 
+    /**
+	 * 获取商品资料在前台展示
+	 */
+	public function getGoodsStock($goodsId)
+    {
+
+        $goodsStock = Db::name('goods')->where(['goodsId' => $goodsId, 'dataFlag' => 1])->value('goodsStock') ?? 0;
+
+        //获取销售规格
+        $sales = Db::name('goods_specs')->where('goodsId', $goodsId)->field('id,isDefault,productNo,specIds,marketPrice,specPrice,specStock')->select();
+        $rs['saleSpec'] = array();
+        if (!empty($sales)) {
+            foreach ($sales as $key => $v) {
+                array_push($rs['saleSpec'], $v);
+            }
+        }
+        
+        return ['goodsStock'=>$goodsStock,'saleSpec'=>$rs['saleSpec']];
+   
+    }
+
+
 	public function historyQuery(){
 		$ids = cookie("wx_history_goods");
 		if(empty($ids))return [];
