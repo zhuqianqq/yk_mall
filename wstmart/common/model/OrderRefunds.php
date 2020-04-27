@@ -453,9 +453,10 @@ class OrderRefunds extends Base{
      * 获取退款资料
      */
     public function getInfoByRefund(){
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
         $where = [['orf.id','=',(int)input('get.id')],
             ['isRefund','=',1],
-            ['refundStatus','in', [1, 7]]];
+            ['refundStatus','in', [1, 3, 4, 7]]];
         $serviceId = (int)input('serviceId');
         if ($serviceId > 0) {
             $where = [
