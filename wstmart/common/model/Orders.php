@@ -826,10 +826,12 @@ class Orders extends Base{
 		if($shopName != ''){
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
-		$orderSort = ['o.orderStatus' => 'asc', 'o.payTime' => 'desc','o.isRefund' => 'asc'];
+
+        $orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.payTime' => 'desc'];
 		}
+		
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
 		}
