@@ -908,8 +908,8 @@ class Orders extends Base{
 	    	 	 if ($v['payType'] == 1 && $v['isRefund'] == 0 && $v['refundId'] == '' && ($v['isPay'] == 1 || $v['useScore'] > 0)) {
                       $page['data'][$key]['allowRefund'] = 1;
 	    	 	 }
-	    	 	 if (count($goodsMap[$v['orderId']])) {
-	    	 	     unset($goodsMap[$v['orderId']][0]['status']);
+	    	 	 if (count($goodsMap[$v['orderId']]) == 1) {
+	    	 	     $goodsMap[$v['orderId']][0]['status'] = '';
                  }
 	    	 	 $page['data'][$key]['list'] = $goodsMap[$v['orderId']];
 	    	 	 $page['data'][$key]['isComplain'] = 1;
