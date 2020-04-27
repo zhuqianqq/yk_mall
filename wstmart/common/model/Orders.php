@@ -783,23 +783,19 @@ class Orders extends Base{
 	}
 
     /**
-     * 获取用户订单各状态数量
+     * 获取退款售后商品数
+     * @param $userId
+     * @return float|string
      */
-	public function getUserOrderCount($orderStatus, $userId){
-        $where = ['o.userId' => $userId, 'o.dataFlag' => 1];
-        $condition = [];
-        if (is_array($orderStatus)) {
-            $condition[] = ['orderStatus', 'in', $orderStatus];
-        } else {
-            $where['orderStatus'] = $orderStatus;
-        }
+    public function getRefundCount($userId){
 
-        $order = $this->alias('o');
-        if ($orderStatus == 'refund') {
-            $order = $order->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId and orf.refundStatus in (1,2,3,4,5,7)','left');
-        }else
-            $order = $order->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId','left');
-        $count = $order->where($where)->where($condition)->group('o.orderId') ->count();
+        $count = Db::name('orders')->alias('o')
+            ->join("__ORDER_GOODS__ og",'o.orderId = og.orderId','left')
+            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+            ->where("o.userId =  $userId  and orf.refundStatus in (1,2,3,4,5,7)")
+            ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
+            ->order('orf.createTime', 'desc')
+            ->count();
 
         return $count;
     }
@@ -807,13 +803,14 @@ class Orders extends Base{
 	/**
 	 * 获取用户订单列表
 	 */
-	public function userOrdersByPage($orderStatus, $isAppraise = -1, $uId = 0)
+	public function userOrdersByPage($orderStatus, $isAppraise = -1, $uId = 0, $type='')
     {
 		$userId = $uId;
 		$orderNo = input('post.orderNo');
 		$shopName = input('post.shopName');
 		$isRefund = (int)input('post.isRefund',-1);
-		$type = input('param.type');
+		$type = input('param.type') ?? $type ;
+        $page_size= input('pagesize/d',1000);
 	
 		$where = ['o.userId' => $userId, 'o.dataFlag' => 1];
         $condition = [];
@@ -829,13 +826,14 @@ class Orders extends Base{
 		if($shopName != ''){
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
-		$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
+		$orderSort = ['o.orderStatus' => 'asc', 'o.payTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.payTime' => 'desc'];
 		}
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
 		}
+
 		$page = $this->alias('o')->join('__SHOPS__ s','o.shopId=s.shopId','left')
 		             ->join('__ORDER_COMPLAINS__ oc','oc.orderId=o.orderId','left')
 		             ->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId and orf.refundStatus!=-1','left')
@@ -844,7 +842,7 @@ class Orders extends Base{
 		              o.orderStatus,o.deliverType,deliverMoney,isPay,payType,payFrom,needPay,isAppraise,isRefund,orderSrc,o.createTime,o.useScore,oc.complainId,orf.id refundId,o.orderCode,orf.refundStatus')
 			         ->order($orderSort)
 			         ->group('o.orderId')
-					 ->paginate(input('pagesize/d'))->toArray();
+					 ->paginate($page_size)->toArray();
 
 	    if (count($page['data']) > 0) {
 	    	 $orderIds = [];
