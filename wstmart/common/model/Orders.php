@@ -968,6 +968,7 @@ class Orders extends Base{
                          }
 
                      } else {
+
                          //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                          // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
                          if (in_array($item[0], $refundingStatus)) {
@@ -982,7 +983,7 @@ class Orders extends Base{
                              continue;
                          }
 
-                         if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
+                         if ($item[0] != Refund::REFUND_CANCEL && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
                              unset($page['data'][$key]);
                              $unsetCount ++;
                              continue;
