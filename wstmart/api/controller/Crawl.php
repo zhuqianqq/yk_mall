@@ -31,22 +31,30 @@ class Crawl extends Base{
                 break;
             case 2:
                 $domain = '1688';
-                $id = $url;
+                $path = rtrim(parse_url($url)['path'], '.html');
+                $arr = explode('/', $path);
+                $id = end($arr);
                 break;
             default:
                 $domain = 'taobao';
         }
 
-        $url = "http://api.onebound.cn/" . $domain . "/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=QQ1597063760&secret";
+//        $url = "http://api.onebound.cn/" . $domain . "/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=QQ1597063760&secret";
+        $url = "http://api.onebound.cn/" . $domain . "/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=tel15701584940&secret=20200426";
         $info = file_get_contents($url);
 //        $info = file_get_contents('/www/test.json');
         $arr = json_decode($info, true);
 
         $goodsInfo = $arr['item'];
-        $skus = $goodsInfo['skus']['sku'];//库存
+        if (empty($goodsInfo)) {
+            var_dump($arr);die;
+        }
         $isSpec = 0;
-        if (count($skus) > 1) {
-            $isSpec = 1;
+        if (!empty($goodsInfo['skus'])) {
+            $skus = $goodsInfo['skus']['sku'];//库存
+            if (count($skus) > 1) {
+                $isSpec = 1;
+            }
         }
 
         $data['isSpec'] = $isSpec;
