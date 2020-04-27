@@ -829,7 +829,7 @@ class Orders extends Base{
 		if($shopName != ''){
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
-		$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc'];
+		$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.orderStatus' => 'asc', 'o.payTime' => 'desc'];
 		}
@@ -885,10 +885,11 @@ class Orders extends Base{
 	    	 	    //没有退款不显示商品状态
                     //$v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
 	    	 	}else{
-	    	 	    if ($v['goodsStatus'] == Refund::REFUND_CANCEL) {
+	    	 	    if ($v['goodsStatus'] == Refund::REFUND_CANCEL) {//取消退款
                         //$v['status'] = WSTLangOrderStatus($formartOrder[$v['orderId']]['orderStatus']);
-                    } else
+                    } else{
                         $v['status'] = WSTLangOrderRefundStatus($v['goodsStatus']);
+                    }
                 }
 
                  $goodsMap[$v['orderId']][] = $v;
@@ -907,6 +908,9 @@ class Orders extends Base{
 	    	 	 if ($v['payType'] == 1 && $v['isRefund'] == 0 && $v['refundId'] == '' && ($v['isPay'] == 1 || $v['useScore'] > 0)) {
                       $page['data'][$key]['allowRefund'] = 1;
 	    	 	 }
+	    	 	 if (count($goodsMap[$v['orderId']]) == 1) {
+	    	 	     $goodsMap[$v['orderId']][0]['status'] = '';
+                 }
 	    	 	 $page['data'][$key]['list'] = $goodsMap[$v['orderId']];
 	    	 	 $page['data'][$key]['isComplain'] = 1;
 	    	 	 if (($v['complainId'] == '') && ($v['payType']==0 || ($v['payType']==1 && $v['orderStatus'] != -2))) {
@@ -928,10 +932,16 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = -3;
                          }
                          if (in_array($item[0], $refundFinshed)) {
-                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-7);//退款完成
-                             $page['data'][$key]['orderStatus'] = -7;
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(8);//退款完成
+                             $page['data'][$key]['orderStatus'] = 8;
+                         }
+
+                         if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
+                             unset($page['data'][$key]);
+                             continue;
                          }
                      }
+
                  }else
                      $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
 
