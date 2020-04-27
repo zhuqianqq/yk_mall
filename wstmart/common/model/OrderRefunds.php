@@ -375,7 +375,7 @@ class OrderRefunds extends Base{
         $trade_no = input('trade_no'); // 订单编号
         $refundTo = (int)input('refundTo',-1); // 支付方式
         $refundStatus = (int)input('refundStatus',-1); // 退款状态
-        if($trade_no != '') $where[] = ['orf.trade_no','like','%'.$trade_no.'%'];
+        if($trade_no != '') $where[] = ['orf.refundTradeNo','like','%'.$trade_no.'%'];
 
         if($refundTo != -1) $where[] = ['orf.refundTo', '=', $refundTo];
         if($refundStatus != -1) {
