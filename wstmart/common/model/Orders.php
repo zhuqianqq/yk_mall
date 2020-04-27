@@ -831,7 +831,7 @@ class Orders extends Base{
 		}
 		$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
-            $orderSort = ['o.orderStatus' => 'asc', 'o.payTime' => 'desc'];
+            $orderSort = ['o.payTime' => 'desc'];
 		}
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
@@ -895,7 +895,7 @@ class Orders extends Base{
                  $goodsMap[$v['orderId']][] = $v;
                  $refundStatusArr[$v['orderId']][] = $v['goodsStatus'];
 	    	 }
-
+            $unsetCount = 0;
              // 查询一个订单下是否有物流包裹
 	    	 foreach ($page['data'] as $key => $v) {
                  $orderExpress = Db::name('order_express')->field('expressId,expressNo')->where([['orderId', '=', $v['orderId']], ['isExpress','=',1]])->find();
@@ -919,31 +919,6 @@ class Orders extends Base{
 	    	 	 $page['data'][$key]['payTypeName'] = WSTLangPayType($v['payType']);
 	    	 	 $page['data'][$key]['deliverTypeName'] = WSTLangDeliverType($v['deliverType'] == 1);
 	    		 $page['data'][$key]['orderCodeTitle'] = WSTOrderModule($v['orderCode']);
-
-	    		 $item = array_unique($refundStatusArr[$v['orderId']]);
-
-                 if ($v['isRefund'] == 1) {//有退款的情况
-                     if (count($item)>1) {
-                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
-                     } else {
-                         // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
-                         if (in_array($item[0], $refundingStatus)) {
-                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
-                             $page['data'][$key]['orderStatus'] = -3;
-                         }
-                         if (in_array($item[0], $refundFinshed)) {
-                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(8);//退款完成
-                             $page['data'][$key]['orderStatus'] = 8;
-                         }
-
-                         if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
-                             unset($page['data'][$key]);
-                             continue;
-                         }
-                     }
-
-                 }else
-                     $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
 
 	    	 	 if ($v["orderStatus"] == -2) {
 					$page['data'][$key]['pkey'] = WSTBase64urlEncode($v["orderNo"] . "@0");
@@ -972,7 +947,50 @@ class Orders extends Base{
 						$page['data'][$key]['canAfterSale'] = ($ogNum > $osNum);
 					}
 				}
-	    	 }
+
+                 $item = array_unique($refundStatusArr[$v['orderId']]);
+                 if ($v['isRefund'] == 1) {//有退款的情况
+                     if (count($item)>1) {
+                         //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+                         //如果多个商品都申请退款则再在代发货中不显示
+                         $flag = true;
+                         foreach ($item  as $vv) {
+                             if ($vv=='') {
+                                 $flag = false;
+                                 break;
+                             }
+                         }
+
+                         if ($flag && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+                             unset($page['data'][$key]);
+                             $unsetCount ++;
+                         }
+
+                     } else {
+                         // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+                         if (in_array($item[0], $refundingStatus)) {
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
+                             $page['data'][$key]['orderStatus'] = -3;
+                         }
+                         if (in_array($item[0], $refundFinshed)) {
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(8);//退款完成
+                             $page['data'][$key]['orderStatus'] = 8;
+                         }
+
+                         if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
+                             unset($page['data'][$key]);
+                             $unsetCount ++;
+                             continue;
+                         }
+                     }
+
+                 }else
+                     $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+
+             }
+            $page['data'] = array_values($page['data']);
+
+            $page['total'] -= $unsetCount;
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
 

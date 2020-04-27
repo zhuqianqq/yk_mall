@@ -112,7 +112,17 @@ class OrderRefunds extends Base{
         }
         if ($id == 0) return WSTReturn("操作失败!", -1);
         $refund = $this->get($id);
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
         if (empty($refund) || !in_array($refund->refundStatus, [1, 4, 7])) return WSTReturn("该退款订单不存在或已退款!", -1);
+        switch ($refund->refundStatus) {
+            case 1:
+                // 申请退款，如果是退货退款，则设置为退货退款同意
+                $refund->refundStatus = 4;
+                $refund->shopAgreeTime = date('Y-m-d H:i:s');
+                $refund->save();
+                return WSTReturn("退款成功",1);
+                break;
+        }
 
         $orderRefund = \wstmart\common\model\OrderRefunds::get($id);
         $refund = new \wstmart\common\pay\Refund();
@@ -370,11 +380,12 @@ class OrderRefunds extends Base{
         if($refundStatus != -1) {
             // 1 未退款 2 已退款
             // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
-            if ($refundStatus == 1) {
-                $where[] = ['orf.refundStatus', 'in', [1,3,4,7]];
-            } else {
-                $where[] = ['orf.refundStatus', '=', 2];
-            }
+            $where[] = ['orf.refundStatus', '=', $refundStatus];
+//            if ($refundStatus == 1) {
+//                $where[] = ['orf.refundStatus', 'in', [1,3,4,7]];
+//            } else {
+//                $where[] = ['orf.refundStatus', '=', 2];
+//            }
         } else {
             $where[] = ['orf.refundStatus', 'in', [1,3,4,7]];
         }
@@ -398,7 +409,7 @@ class OrderRefunds extends Base{
         $page = Db::name('orders')->alias('o')
             ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId', 'left')
             ->where($where)
-            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus')
+            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus, orf.refundType')
             ->order('orf.createTime', 'desc')
             ->paginate(input('limit/d'))->toArray();
         return $page;
