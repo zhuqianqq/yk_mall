@@ -153,6 +153,7 @@ class Refund extends Base
                 $refund->goodsId = $goodsId;
                 $refund->goodsSpecId = $goodsSpecId;
                 $refund->refundReson = $refundCode;
+                $refund->refundType = $refundType;
                 $refund->refundOtherReson = $refundReason;
                 $refund->backMoney = bcdiv($refundMoney, 1, 2);
                 $refund->totalMoney = bcdiv($order['realTotalMoney'], 1, 2);

@@ -423,7 +423,7 @@ class OrderRefunds extends Base{
 		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
 		->where($where)
 		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,orf.id as refundId,orf.refundTo,
-		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.refundOtherReson,orf.refundRemark,orf.logisticTime,orf.logisticNum,orf.logisticInfo,orf.createTime,orf.refundTime,o.orderStatus,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
+		 orf.refundStatus,orf.refundTradeNo,orf.refundReson,orf.refundOtherReson,orf.refundRemark,orf.logisticTime,orf.logisticNum,orf.logisticInfo,orf.createTime,orf.refundTime,orf.shopAgreeTime,o.orderStatus,o.shopId,o.createTime as oCreateTime,o.payTime,o.receiveTime,o.deliveryTime')
 		->order('orf.createTime', 'desc')
 		->find() ?? [];
 
