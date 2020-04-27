@@ -66,9 +66,11 @@ function initRefundGrid(p){
         {title:'操作', name:'op' ,width:120, align:'center', renderer: function(val,item,rowIndex){
             var h = '';
             if((item['serviceId']==0 && (item['refundStatus'] == 1 || item['refundStatus'] == 4 || item['refundStatus'] == 7)) || (item['serviceId'] >0 && item['isServiceRefund']==0)){
-                h += "<a class='btn btn-blue' href='javascript:toRefund(" + item['refundId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>退款</a> ";
-            } else if (item['refundType'] == 1 && item['refundStatus'] == 1) {
-                h += "<a class='btn btn-blue' href='javascript:toRefund(" + item['refundId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>同意退货退款</a> ";
+                if (item['refundType'] == 1 && item['refundStatus'] == 1) {
+                    h += "<a class='btn btn-blue' href='javascript:toRefund(" + item['refundId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>同意退货退款</a> ";
+                } else {
+                    h += "<a class='btn btn-blue' href='javascript:toRefund(" + item['refundId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>退款</a> ";
+                }
             }
             h += "<a class='btn btn-blue' href='javascript:toView(" + item['orderId'] + ", "+ item['serviceId'] +")'><i class='fa fa-search'></i>详情</a> ";
             return h;
