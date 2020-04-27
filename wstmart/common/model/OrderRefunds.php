@@ -373,9 +373,11 @@ class OrderRefunds extends Base{
         $endDate = input('endDate');
         $where = [];
         $trade_no = input('trade_no'); // 订单编号
+        $refundTradeNo = input('refundTradeNo'); // 退款编号
         $refundTo = (int)input('refundTo',-1); // 支付方式
         $refundStatus = (int)input('refundStatus',-1); // 退款状态
-        if($trade_no != '') $where[] = ['orf.refundTradeNo', '=', $trade_no];
+        if($trade_no != '') $where[] = ['orf.trade_no', '=', $trade_no];
+        if($refundTradeNo != '') $where[] = ['orf.refundTradeNo', '=', $refundTradeNo];
 
         if($refundTo != -1) $where[] = ['orf.refundTo', '=', $refundTo];
         if($refundStatus != -1) {
@@ -408,7 +410,7 @@ class OrderRefunds extends Base{
         $page = Db::name('orders')->alias('o')
             ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId', 'left')
             ->where($where)
-            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus, orf.refundType')
+            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus, orf.refundType,orf.refundTradeNo')
             ->order('orf.createTime', 'desc')
             ->paginate(input('limit/d'))->toArray();
         return $page;

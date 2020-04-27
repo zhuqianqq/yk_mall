@@ -17,6 +17,7 @@ function initRefundGrid(p){
             h += "<a style='cursor:pointer' onclick='javascript:showDetail("+ item['orderId'] +");'>"+item['orderNo']+"</a>";
             return h;
         }},
+        {title:'退款编号', name:'refundTradeNo',width:40,sortable: true},
         {title:'订单来源', name:'orderCodeTitle',width:40,sortable: true,hidden: true},
         {title:'配送方式', name:'deliverType',width:40,sortable: true,hidden: true},
         {title:'实收金额', name:'realTotalMoney', width:40,sortable: true,renderer: function(val,item,rowIndex){
