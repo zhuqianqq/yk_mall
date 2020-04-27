@@ -1133,7 +1133,6 @@ function WSTLangOrderListStatus($v){
         case 0:return '待发货';
         case 1:return '待收货';
         case 2:return '交易成功';
-        case 8:
         case -1:
         case 6:return '交易失败';
     }

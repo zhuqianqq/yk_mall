@@ -339,25 +339,26 @@ class OrderRefunds extends Base{
             ->order('orf.createTime', 'desc')
             ->paginate(input('limit/d'))->toArray();
         $orderIds = [];
-        $list = [];
-        if (!empty($page['data'])) {
-            foreach ($page['data'] as $key => $v){
-                $orderId = $v['orderId'];
-                $orderIds[] = $orderId;
-            }
-            $orderIds = array_unique($orderIds);
-            $ids = implode(',', $orderIds);
-            $list = Db::name('order_goods')->alias('og')
-                ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
-                ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
-                ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
-                ->order('orf.createTime', 'desc')
-                ->paginate(input('limit/d'))->toArray();
-            if (!empty($list['data'])) {
-                foreach ($list['data'] as $k => $v) {
-                    $list['data'][$k]['refundMoney'] = bcmul($v['goodsNum'], $v['goodsPrice'], 2);
-                    $list['data'][$k]['refundStatusText'] = WSTLangOrderRefundStatus($v['refundStatus']);
-                }
+        if (empty($page['data'])) {
+            $page['data'] = (object)[];
+            return $page;
+        }
+        foreach ($page['data'] as $key => $v){
+            $orderId = $v['orderId'];
+            $orderIds[] = $orderId;
+        }
+        $orderIds = array_unique($orderIds);
+        $ids = implode(',', $orderIds);
+        $list = Db::name('order_goods')->alias('og')
+            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+            ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
+            ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
+            ->order('orf.createTime', 'desc')
+            ->paginate(input('limit/d'))->toArray();
+        if (!empty($list['data'])) {
+            foreach ($list['data'] as $k => $v) {
+                $list['data'][$k]['refundMoney'] = bcmul($v['goodsNum'], $v['goodsPrice'], 2);
+                $list['data'][$k]['refundStatusText'] = WSTLangOrderRefundStatus($v['refundStatus']);
             }
         }
         return $list;
@@ -452,9 +453,10 @@ class OrderRefunds extends Base{
      * 获取退款资料
      */
     public function getInfoByRefund(){
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
         $where = [['orf.id','=',(int)input('get.id')],
             ['isRefund','=',1],
-            ['refundStatus','in', [1, 7]]];
+            ['refundStatus','in', [1, 3, 4, 7]]];
         $serviceId = (int)input('serviceId');
         if ($serviceId > 0) {
             $where = [

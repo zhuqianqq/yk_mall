@@ -235,6 +235,7 @@ class Orders extends Base{
             return $this->outJson(100, "缺少参数");
         }
 
+        $flag = -1;
         $status = [
             'waitPay' => [-2], //待支付
             'waitReceive' => [1,0],//待收货
@@ -244,10 +245,10 @@ class Orders extends Base{
         ];
 
         $m = new M();
-        $rs['waitPay'] = $m->getUserOrderCount($status['waitPay'],$userId);
-        $rs['waitReceive'] = $m->getUserOrderCount($status['waitReceive'],$userId);
-        $rs['finish'] = $m->getUserOrderCount($status['finish'],$userId);
-        $rs['refund'] = $m->getUserOrderCount($status['refund'],$userId);
+        $rs['waitPay'] = $m->userOrdersByPage($status['waitPay'],$flag,$userId,'waitPay')['total'];
+        $rs['waitReceive'] = $m->userOrdersByPage($status['waitReceive'],$flag,$userId,'waitReceive')['total'];
+        $rs['finish'] = $m->userOrdersByPage($status['finish'],$flag,$userId,'finish')['total'];
+        $rs['refund'] = $m->getRefundCount($userId);
 
         return $this->outJson(0, "success", $rs);
     }
@@ -289,6 +290,7 @@ class Orders extends Base{
 		}
 		$m = new M();
 		$rs = $m->userOrdersByPage($status,$flag,$userId);
+
 		foreach ($rs['data'] as $k=>$v) {
 		    if (empty($v['list'])) continue;
             foreach($v['list'] as $k1=>$v1){
