@@ -10,5 +10,6 @@ class OrderGoods extends Base
     CONST STATUS_REFUND_SUCCESS = 2;//退款成功
     CONST STATUS_REFUND_FAIL = 3;//退款失败
     CONST STATUS_REFUND_DELETE = 4;//删除退款
+    CONST STATUS_REFUND_RECEIVE = 7;//等待商家收货
 
 }
