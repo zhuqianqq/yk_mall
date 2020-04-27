@@ -936,10 +936,10 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = 8;
                          }
 
-                        /* if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
+                         if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
                              unset($page['data'][$key]);
                              continue;
-                         }*/
+                         }
                      }
 
                  }else
@@ -973,6 +973,7 @@ class Orders extends Base{
 					}
 				}
 	    	 }
+            $page['data'] = array_values($page['data']);
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
 
