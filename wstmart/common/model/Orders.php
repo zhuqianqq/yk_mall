@@ -975,8 +975,11 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = -3;
                          }
                          if (in_array($item[0], $refundFinshed)) {
-                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(8);//退款完成
-                             $page['data'][$key]['orderStatus'] = 8;
+                             //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(8);//退款完成
+                             //$page['data'][$key]['orderStatus'] = 8;
+                             unset($page['data'][$key]);
+                             $unsetCount ++;
+                             continue;
                          }
 
                          if ($type == 'waitPay' || $type == 'waitReceive' || $type == 'finish' || $type == 'waitDeliver') {
