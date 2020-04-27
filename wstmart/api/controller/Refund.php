@@ -287,7 +287,8 @@ class Refund extends Base
         }
         // 0初始 1 退款中 2 退款成功 3 退款失败
         $orderGoodsStatus = $orderGoods['refundStatus'];
-        if (!in_array($orderGoodsStatus, [2])) {
+        // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
+        if (!in_array($orderGoodsStatus, [2, 5])) {
             return $this->outJson(100, "不可操作!");
         }
 
