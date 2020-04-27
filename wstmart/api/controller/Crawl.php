@@ -21,44 +21,86 @@ class Crawl extends Base{
     public function index()
     {
         $type = input('type', 1);
-        // 1 淘宝天猫
         $url = input('url');
-        parse_str(parse_url($url)['query'], $query_arr);
-        $id = $query_arr['id'];
-        $url = "http://api.onebound.cn/taobao/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=tel15675151201&secret=20200407";
+        switch ($type) {
+            case 1:
+                $domain = 'taobao';
+                // 1 淘宝天猫
+                parse_str(parse_url($url)['query'], $query_arr);
+                $id = $query_arr['id'];
+                break;
+            case 2:
+                $domain = '1688';
+                $id = $url;
+                break;
+            default:
+                $domain = 'taobao';
+        }
+
+        $url = "http://api.onebound.cn/" . $domain . "/api_call.php?num_iid={$id}&is_promotion=1&api_name=item_get&lang=zh-CN&key=QQ1597063760&secret";
         $info = file_get_contents($url);
-//       $file = file_get_contents('test.json');
+//        $info = file_get_contents('/www/test.json');
         $arr = json_decode($info, true);
-       $goodsInfo = $arr['item'];
-       $skus = $goodsInfo['skus']['sku'];//库存
-        $isSpec = 1;
-//        if (count($skus) > 1) {
-//            $isSpec = 1;
-//        }
+
+        $goodsInfo = $arr['item'];
+        $skus = $goodsInfo['skus']['sku'];//库存
+        $isSpec = 0;
+        if (count($skus) > 1) {
+            $isSpec = 1;
+        }
 
         $data['isSpec'] = $isSpec;
-       $shopId = 43; // 御泥坊 45  绝艺鸭脖 44 天然工坊 43
-       $data['goodsName'] = $goodsName = $goodsInfo['title'];// 标题
-        $data['goodsImg'] = $goodsImg = $this->getSelfImg('http:' . $goodsInfo['pic_url']);// 封面图
+        $shopId = 119; // 御泥坊 45  绝艺鸭脖 44 天然工坊 43 白又白 118 天门市小潮服装有限公司119
+        $data['goodsName'] = $goodsName = $goodsInfo['title'];// 标题
+        if (!empty($goodsInfo['props'])) {
+            $props = $goodsInfo['props'];
+            $data['goodsAttr'] = json_encode($props);
+        }
+
+        if ($this->urlParse($goodsInfo['pic_url'])) {
+            $picUrl = $goodsInfo['pic_url'];
+        } else {
+            $picUrl = 'http:' . $goodsInfo['pic_url'];
+        }
+        $data['goodsImg'] = $goodsImg = $this->getSelfImg($picUrl);// 封面图
         $data['goodsDesc'] = $goodsDesc = $this->getDesc($goodsInfo['desc']);// 描述
         $data['goodsSn'] = $goodsSn = WSTGoodsNo();
         $data['productNo'] = $productNo = WSTGoodsNo();
         $data['productNo'] = $productNo = WSTGoodsNo();
         $data['goodsCatId'] = $goodsCatId = 365;
+        $data['goodsStatus'] = 1;
         $data['goodsCatIdPath'] =  '365_';
         $data['goodsType'] = $goodsType = 0;
         $data['weight'] = $weight = 0;
-        $data['marketPrice'] = $marketPrice = $goodsInfo['orginal_price'];
-        $data['shopPrice'] = $shopPrice = $goodsInfo['price'];
+        $data['marketPrice'] = $marketPrice = bcmul($goodsInfo['orginal_price'], 1.5, 2);
+        $data['shopPrice'] = $shopPrice = bcmul($goodsInfo['price'], 1.5, 2);
+
        $img = $goodsInfo['item_imgs'];
        $gallery = '';
        foreach ($img as $v) {
-           $imgUrl = $this->getSelfImg('http:' . $v['url']);
+           if ($this->urlParse($v['url'])) {
+               $url = $v['url'];
+           } else {
+               $url = 'http:' . $v['url'];
+           }
+           $imgUrl = $this->getSelfImg($url);
            $gallery .= $imgUrl . ',';
        }
         $data['gallery'] = $gallery = rtrim($gallery, ','); // 图片
         $data['skus'] = $skus;
         $this->addTo($data, $shopId);
+    }
+
+    public function urlParse($url)
+    {
+        $preg = "/^http(s)?:\\/\\/.+/";
+        if(preg_match($preg,$url))
+        {
+            return true;
+        }else
+        {
+            return false;
+        }
     }
 
     public function addTo($data, $shopId)
@@ -69,6 +111,7 @@ class Crawl extends Base{
 
             $goodsData = [];
             $goodsData['isSpec'] = $data['isSpec'];
+            $goodsData['goodsAttr'] = $data['goodsAttr'];
             $goodsData['goodsSn'] = $data['goodsSn'];
             $goodsData['goodsUnit'] = '件';
             $goodsData['productNo'] = $data['productNo'];
@@ -80,6 +123,7 @@ class Crawl extends Base{
             $goodsData['goodsCatId'] = $data['goodsCatId'];
             $goodsData['shopCatId1'] = 0;
             $goodsData['shopCatId2'] = 0;
+            $goodsData['goodsStock'] = 1000;
             $goodsData['goodsDesc'] = $data['goodsDesc'];
             $goodsData['gallery'] = $data['gallery'];
             $goodsData['saleTime'] = date('Y-m-d H:i:s');
@@ -127,7 +171,7 @@ class Crawl extends Base{
                     $specItems['createTime'] = date('Y-m-d H:i:s');
                     $specItemsId = Db::name('spec_items')->insertGetId($specItems);
                     $goodsSpecs['specIds'] = $specItemsId;
-                    $goodsSpecs['specIds'] = $specItemsId;
+                    $goodsSpecs['specStock'] = 1000;
                     if ($k == 0) {
                         $goodsSpecs['isDefault'] = 1;
                     } else {
@@ -157,7 +201,7 @@ class Crawl extends Base{
     //取得页面所有的图片地址
     function getimages($str)
     {
-        $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.gif|\.jpg]))[\'|\"].*?[\/]?>/";
+        $pattern="/<[img|IMG].*?src=[\'|\"](.*?(?:[\.jpg]))[\'|\"].*?[\/]?>/";
         preg_match_all($pattern,$str,$match);
         return $match[1];
     }
@@ -175,7 +219,12 @@ class Crawl extends Base{
             if (empty($v)) {
                 continue;
             }
-            $selfImg = $this->getSelfImg('http:' . $v);
+            if ($this->urlParse($v)) {
+                $url = $v;
+            } else {
+                $url = 'http:' . $v;
+            }
+            $selfImg = $this->getSelfImg($url);
             $imgData[] = ['old' => $v, 'new' => $selfImg];
         }
         foreach ($imgData as $v) {
