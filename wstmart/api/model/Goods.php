@@ -154,26 +154,23 @@ class Goods extends CGoods{
     /**
 	 * 获取商品资料在前台展示
 	 */
-	// public function getGoodsStock($goodsId)
-    // {
+	public function getGoodsStock($goodsId)
+    {
 
-    //     $goodStock = Db::name('goods')->field('goodStock')->where(['goodsId' => $goodsId, 'dataFlag' => 1])->find();
+        $goodsStock = Db::name('goods')->where(['goodsId' => $goodsId, 'dataFlag' => 1])->value('goodsStock') ?? 0;
 
-    //     //获取销售规格
-    //     $sales = Db::name('goods_specs')->where('goodsId', $goodsId)->field('id,isDefault,productNo,specIds,marketPrice,specPrice,specStock')->select();
-    //     if (!empty($sales)) {
-    //         $rs['saleSpec'] = array();
-    //         foreach ($sales as $key => $v) {
-    //             // $str = explode(':',$v['specIds']);
-    //             // sort($str);
-    //             // unset($v['specIds']);
-    //             // $rs['saleSpec'][implode(':',$str)] = $v;
-    //             array_push($rs['saleSpec'], $v);
-    //         }
-    //     }
-
-    //     dd($goodStock);
-    // }
+        //获取销售规格
+        $sales = Db::name('goods_specs')->where('goodsId', $goodsId)->field('id,isDefault,productNo,specIds,marketPrice,specPrice,specStock')->select();
+        $rs['saleSpec'] = array();
+        if (!empty($sales)) {
+            foreach ($sales as $key => $v) {
+                array_push($rs['saleSpec'], $v);
+            }
+        }
+        
+        return ['goodsStock'=>$goodsStock,'saleSpec'=>$rs['saleSpec']];
+   
+    }
 
 
 	public function historyQuery(){
