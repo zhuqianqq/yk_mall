@@ -290,7 +290,7 @@ class Orders extends Base{
 		}
 		$m = new M();
 		$rs = $m->userOrdersByPage($status,$flag,$userId);
-		print_r($rs);die;
+
 		foreach ($rs['data'] as $k=>$v) {
 		    if (empty($v['list'])) continue;
             foreach($v['list'] as $k1=>$v1){
