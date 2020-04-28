@@ -162,8 +162,8 @@ class Crawl extends Base{
                     $catArr = explode(':', $v['properties_name']);
                     $catName = $catArr[2];
                     $itemName = $catArr[3];
-                    $goodsSpecs['specPrice'] = $v['price'];
-                    $goodsSpecs['marketPrice'] = $v['orginal_price'];
+                    $goodsSpecs['specPrice'] = bcmul($v['price'], 1.5, 2);
+                    $goodsSpecs['marketPrice'] = bcmul($v['orginal_price'], 1.5, 2);
                     $isCat = Db::name('spec_cats')->where("catName = '{$catName}'")->find();
                     if (!empty($isCat)) {
                        $catId = $isCat['catId'];
