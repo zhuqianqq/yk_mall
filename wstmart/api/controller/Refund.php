@@ -86,7 +86,7 @@ class Refund extends Base
         }
         if (1 == $refundType) {
             // 如果是退货退款
-            if (1 != $orderStatus) {
+            if (!in_array($orderStatus, [1, 2])) {
                 return $this->outJson(100, "不可操作");
             }
         }
