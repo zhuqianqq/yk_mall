@@ -258,12 +258,13 @@ class AlipayService
                 $this->log('alipayNotify: 交易状态不为成功状态');
                 return false;
             }
+            $payFrom = 'alipays';
             $obj = [];
             $obj["trade_no"] = $order_num;
             $obj["isBatch"] = $order['isBatch'];
             $obj["out_trade_no"] = $order_num;
             $obj["userId"] = (int)$order['userId'];
-            $obj["payFrom"] = $order['payFrom'];
+            $obj["payFrom"] = $payFrom;
             $obj["total_fee"] = (float)$map["total_amount"];
             $m->success($obj);
             $this->log('支付宝回调通知success');
