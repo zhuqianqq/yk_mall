@@ -803,7 +803,7 @@ class Orders extends Base{
 	/**
 	 * 获取用户订单列表
 	 */
-	public function userOrdersByPage($orderStatus, $isAppraise = -1, $uId = 0, $type='')
+	public function userOrdersByPage($orderStatus, $isAppraise = -1, $uId = 0, $type='',$falg='list')
     {
 		$userId = $uId;
 		$orderNo = input('post.orderNo');
@@ -835,8 +835,6 @@ class Orders extends Base{
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
 		}
-
-		//先查询待付款的订单商品
 
 		$page = $this->alias('o')->join('__SHOPS__ s','o.shopId=s.shopId','left')
 		             ->join('__ORDER_COMPLAINS__ oc','oc.orderId=o.orderId','left')
@@ -1017,20 +1015,20 @@ class Orders extends Base{
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
 
-	    $waitPayArr = [];
-	    $otherArr = [];
+	    if ($falg=='list' && !in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+            $waitPayArr = [];
+            $otherArr = [];
+            foreach ($page['data'] as $key => $v) {
+                if ($v['orderStatus'] == -2) {
+                    $waitPayArr[] = $v;
+                }else
+                    $otherArr[] = $v;
+            }
+            $createTime = array_column($otherArr,'createTime');
+            array_multisort($createTime,SORT_DESC,$otherArr);
 
-        foreach ($page['data'] as $key => $v) {
-            if ($v['orderStatus'] == -2) {
-                $waitPayArr[] = $v;
-            }else
-                $otherArr[] = $v;
+            $page['data'] = array_merge($waitPayArr, $otherArr);
         }
-
-        $payTime = array_column($otherArr,'payTime');
-        array_multisort($payTime,SORT_DESC,$otherArr);
-
-        $page['data'] = array_merge($waitPayArr, $otherArr);
 
 	    return $page;
 	}
