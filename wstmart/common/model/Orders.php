@@ -809,7 +809,7 @@ class Orders extends Base{
 		$orderNo = input('post.orderNo');
 		$shopName = input('post.shopName');
 		$isRefund = (int)input('post.isRefund',-1);
-		$type = input('param.type') ?? $type ;
+		$type = input('param.type') ?? $type;
         $page_size= input('pagesize/d',1000);
 	
 		$where = ['o.userId' => $userId, 'o.dataFlag' => 1];
@@ -841,7 +841,7 @@ class Orders extends Base{
 		             ->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId and orf.refundStatus!=-1','left')
 		             ->where($where)->where($condition)
 		             ->field('o.afterSaleEndTime,o.receiveTime,o.orderRemarks,o.noticeDeliver,o.payTime,o.orderId,o.orderNo,s.shopName,s.shopId,s.shopQQ,s.shopWangWang,o.goodsMoney,o.totalMoney,o.realTotalMoney,
-		              o.orderStatus,o.deliverType,deliverMoney,isPay,payType,payFrom,needPay,isAppraise,isRefund,orderSrc,o.createTime,o.useScore,oc.complainId,orf.id refundId,o.orderCode,orf.refundStatus')
+		              o.orderStatus,o.deliverType,o.deliveryTime,deliverMoney,isPay,payType,payFrom,needPay,isAppraise,isRefund,orderSrc,o.createTime,o.useScore,oc.complainId,orf.id refundId,o.orderCode,orf.refundStatus')
 			         ->order($orderSort)
 			         ->group('o.orderId')
 					 ->paginate($page_size)->toArray();
@@ -968,6 +968,7 @@ class Orders extends Base{
                              if (in_array($type,['waitPay','waitReceive','waitDeliver'])) {
                                  unset($page['data'][$key]);
                                  $unsetCount ++;
+                                 continue;
                              }
                              //多个商品如果退款状态都不一样 显示退款中
                              //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
@@ -1003,7 +1004,7 @@ class Orders extends Base{
                              continue;
                          }
 
-                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+//                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      }
 
                  }else
@@ -1018,6 +1019,9 @@ class Orders extends Base{
 	    if ($falg=='list' && !in_array($type,['waitPay','waitReceive','waitDeliver'])) {
             $waitPayArr = [];
             $otherArr = [];
+            if (empty($page['data'])) {
+                return $page;
+            }
             foreach ($page['data'] as $key => $v) {
                 if ($v['orderStatus'] == -2) {
                     $waitPayArr[] = $v;
@@ -1025,7 +1029,18 @@ class Orders extends Base{
                     $otherArr[] = $v;
             }
             $createTime = array_column($otherArr,'createTime');
-            array_multisort($createTime,SORT_DESC,$otherArr);
+            if (!empty($createTime) && !empty($otherArr)) {
+                array_multisort($createTime,SORT_DESC, $otherArr);
+            }
+            if (empty($waitPayArr)) {
+                $page['data'] = $otherArr;
+                return $page;
+            }
+
+            if (empty($otherArr)) {
+                $page['data'] = $waitPayArr;
+                return $page;
+            }
 
             $page['data'] = array_merge($waitPayArr, $otherArr);
         }
