@@ -164,7 +164,7 @@ class Orders extends Base{
         if ($oCnt > 1) {
             // 如果是多个则直接显示多个
             $isMany = 1;
-            $orderId = '';
+            $orderId = 0;
         } else {
             $o = model('orders')
                 ->where(["userId" => $userId, "orderunique" => $rs['data']])
@@ -173,7 +173,7 @@ class Orders extends Base{
             $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
             if ($cnt > 1) {
                 $isMany = 1;
-                $orderId = '';
+                $orderId = 0;
             } else {
                 $orderId = $o['orderId'];
                 $isMany = 0;
