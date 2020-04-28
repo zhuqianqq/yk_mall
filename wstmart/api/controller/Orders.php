@@ -245,9 +245,9 @@ class Orders extends Base{
         ];
 
         $m = new M();
-        $rs['waitPay'] = $m->userOrdersByPage($status['waitPay'],$flag,$userId,'waitPay')['total'];
-        $rs['waitReceive'] = $m->userOrdersByPage($status['waitReceive'],$flag,$userId,'waitReceive')['total'];
-        $rs['finish'] = $m->userOrdersByPage($status['finish'],$flag,$userId,'finish')['total'];
+        $rs['waitPay'] = $m->userOrdersByPage($status['waitPay'],$flag,$userId,'waitPay','count')['total'];
+        $rs['waitReceive'] = $m->userOrdersByPage($status['waitReceive'],$flag,$userId,'waitReceive','count')['total'];
+        $rs['finish'] = $m->userOrdersByPage($status['finish'],$flag,$userId,'finish','count')['total'];
         $rs['refund'] = $m->getRefundCount($userId);
 
         return $this->outJson(0, "success", $rs);

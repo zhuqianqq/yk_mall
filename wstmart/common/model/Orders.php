@@ -803,7 +803,7 @@ class Orders extends Base{
 	/**
 	 * 获取用户订单列表
 	 */
-	public function userOrdersByPage($orderStatus, $isAppraise = -1, $uId = 0, $type='')
+	public function userOrdersByPage($orderStatus, $isAppraise = -1, $uId = 0, $type='',$falg='list')
     {
 		$userId = $uId;
 		$orderNo = input('post.orderNo');
@@ -826,10 +826,12 @@ class Orders extends Base{
 		if($shopName != ''){
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
-		$orderSort = ['o.orderStatus' => 'asc', 'o.payTime' => 'desc','o.isRefund' => 'asc'];
+
+        $orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.payTime' => 'desc'];
 		}
+		
 		if (in_array($isRefund,[0, 1])) {
 			$where['o.isRefund'] = $isRefund;
 		}
@@ -953,7 +955,7 @@ class Orders extends Base{
                  if ($v['isRefund'] == 1) {//有退款的情况
                      if (count($item)>1) {
                          //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
-                         //如果多个商品都申请退款则再在代发货中不显示
+                         //如果多个商品中有一个商品取消退款或者只有一个商品申请退款  则正常显示
                          $flag = true;
                          foreach ($item  as $vv) {
                              if ($vv=='' || $vv == Refund::REFUND_CANCEL) {
@@ -962,10 +964,22 @@ class Orders extends Base{
                              }
                          }
 
-                         if ($flag && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+                         if ($flag) {
+                             if (in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+                                 unset($page['data'][$key]);
+                                 $unsetCount ++;
+                             }
+                             //多个商品如果退款状态都不一样 显示退款中
+                             //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
+                             $page['data'][$key]['orderStatus'] = -3;
+                         } else
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+                        /* if ($flag && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
                              unset($page['data'][$key]);
                              $unsetCount ++;
-                         }
+                             break;
+                         }*/
 
                      } else {
 
@@ -988,6 +1002,8 @@ class Orders extends Base{
                              $unsetCount ++;
                              continue;
                          }
+
+                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      }
 
                  }else
@@ -995,10 +1011,24 @@ class Orders extends Base{
 
              }
             $page['data'] = array_values($page['data']);
-
             $page['total'] -= $unsetCount;
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
+
+	    if ($falg=='list' && !in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+            $waitPayArr = [];
+            $otherArr = [];
+            foreach ($page['data'] as $key => $v) {
+                if ($v['orderStatus'] == -2) {
+                    $waitPayArr[] = $v;
+                }else
+                    $otherArr[] = $v;
+            }
+            $createTime = array_column($otherArr,'createTime');
+            array_multisort($createTime,SORT_DESC,$otherArr);
+
+            $page['data'] = array_merge($waitPayArr, $otherArr);
+        }
 
 	    return $page;
 	}

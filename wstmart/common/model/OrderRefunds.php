@@ -114,14 +114,12 @@ class OrderRefunds extends Base{
         $refund = $this->get($id);
         // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
         if (empty($refund) || !in_array($refund->refundStatus, [1, 4, 7])) return WSTReturn("该退款订单不存在或已退款!", -1);
-        switch ($refund->refundStatus) {
-            case 1:
-                // 申请退款，如果是退货退款，则设置为退货退款同意
-                $refund->refundStatus = 4;
-                $refund->shopAgreeTime = date('Y-m-d H:i:s');
-                $refund->save();
-                return WSTReturn("退款成功",1);
-                break;
+        if (1 == $refund->refundStatus && 1 == $refund->refundType) {
+            // 申请退款，如果是退货退款，则设置为退货退款同意
+            $refund->refundStatus = 4;
+            $refund->shopAgreeTime = date('Y-m-d H:i:s');
+            $refund->save();
+            return WSTReturn("退款成功",1);
         }
 
         $orderRefund = \wstmart\common\model\OrderRefunds::get($id);
@@ -340,7 +338,7 @@ class OrderRefunds extends Base{
             ->paginate(input('limit/d'))->toArray();
         $orderIds = [];
         if (empty($page['data'])) {
-            $page['data'] = (object)[];
+            $page['data'] = [];
             return $page;
         }
         foreach ($page['data'] as $key => $v){
@@ -373,9 +371,11 @@ class OrderRefunds extends Base{
         $endDate = input('endDate');
         $where = [];
         $trade_no = input('trade_no'); // 订单编号
+        $refundTradeNo = input('refundTradeNo'); // 退款编号
         $refundTo = (int)input('refundTo',-1); // 支付方式
         $refundStatus = (int)input('refundStatus',-1); // 退款状态
-        if($trade_no != '') $where[] = ['orf.refundTradeNo', '=', $trade_no];
+        if($trade_no != '') $where[] = ['orf.trade_no', '=', $trade_no];
+        if($refundTradeNo != '') $where[] = ['orf.refundTradeNo', '=', $refundTradeNo];
 
         if($refundTo != -1) $where[] = ['orf.refundTo', '=', $refundTo];
         if($refundStatus != -1) {
@@ -408,7 +408,7 @@ class OrderRefunds extends Base{
         $page = Db::name('orders')->alias('o')
             ->join('__ORDER_REFUNDS__ orf ','o.orderId=orf.orderId', 'left')
             ->where($where)
-            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus, orf.refundType')
+            ->field('orf.serviceId, orf.isServiceRefund, orf.id refundId,o.orderId,payType,payFrom,o.orderStatus,orderSrc,orf.backMoney,orf.totalMoney realTotalMoney,orf.refundRemark,o.isRefund,orf.createTime,orf.trade_no orderNo, orf.refundTo, orf.refundStatus, orf.refundType,orf.refundTradeNo')
             ->order('orf.createTime', 'desc')
             ->paginate(input('limit/d'))->toArray();
         return $page;
