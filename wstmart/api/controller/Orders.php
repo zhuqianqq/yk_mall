@@ -157,18 +157,16 @@ class Orders extends Base{
                 $data['wxpay'] = $prepayData;
                 $data['orderunique'] = $rs['data'];
         }
-        $cnt = model('orders')
+        $o = model('orders')
             ->where(["userId" => $userId, "orderunique" => $rs['data']])
-            ->count();
+            ->field('orderId')
+            ->find();
+        $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
 
         if ($cnt > 1) {
             $isMany = 1;
             $orderId = '';
         } else {
-            $o = model('orders')
-                ->where(["userId" => $userId, "orderunique" => $rs['data']])
-                ->field('orderId')
-                ->find();
             $orderId = $o['orderId'];
             $isMany = 0;
         }
