@@ -968,6 +968,7 @@ class Orders extends Base{
                              if (in_array($type,['waitPay','waitReceive','waitDeliver'])) {
                                  unset($page['data'][$key]);
                                  $unsetCount ++;
+                                 continue;
                              }
                              //多个商品如果退款状态都不一样 显示退款中
                              //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
