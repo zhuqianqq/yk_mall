@@ -157,6 +157,23 @@ class Orders extends Base{
                 $data['wxpay'] = $prepayData;
                 $data['orderunique'] = $rs['data'];
         }
+        $cnt = model('orders')
+            ->where(["userId" => $userId, "orderunique" => $rs['data']])
+            ->count();
+
+        if ($cnt > 1) {
+            $isMany = 1;
+            $orderId = '';
+        } else {
+            $o = model('orders')
+                ->where(["userId" => $userId, "orderunique" => $rs['data']])
+                ->field('orderId')
+                ->find();
+            $orderId = $o['orderId'];
+            $isMany = 0;
+        }
+        $data['isBatch'] = $isMany;
+        $data['orderId'] = $orderId;
         return $this->outJson(0, "提交成功!", $data);
     }
 
