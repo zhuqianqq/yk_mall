@@ -1015,7 +1015,7 @@ class Orders extends Base{
 //	    	 hook('afterQueryUserOrders',['page'=>&$page]);
 	    }
 
-//	    if ($falg=='list' && !in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+	    if ($falg=='list' && !in_array($type,['waitPay','waitReceive','waitDeliver'])) {
             $waitPayArr = [];
             $otherArr = [];
             foreach ($page['data'] as $key => $v) {
@@ -1028,7 +1028,7 @@ class Orders extends Base{
             array_multisort($createTime,SORT_DESC,$otherArr);
 
             $page['data'] = array_merge($waitPayArr, $otherArr);
-//        }
+        }
 
 	    return $page;
 	}
