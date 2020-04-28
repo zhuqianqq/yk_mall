@@ -176,13 +176,18 @@ class Orders extends Base{
                 ->where(["userId" => $userId, "orderunique" => $rs['data']])
                 ->field('orderId')
                 ->find();
-            $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
-            if ($cnt > 1) {
+            if (empty($o)) {
                 $isMany = 1;
                 $orderId = 0;
             } else {
-                $orderId = $o['orderId'];
-                $isMany = 0;
+                $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
+                if ($cnt > 1) {
+                    $isMany = 1;
+                    $orderId = 0;
+                } else {
+                    $orderId = $o['orderId'];
+                    $isMany = 0;
+                }
             }
         }
 
