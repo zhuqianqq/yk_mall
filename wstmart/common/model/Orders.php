@@ -860,9 +860,10 @@ class Orders extends Base{
                  ->select();
 	    	 $goodsMap = [];
 
-             $refundingStatus = [OrderGoods::STATUS_INITION,OrderGoods::STATUS_REFUNDING,OrderGoods::STATUS_REFUND_FAIL,OrderGoods::STATUS_REFUND_RECEIVE];//退款中
-             $refundFinshed = [OrderGoods::STATUS_REFUND_SUCCESS];//退款完成
-            $refundStatusArr = [];
+             //$refundingStatus = [OrderGoods::STATUS_INITION,OrderGoods::STATUS_REFUNDING,OrderGoods::STATUS_REFUND_FAIL,OrderGoods::STATUS_REFUND_RECEIVE,OrderGoods::STATUS_REFUND_RECEIVE];//退款中
+             $refundingStatus = [Refund::REFUND_APPLICATION,Refund::REFUND_FAIL,Refund::REFUND_AGREE,Refund::REFUND_WAIT_RECIVE];//退款中
+             $refundFinshed = [Refund::REFUND_SUCCESS];//退款完成
+             $refundStatusArr = [];
 
 	    	 foreach ($goods as $v) {
                 $v['goodsName'] = WSTStripTags($v['goodsName']);
