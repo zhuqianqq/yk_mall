@@ -338,7 +338,7 @@ class OrderRefunds extends Base{
             ->paginate(input('limit/d'))->toArray();
         $orderIds = [];
         if (empty($page['data'])) {
-            $page['data'] = (object)[];
+            $page['data'] = [];
             return $page;
         }
         foreach ($page['data'] as $key => $v){
