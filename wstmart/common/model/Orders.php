@@ -841,7 +841,7 @@ class Orders extends Base{
 		             ->join('__ORDER_REFUNDS__ orf','orf.orderId=o.orderId and orf.refundStatus!=-1','left')
 		             ->where($where)->where($condition)
 		             ->field('o.afterSaleEndTime,o.receiveTime,o.orderRemarks,o.noticeDeliver,o.payTime,o.orderId,o.orderNo,s.shopName,s.shopId,s.shopQQ,s.shopWangWang,o.goodsMoney,o.totalMoney,o.realTotalMoney,
-		              o.orderStatus,o.deliverType,deliverMoney,isPay,payType,payFrom,needPay,isAppraise,isRefund,orderSrc,o.createTime,o.useScore,oc.complainId,orf.id refundId,o.orderCode,orf.refundStatus')
+		              o.orderStatus,o.deliverType,o.deliveryTime,deliverMoney,isPay,payType,payFrom,needPay,isAppraise,isRefund,orderSrc,o.createTime,o.useScore,oc.complainId,orf.id refundId,o.orderCode,orf.refundStatus')
 			         ->order($orderSort)
 			         ->group('o.orderId')
 					 ->paginate($page_size)->toArray();
