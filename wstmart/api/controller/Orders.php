@@ -157,19 +157,29 @@ class Orders extends Base{
                 $data['wxpay'] = $prepayData;
                 $data['orderunique'] = $rs['data'];
         }
-        $o = model('orders')
+        $oCnt = model('orders')
             ->where(["userId" => $userId, "orderunique" => $rs['data']])
             ->field('orderId')
-            ->find();
-        $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
-
-        if ($cnt > 1) {
+            ->count();
+        if ($oCnt > 1) {
+            // 如果是多个则直接显示多个
             $isMany = 1;
             $orderId = '';
         } else {
-            $orderId = $o['orderId'];
-            $isMany = 0;
+            $o = model('orders')
+                ->where(["userId" => $userId, "orderunique" => $rs['data']])
+                ->field('orderId')
+                ->find();
+            $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
+            if ($cnt > 1) {
+                $isMany = 1;
+                $orderId = '';
+            } else {
+                $orderId = $o['orderId'];
+                $isMany = 0;
+            }
         }
+
         $data['isBatch'] = $isMany;
         $data['orderId'] = $orderId;
         return $this->outJson(0, "提交成功!", $data);
