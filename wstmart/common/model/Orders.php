@@ -1004,7 +1004,7 @@ class Orders extends Base{
                              continue;
                          }
 
-                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+//                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      }
 
                  }else
