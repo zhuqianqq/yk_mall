@@ -53,12 +53,18 @@ class Orders extends Base{
 	public function submit()
     {
         try {
+            $orderunique = (int)input('post.orderunique', 0); // orderunique
             $m = new M();
-            $rs = $m->submit(2);
-            if ($rs["status"] == -1) {
-                throw new \Exception($rs["msg"], 100);
-            }
-            if ($rs["status"] == 1) {
+            if (empty($orderunique)) {
+                $rs = $m->submit(2);
+                if ($rs["status"] == -1) {
+                    throw new \Exception($rs["msg"], 100);
+                }
+                if ($rs["status"] == 1) {
+                    return $this->pay($m,$rs);
+                }
+            } else {
+                $rs['data'] = $orderunique;
                 return $this->pay($m,$rs);
             }
         } catch (\Exception $e) {
