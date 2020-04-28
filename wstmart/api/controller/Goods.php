@@ -35,6 +35,11 @@ class Goods extends Base
             $_goods = $m->getGoodsStock(input('goodsId/d'));
             $goods_cache['goodsStock'] = $_goods['goodsStock'];
             $goods_cache['saleSpec'] = $_goods['saleSpec'];
+            //商铺商品总件数
+            //商铺商品数量读数据库信息
+            $goods_cache['goodsNum'] = Db::name('goods')
+            ->where(['shopId'=>$goods_cache['shopId'],'dataFlag'=>1,'isSale'=>1])
+            ->count();
             return $this->outJson(0,"查找成功！",$goods_cache);
         }
 
