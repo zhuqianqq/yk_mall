@@ -1893,6 +1893,11 @@ class Orders extends Base{
 		$refundStatusArr = array_unique($refundStatusArr);
 		if(count($refundStatusArr)>1){
 			$orders['statusSubText'] = '';
+			//若状态不统一  判断商品的退款状态是否有为0的状态  若有为0 则不做处理 , 若没为0  则修改订单状态为-3 退款的状态
+			if (!in_array(0, $refundStatusArr)){
+				$orders['orderStatus'] = -3;
+			}
+			
 		}else{
 			// 状态统一且不为0 与 5 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
 			if($refundStatusArr[0] != 0 && $refundStatusArr[0] != 5){
