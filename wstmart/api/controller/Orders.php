@@ -53,12 +53,18 @@ class Orders extends Base{
 	public function submit()
     {
         try {
+            $orderunique = (int)input('post.orderunique', 0); // orderunique
             $m = new M();
-            $rs = $m->submit(2);
-            if ($rs["status"] == -1) {
-                throw new \Exception($rs["msg"], 100);
-            }
-            if ($rs["status"] == 1) {
+            if (empty($orderunique)) {
+                $rs = $m->submit(2);
+                if ($rs["status"] == -1) {
+                    throw new \Exception($rs["msg"], 100);
+                }
+                if ($rs["status"] == 1) {
+                    return $this->pay($m,$rs);
+                }
+            } else {
+                $rs['data'] = $orderunique;
                 return $this->pay($m,$rs);
             }
         } catch (\Exception $e) {
@@ -164,7 +170,7 @@ class Orders extends Base{
         if ($oCnt > 1) {
             // 如果是多个则直接显示多个
             $isMany = 1;
-            $orderId = '';
+            $orderId = 0;
         } else {
             $o = model('orders')
                 ->where(["userId" => $userId, "orderunique" => $rs['data']])
@@ -173,7 +179,7 @@ class Orders extends Base{
             $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
             if ($cnt > 1) {
                 $isMany = 1;
-                $orderId = '';
+                $orderId = 0;
             } else {
                 $orderId = $o['orderId'];
                 $isMany = 0;
