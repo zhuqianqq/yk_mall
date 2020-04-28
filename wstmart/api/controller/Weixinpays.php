@@ -80,13 +80,18 @@ class Weixinpays extends Base
                 return false;
             }
             $money = bcdiv($data['total_fee'], 100, 2);
+            if ($channel == 'app') {
+                $payFrom = 'weixinpays';
+            } else {
+                $payFrom = 'xcx';
+            }
 
             $obj = [];
             $obj["trade_no"] = $order_num;
             $obj["isBatch"] = $order['isBatch'];
             $obj["out_trade_no"] = $order_num;
             $obj["userId"] = (int)$order['userId'];
-            $obj["payFrom"] = $order['payFrom'];
+            $obj["payFrom"] = $payFrom;
             $obj["total_fee"] = (float)$money;
             $m->success($obj);
             $this->log('微信回调通知success');
