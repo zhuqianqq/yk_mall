@@ -958,7 +958,7 @@ class Orders extends Base{
                          //如果多个商品中有一个商品取消退款或者只有一个商品申请退款  则正常显示
                          $flag = true;
                          foreach ($item  as $vv) {
-                             if ($vv=='' || $vv == Refund::REFUND_CANCEL) {
+                             if ($vv=='' || $vv == Refund::REFUND_CANCEL || $vv == Refund::REFUND_DELETE) {
                                  $flag = false;
                                  break;
                              }
@@ -975,14 +975,7 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = -3;
                          } else
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
-                        /* if ($flag && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
-                             unset($page['data'][$key]);
-                             $unsetCount ++;
-                             break;
-                         }*/
-
                      } else {
-
                          // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
                          if (in_array($item[0], $refundingStatus)) {
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
@@ -1000,7 +993,7 @@ class Orders extends Base{
                              continue;
                          }
 
-                         if ($item[0] == Refund::REFUND_CANCEL) {
+                         if ($item[0] == Refund::REFUND_CANCEL || $item[0] == Refund::REFUND_DELETE) {
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                          }
 
