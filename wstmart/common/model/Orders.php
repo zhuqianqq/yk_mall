@@ -813,7 +813,6 @@ class Orders extends Base{
         $page_size= input('pagesize/d',1000);
 	
 		$where = ['o.userId' => $userId, 'o.dataFlag' => 1];
-        $where['o.orderStatus'] = ['neq',-7];
 
         $condition = [];
 		if (is_array($orderStatus)) {
