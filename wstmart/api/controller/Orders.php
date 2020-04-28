@@ -31,21 +31,19 @@ class Orders extends Base{
      */
 	public function payment()
     {
-        $userId = (int)input('post.user_id', 0); //用户id
+//        $userId = (int)input('post.user_id', 0); //用户id
         $orderId = (int)input('post.orderId', 0); //订单ID
         $orderM = new \wstmart\common\model\Orders();
-        $rs = $orderM->checkOrderStatus($userId,$orderId);
-        if ($rs["status"] == -1) {
-            return $this->outJson(100, $rs['msg']);
+        $order = $orderM->get($orderId);
+        if (empty($order)) {
+            return $this->outJson(100, '没有数据');
         }
-        if ($rs['status'] == 1) {
-            try {
-                $m = new M();
-                $data['data'] = $rs['data']['orderunique'];
-                return $this->pay($m, $data);
-            } catch (\Exception $e) {
-                return $this->outJson(100, $e->getMessage());
-            }
+        try {
+            $m = new M();
+            $data['data'] = $order['orderunique'];
+            return $this->pay($m, $data);
+        } catch (\Exception $e) {
+            return $this->outJson(100, $e->getMessage());
         }
     }
 
@@ -159,6 +157,31 @@ class Orders extends Base{
                 $data['wxpay'] = $prepayData;
                 $data['orderunique'] = $rs['data'];
         }
+        $oCnt = model('orders')
+            ->where(["userId" => $userId, "orderunique" => $rs['data']])
+            ->field('orderId')
+            ->count();
+        if ($oCnt > 1) {
+            // 如果是多个则直接显示多个
+            $isMany = 1;
+            $orderId = '';
+        } else {
+            $o = model('orders')
+                ->where(["userId" => $userId, "orderunique" => $rs['data']])
+                ->field('orderId')
+                ->find();
+            $cnt = model('order_goods')->where(["orderId" => $o['orderId']])->count();
+            if ($cnt > 1) {
+                $isMany = 1;
+                $orderId = '';
+            } else {
+                $orderId = $o['orderId'];
+                $isMany = 0;
+            }
+        }
+
+        $data['isBatch'] = $isMany;
+        $data['orderId'] = $orderId;
         return $this->outJson(0, "提交成功!", $data);
     }
 

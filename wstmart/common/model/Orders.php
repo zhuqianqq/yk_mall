@@ -2969,6 +2969,24 @@ class Orders extends Base{
         if($goods){
             foreach($goods as $k => $v){
                 $goods[$k]['hasDeliver'] = (in_array($v['id'], $deliveredGoodsIds)) ? true : false;
+                switch ($v['refundStatus']) {
+                    case 1:
+                         // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
+                        $refundText = '退款中';
+                         break;
+                    case 2:
+                        $refundText = '已退款';
+                        break;
+                    case 3:
+                        $refundText = '退款失败';
+                        break;
+                    case 4:
+                        $refundText = '删除退款';
+                        break;
+                    default:
+                        $refundText = '';
+                }
+                $goods[$k]['refundText'] = $refundText;
             }
             $data['list'] = $goods;
         }
