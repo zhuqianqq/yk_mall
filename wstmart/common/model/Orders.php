@@ -987,7 +987,7 @@ class Orders extends Base{
                              continue;
                          }
 
-                         if ($item[0] != Refund::REFUND_CANCEL && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+                         if ($item[0] != Refund::REFUND_CANCEL && $item[0] != Refund::REFUND_DELETE && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
                              unset($page['data'][$key]);
                              $unsetCount ++;
                              continue;
