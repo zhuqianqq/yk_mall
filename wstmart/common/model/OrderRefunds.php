@@ -429,7 +429,7 @@ class OrderRefunds extends Base{
 		}
 		
 		$orderDetail = Db::name('order_goods')->alias('og')
-		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+		->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId and og.goodsSpecId = orf.goodsSpecId', 'left')
 		->join("__ORDERS__ o", 'og.orderId = o.orderId', 'left')
 		->where($where)
 		->field('og.orderId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecId,og.goodsSpecNames, og.goodsName, og.goodsImg,orf.id as refundId,orf.refundTo,
