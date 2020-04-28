@@ -1004,6 +1004,10 @@ class Orders extends Base{
                              continue;
                          }
 
+                         if ($item[0] == Refund::REFUND_CANCEL) {
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
+                         }
+
 //                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      }
 
