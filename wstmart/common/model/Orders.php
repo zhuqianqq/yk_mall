@@ -1018,6 +1018,9 @@ class Orders extends Base{
 	    if ($falg=='list' && !in_array($type,['waitPay','waitReceive','waitDeliver'])) {
             $waitPayArr = [];
             $otherArr = [];
+            if (empty($page['data'])) {
+                return $page;
+            }
             foreach ($page['data'] as $key => $v) {
                 if ($v['orderStatus'] == -2) {
                     $waitPayArr[] = $v;
@@ -1025,7 +1028,18 @@ class Orders extends Base{
                     $otherArr[] = $v;
             }
             $createTime = array_column($otherArr,'createTime');
-            array_multisort($createTime,SORT_DESC,$otherArr);
+            if (!empty($createTime) && !empty($otherArr)) {
+                array_multisort($createTime,SORT_DESC, $otherArr);
+            }
+            if (empty($waitPayArr)) {
+                $page['data'] = $otherArr;
+                return $page;
+            }
+
+            if (empty($otherArr)) {
+                $page['data'] = $waitPayArr;
+                return $page;
+            }
 
             $page['data'] = array_merge($waitPayArr, $otherArr);
         }
