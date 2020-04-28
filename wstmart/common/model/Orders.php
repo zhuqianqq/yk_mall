@@ -813,6 +813,8 @@ class Orders extends Base{
         $page_size= input('pagesize/d',1000);
 	
 		$where = ['o.userId' => $userId, 'o.dataFlag' => 1];
+        $where['o.orderStatus'] = ['neq',-7];
+
         $condition = [];
 		if (is_array($orderStatus)) {
 			$condition[] = ['orderStatus', 'in', $orderStatus];
@@ -881,7 +883,6 @@ class Orders extends Base{
 	    	 	$v['goodsSpecNames'] = str_replace('@@_@@','、',$v['goodsSpecNames']);
 
 	    	 	 //获取每笔订单商品的交易状态，如果存在refundId则表示有退款
-                 //if ($v['orderId']=1999) var_dump($v);die;
                  $v['status'] = '';
                  if (empty($v['refundId'])) {
 	    	 	    //没有退款不显示商品状态
@@ -954,7 +955,6 @@ class Orders extends Base{
                  $item = array_unique($refundStatusArr[$v['orderId']]);
                  if ($v['isRefund'] == 1) {//有退款的情况
                      if (count($item)>1) {
-                         //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                          //如果多个商品中有一个商品取消退款或者只有一个商品申请退款  则正常显示
                          $flag = true;
                          foreach ($item  as $vv) {
@@ -971,7 +971,6 @@ class Orders extends Base{
                                  continue;
                              }
                              //多个商品如果退款状态都不一样 显示退款中
-                             //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
                              $page['data'][$key]['orderStatus'] = -3;
                          } else
@@ -984,15 +983,12 @@ class Orders extends Base{
 
                      } else {
 
-                         //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                          // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
                          if (in_array($item[0], $refundingStatus)) {
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
                              $page['data'][$key]['orderStatus'] = -3;
                          }
                          if (in_array($item[0], $refundFinshed)) {
-                             //$page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(8);//退款完成
-                             //$page['data'][$key]['orderStatus'] = 8;
                              unset($page['data'][$key]);
                              $unsetCount ++;
                              continue;
@@ -1008,7 +1004,6 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                          }
 
-//                         $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                      }
 
                  }else
