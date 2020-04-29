@@ -290,6 +290,16 @@ class Orders extends Base{
         $isUseScore = (int)input('isUseScore');
         $useScore = (int)input('useScore');
         if ($userId == 0) return WSTReturn('下单失败，请先登录');
+        $cacheKey = config('cachekeys.order_submit') . ":USERID:" . $userId;
+        $redis = Cache::handler();
+        $isLock = false;
+        if ($redis->setnx($cacheKey, 1)) {
+            $redis->expire($cacheKey, 1);
+            $isLock = true;
+        }
+        if (!$isLock) {
+            return WSTReturn("请不要重复提交");
+        }
 
         //检测购物车
         $carts = model('common/carts')->getCarts(true, $userId);
@@ -982,9 +992,11 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = -3;
                          }
                          if (in_array($item[0], $refundFinshed)) {
-                             unset($page['data'][$key]);
+                            /* unset($page['data'][$key]);
                              $unsetCount ++;
-                             continue;
+                             continue;*/
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(6);//退款完成
+                             $page['data'][$key]['orderStatus'] = 6;
                          }
 
                          if ($item[0] != Refund::REFUND_CANCEL && $item[0] != Refund::REFUND_DELETE && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
@@ -1187,6 +1199,7 @@ class Orders extends Base{
                 $orderExpressResult = Db::name('order_express')->insert($expressData);
             }
             $orderStatus = 0;
+            $finishDeliver = 1; //  目前只要发一件就是发货完成
             if($finishDeliver){
             	$orderStatus = 1;
                 $orderData = ['orderStatus'=>1,'deliveryTime'=>date('Y-m-d H:i:s')];
