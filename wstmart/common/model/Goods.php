@@ -626,7 +626,7 @@ class Goods extends Base
                 $searchKeys = WSTGroupGoodsSearchKey($goodsId);
                 $this->where('goodsId', $goodsId)->update(['goodsSerachKeywords' => implode(',', $searchKeys)]);
                 //删除购物车里的商品
-                model('common/carts')->delCartByUpdate($goodsId);
+                //model('common/carts')->delCartByUpdate($goodsId);
                 //商品编辑之后执行
                 hook('afterEditGoods', ['goodsId' => $goodsId]);
                 hook('afterChangeGoodsStatus', ['goodsId' => $goodsId]);
