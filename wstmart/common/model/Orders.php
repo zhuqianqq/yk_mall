@@ -838,8 +838,8 @@ class Orders extends Base{
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
 
-        $orderSort = [ 'o.createTime' => 'desc'];
-        //$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
+//        $orderSort = [ 'o.createTime' => 'desc'];
+        $orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.payTime' => 'desc'];
 		}
