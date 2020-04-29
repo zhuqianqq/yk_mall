@@ -1902,9 +1902,12 @@ class Orders extends Base{
 			$orders['statusSubText'] = '';
 			//若状态不统一  判断商品的退款状态是否有为0的状态  若有为0 则不做处理 , 若没为0  则修改订单状态为-3 退款的状态
 			if (!in_array(0, $refundStatusArr)){
-				if( $refundStatusArr != [5,2] || $refundStatusArr != [2,5]){
+	
+				if( $refundStatusArr != [5,2] && $refundStatusArr != [2,5]){
+	
 					$orders['orderStatus'] = -3;
 				}
+		
 			}
 			
 		}else{
