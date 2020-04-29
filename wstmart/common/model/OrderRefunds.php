@@ -350,12 +350,12 @@ class OrderRefunds extends Base{
         $list = Db::name('order_goods')->alias('og')
             ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId  and og.goodsSpecId = orf.goodsSpecId', 'left')
             ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
-            ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
+            ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime, orf.backMoney')
             ->order('orf.createTime', 'desc')
             ->paginate(input('limit/d'))->toArray();
         if (!empty($list['data'])) {
             foreach ($list['data'] as $k => $v) {
-                $list['data'][$k]['refundMoney'] = bcmul($v['goodsNum'], $v['goodsPrice'], 2);
+                $list['data'][$k]['refundMoney'] = $v['backMoney'];
                 $list['data'][$k]['refundStatusText'] = WSTLangOrderRefundStatus($v['refundStatus']);
             }
         }
