@@ -48,6 +48,7 @@ class Carts extends Base{
 		if($data['carts']){
 			$data['carts'] = json_decode($data['carts'],true);
 			$m = new M();
+			//dd($data['carts']);
 			foreach ($data['carts'] as $k => $v) {
 				 $m->unlogin_addCart($data['user_id'],$v['goodsId'],$v['goodsSpecId'],$v['buyNum'],$v['shareId']);
 			}
