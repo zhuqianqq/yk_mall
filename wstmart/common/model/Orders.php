@@ -290,6 +290,16 @@ class Orders extends Base{
         $isUseScore = (int)input('isUseScore');
         $useScore = (int)input('useScore');
         if ($userId == 0) return WSTReturn('下单失败，请先登录');
+        $cacheKey = config('cachekeys.order_submit') . ":USERID:" . $userId;
+        $redis = Cache::handler();
+        $isLock = false;
+        if ($redis->setnx($cacheKey, 1)) {
+            $redis->expire($cacheKey, 1);
+            $isLock = true;
+        }
+        if (!$isLock) {
+            return WSTReturn("请不要重复提交");
+        }
 
         //检测购物车
         $carts = model('common/carts')->getCarts(true, $userId);
