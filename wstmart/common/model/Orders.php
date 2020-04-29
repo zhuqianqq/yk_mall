@@ -791,7 +791,7 @@ class Orders extends Base{
 
         $count = Db::name('orders')->alias('o')
             ->join("__ORDER_GOODS__ og",'o.orderId = og.orderId','left')
-            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId and og.goodsSpecId = orf.goodsSpecId', 'left')
             ->where("o.userId =  $userId  and orf.refundStatus in (1,2,3,4,5,7)")
             ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
             ->order('orf.createTime', 'desc')
