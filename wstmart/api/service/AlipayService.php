@@ -242,15 +242,20 @@ class AlipayService
 
             $m = new Orders();
             $order = $m->where(['orderunique' => $order_num, 'isPay' => Orders::IS_PAY_WAIT])->find();
+            $isBatch = 1;
             if (empty($order)) {
-                $this->log('alipayNotify: 没有该订单');
-                return false;
+                $order = $m->where(['orderNo' => $order_num, 'isPay' => Orders::IS_PAY_WAIT])->find();
+                $isBatch = 0;
+                if (empty($order)) {
+                    $this->log('alipayNotify: 没有该订单');
+                    return false;
+                }
             }
 
             // 交易正常关闭,支付宝通常会在30分钟后关闭未支付的订单
             if (strtoupper($map['trade_status']) == 'TRADE_CLOSED') {
                 // 若充值记录状态为等待支付则更新为已失败
-                $m->failure($order_num);
+                $m->failure($order_num, $isBatch);
                 return 'success';
             }
             if (!in_array(strtoupper($map['trade_status']), AliPay::SUCCESS_CODE)) {
@@ -266,7 +271,7 @@ class AlipayService
             $obj["userId"] = (int)$order['userId'];
             $obj["payFrom"] = $payFrom;
             $obj["total_fee"] = (float)$map["total_amount"];
-            $m->success($obj);
+            $m->success($obj, $isBatch);
             $this->log('支付宝回调通知success');
             return true;
         } catch (\Exception $e) {

@@ -41,7 +41,8 @@ class Orders extends Base{
         try {
             $m = new M();
             $data['data'] = $order['orderunique'];
-            return $this->pay($m, $data);
+            $data['orderNo'] = $order['orderNo'];
+            return $this->pay($m, $data, 0);
         } catch (\Exception $e) {
             return $this->outJson(100, $e->getMessage());
         }
@@ -85,16 +86,15 @@ class Orders extends Base{
      * @param $rs
      * @return array
      */
-    private function pay($m, $rs)
+    private function pay($m, $rs, $batch = 1)
     {
-        $pkey = WSTBase64urlEncode($rs["data"] . "@1");
-        $rs["pkey"] = $pkey;
         $userId = (int)input('post.user_id', 0); //直播用户id
         $deliverType = (int)input('post.deliverType', 1); // 1 支付宝 0 微信
-        $pkey = WSTBase64urlDecode($pkey);
-        $pkey = explode('@',$pkey);
-        $orderNo = $pkey[0];
-        $isBatch = (int)$pkey[1];
+        $orderNo = $rs["data"];
+        if (!$batch) {
+            $orderNo = $rs['orderNo'];
+        }
+        $isBatch = $batch;
         $obj = array();
         $obj["userId"] = $userId;
         $obj["orderNo"] = $orderNo;
@@ -107,7 +107,7 @@ class Orders extends Base{
                 $data = [
                     'orderunique' => (string)$rs['data'],
                     'alipay' => $pay->sdkExecute([
-                        'tradeNo' => $rs['data'],
+                        'tradeNo' => $orderNo,
                         'tradeMoney' =>  bcdiv($order["needPay"], 1 , 2),
                     ]),
                 ];
@@ -126,7 +126,7 @@ class Orders extends Base{
                 }
                 $notifyUrl = config('wxpay.xcx.notify_url');
                 $ip = Tools::getClientIp();
-                $recharge['merOrderId'] = $rs['data'];
+                $recharge['merOrderId'] = $orderNo;
                 $recharge['money'] = $order["needPay"];
 
                 $member = Member::where('user_id = ' . $this->user_id)->find();
@@ -139,7 +139,7 @@ class Orders extends Base{
                 unset($jsApiParams['timestamp']);
                 $data = [
                     "xcx" => $jsApiParams,
-                    'orderunique' => (string)$rs['data'],
+                    'orderunique' => (string)$rs["data"],
                 ];
                 break;
             default:
@@ -152,7 +152,7 @@ class Orders extends Base{
                 }
                 $notifyUrl = config('wxpay.app.notify_url');
                 $payer = new WeixinPay($appId, $mchId, $key, $notifyUrl);
-                $recharge['merOrderId'] = $rs['data'];
+                $recharge['merOrderId'] = $orderNo;
                 $recharge['money'] = $order["needPay"];
                 $wxOrder = $payer->prepay($recharge);
 
