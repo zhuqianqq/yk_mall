@@ -56,7 +56,7 @@ class Shops extends Base{
             $shopId = $rs['shopId'];
         }
         //仅仅是为了获取businessLicenceImg而写的，因为businessLicenceImg不排除被删除掉了
-        WSTAllow($rs,'shopNotice,shopId,shopImg,shopName,shopAddress,shopQQ,shopWangWang,shopTel,serviceStartTime,longitude,latitude,serviceEndTime,shopKeeper,mapLevel,areaId,isInvoice,freight,invoiceRemarks,businessLicenceImg');
+        WSTAllow($rs,'shopNotice,shopId,shopBackgroudImg,shopImg,shopName,shopAddress,shopQQ,shopWangWang,shopTel,serviceStartTime,longitude,latitude,serviceEndTime,shopKeeper,mapLevel,areaId,isInvoice,freight,invoiceRemarks,businessLicenceImg');
     	//评分
     	$score = $this->getShopScore($rs['shopId']);
     	$rs['scores'] = $score;
