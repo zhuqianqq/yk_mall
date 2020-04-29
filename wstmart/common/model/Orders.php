@@ -791,7 +791,7 @@ class Orders extends Base{
 
         $count = Db::name('orders')->alias('o')
             ->join("__ORDER_GOODS__ og",'o.orderId = og.orderId','left')
-            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId and og.goodsSpecId = orf.goodsSpecId', 'left')
             ->where("o.userId =  $userId  and orf.refundStatus in (1,2,3,4,5,7)")
             ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
             ->order('orf.createTime', 'desc')
@@ -1903,11 +1903,16 @@ class Orders extends Base{
 			$orders['statusSubText'] = '';
 			//若状态不统一  判断商品的退款状态是否有为0的状态  若有为0 则不做处理 , 若没为0  则修改订单状态为-3 退款的状态
 			if (!in_array(0, $refundStatusArr)){
-				$orders['orderStatus'] = -3;
+	
+				if( $refundStatusArr != [5,2] && $refundStatusArr != [2,5]){
+	
+					$orders['orderStatus'] = -3;
+				}
+		
 			}
 			
 		}else{
-			// 状态统一且不为0 与 5（撤销订单） 与 6（删除订单）： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+			// 状态统一且不为0 与 5（撤销退款订单） 与 6（删除退款订单）： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
 			if($refundStatusArr[0] != 0 && $refundStatusArr[0] != 5 && $refundStatusArr[0] != 6){
 				$orders['orderStatus'] = -3;
 			}
