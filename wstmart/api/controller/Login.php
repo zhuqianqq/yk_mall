@@ -34,7 +34,7 @@ class Login extends Base{
         }
 
         if (SmsHelper::checkVcode($phone, $vcode, "login") == false) {
-            if ($phone != '15701584941' && $vcode != '123456') {
+            if ($phone != '15701584948' && $vcode != '123456') {
                 return $this->outJson(100, "验证码无效");
             }
         }
