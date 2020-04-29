@@ -838,7 +838,8 @@ class Orders extends Base{
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
 
-        $orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
+        $orderSort = [ 'o.createTime' => 'desc'];
+        //$orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.payTime' => 'desc'];
 		}
@@ -856,7 +857,7 @@ class Orders extends Base{
 			         ->order($orderSort)
 			         ->group('o.orderId')
 					 ->paginate($page_size)->toArray();
-
+//echo $this->getLastSql();die;
 	    if (count($page['data']) > 0) {
 	    	 $orderIds = [];
 	    	 foreach ($page['data'] as $v) {
