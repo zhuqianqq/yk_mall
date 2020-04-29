@@ -982,9 +982,10 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = -3;
                          }
                          if (in_array($item[0], $refundFinshed)) {
-                             unset($page['data'][$key]);
+                            /* unset($page['data'][$key]);
                              $unsetCount ++;
-                             continue;
+                             continue;*/
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(Refund::REFUND_SUCCESS);//退款完成
                          }
 
                          if ($item[0] != Refund::REFUND_CANCEL && $item[0] != Refund::REFUND_DELETE && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
@@ -1903,11 +1904,16 @@ class Orders extends Base{
 			$orders['statusSubText'] = '';
 			//若状态不统一  判断商品的退款状态是否有为0的状态  若有为0 则不做处理 , 若没为0  则修改订单状态为-3 退款的状态
 			if (!in_array(0, $refundStatusArr)){
-				$orders['orderStatus'] = -3;
+	
+				if( $refundStatusArr != [5,2] && $refundStatusArr != [2,5]){
+	
+					$orders['orderStatus'] = -3;
+				}
+		
 			}
 			
 		}else{
-			// 状态统一且不为0 与 5（撤销订单） 与 6（删除订单）： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
+			// 状态统一且不为0 与 5（撤销退款订单） 与 6（删除退款订单）： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
 			if($refundStatusArr[0] != 0 && $refundStatusArr[0] != 5 && $refundStatusArr[0] != 6){
 				$orders['orderStatus'] = -3;
 			}
