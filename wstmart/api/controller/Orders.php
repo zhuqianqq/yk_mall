@@ -53,7 +53,7 @@ class Orders extends Base{
 	public function submit()
     {
         try {
-            $orderunique = (int)input('post.orderunique', 0); // orderunique
+            $orderunique = (string)input('post.orderunique', 0); // orderunique
             $m = new M();
             if (empty($orderunique)) {
                 $rs = $m->submit(2);
@@ -105,7 +105,7 @@ class Orders extends Base{
                 //支付宝
                 $pay = new  Alipay();
                 $data = [
-                    'orderunique' => $rs['data'],
+                    'orderunique' => (string)$rs['data'],
                     'alipay' => $pay->sdkExecute([
                         'tradeNo' => $rs['data'],
                         'tradeMoney' =>  bcdiv($order["needPay"], 1 , 2),
@@ -139,7 +139,7 @@ class Orders extends Base{
                 unset($jsApiParams['timestamp']);
                 $data = [
                     "xcx" => $jsApiParams,
-                    'orderunique' => $rs['data'],
+                    'orderunique' => (string)$rs['data'],
                 ];
                 break;
             default:
@@ -168,7 +168,7 @@ class Orders extends Base{
 
                 $prepayData['sign'] = $payer->sign($signData);
                 $data['wxpay'] = $prepayData;
-                $data['orderunique'] = $rs['data'];
+                $data['orderunique'] = (string)$rs['data'];
         }
         $oCnt = model('orders')
             ->where(["userId" => $userId, "orderunique" => $rs['data']])
