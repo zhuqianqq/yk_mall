@@ -40,7 +40,7 @@ class ads extends Base{
 
 		return Db::name('ads')->alias('a')
 		            ->join('ad_positions ap','a.positionType=ap.positionType AND a.adPositionId=ap.positionId AND ap.dataFlag=1','left')
-					->field('adId,adName,adPositionId,adURL,adStartDate,adEndDate,adPositionId,adFile,adClickNum,ap.positionName,a.adSort')
+					->field('adId,adName,adPositionId,adURL,adStartDate,adEndDate,adPositionId,adFile,adClickNum,ap.positionName,a.adSort,ap.positionCode')
 		            ->where($where)
 		            ->order('adSort','desc')
 					->limit(3)

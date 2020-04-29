@@ -42,7 +42,7 @@ class Shops extends Base{
     	$rs = Db::name('shops')->alias('s')
         ->join('__SHOP_EXTRAS__ ser','ser.shopId=s.shopId','inner')
         ->where(['s.shopId'=>$shopId,'s.shopStatus'=>1,'s.dataFlag'=>1])
-    	->field('s.shopNotice,s.shopId,s.shopImg,s.shopName,s.shopAddress,s.shopQQ,s.shopWangWang,s.shopTel,s.serviceStartTime,s.longitude,s.latitude,s.serviceEndTime,s.shopKeeper,mapLevel,s.areaId,s.isInvoice,s.freight,s.invoiceRemarks,ser.*')
+    	->field('s.shopNotice,s.shopId,s.shopImg,s.shopBackgroudImg,s.shopName,s.shopAddress,s.shopQQ,s.shopWangWang,s.shopTel,s.serviceStartTime,s.longitude,s.latitude,s.serviceEndTime,s.shopKeeper,mapLevel,s.areaId,s.isInvoice,s.freight,s.invoiceRemarks,ser.*')
         ->find();
 
     	if(empty($rs)){
@@ -56,7 +56,7 @@ class Shops extends Base{
             $shopId = $rs['shopId'];
         }
         //仅仅是为了获取businessLicenceImg而写的，因为businessLicenceImg不排除被删除掉了
-        WSTAllow($rs,'shopNotice,shopId,shopImg,shopName,shopAddress,shopQQ,shopWangWang,shopTel,serviceStartTime,longitude,latitude,serviceEndTime,shopKeeper,mapLevel,areaId,isInvoice,freight,invoiceRemarks,businessLicenceImg');
+        WSTAllow($rs,'shopNotice,shopId,shopBackgroudImg,shopImg,shopName,shopAddress,shopQQ,shopWangWang,shopTel,serviceStartTime,longitude,latitude,serviceEndTime,shopKeeper,mapLevel,areaId,isInvoice,freight,invoiceRemarks,businessLicenceImg');
     	//评分
     	$score = $this->getShopScore($rs['shopId']);
     	$rs['scores'] = $score;

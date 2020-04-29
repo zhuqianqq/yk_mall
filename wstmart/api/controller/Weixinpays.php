@@ -65,12 +65,17 @@ class Weixinpays extends Base
             }
 
             $m = new \wstmart\common\model\Orders();
+            $isBatch = 1;
             $order = $m->where(['orderunique' => $order_num, 'isPay' => \wstmart\common\model\Orders::IS_PAY_WAIT])->find();
             if (empty($order)) {
-                $this->log('wxpayNotify: 没有该订单');
-                $response = "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
-                echo $response;
-                return false;
+                $order = $m->where(['orderNo' => $order_num, 'isPay' => \wstmart\common\model\Orders::IS_PAY_WAIT])->find();
+                $isBatch = 0;
+                if (empty($order)) {
+                    $this->log('wxpayNotify: 没有该订单');
+                    $response = "<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>";
+                    echo $response;
+                    return false;
+                }
             }
 
             $payment_success = $data['return_code'] === "SUCCESS" && $data['result_code'] === "SUCCESS";
@@ -88,12 +93,12 @@ class Weixinpays extends Base
 
             $obj = [];
             $obj["trade_no"] = $order_num;
-            $obj["isBatch"] = $order['isBatch'];
+            $obj["isBatch"] = $isBatch;
             $obj["out_trade_no"] = $order_num;
             $obj["userId"] = (int)$order['userId'];
             $obj["payFrom"] = $payFrom;
             $obj["total_fee"] = (float)$money;
-            $m->success($obj);
+            $m->success($obj, $isBatch);
             $this->log('微信回调通知success');
         } catch (\Exception $e) {
             Tools::addLog("wxpay_notify", "微信回调通知处理失败");

@@ -83,7 +83,7 @@ class Carts extends Base{
 				$data['isCheck'] = 1;
 				$data['cartNum'] = $cartNum;
 				$data['shareId'] = $shareId;
-				$rs = $this->save($data);
+				$rs = Db::name('carts')->insert($data);
 			}else{
 				$rs = $this->where(['userId'=>$userId,'goodsId'=>$goodsId,'goodsSpecId'=>$goodsSpecId])->setInc('cartNum',$cartNum);
 			}

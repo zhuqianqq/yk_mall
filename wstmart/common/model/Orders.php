@@ -1900,10 +1900,16 @@ class Orders extends Base{
 				}
 				
 			}
-			//如果refundStatus为5  撤销退款状态 ，可以撤销三次 ;  如果refundStatus为6  删除订单状态 也可申请退款
-			if(($v['refundStatus']==5 && $v['refundNum']<3) || $v['refundStatus']==6){
+			//如果refundStatus为5  撤销退款状态 ， 可申请退款;  如果refundStatus为6  删除订单状态 也可申请退款
+			if($v['refundStatus']==5 || $v['refundStatus']==6){
 				$orders['goods'][$key]['refundStatus'] = 0;
 				$orders['goods'][$key]['allowRefund'] = 1;
+			}
+
+			//如果任何状态的撤销退款已经撤销三次 ; 不显示任何（包括申请退款按钮与退款详情按钮）按钮
+			if($v['refundNum']>=3){
+				$orders['goods'][$key]['refundStatus'] = 0;
+				$orders['goods'][$key]['allowRefund'] = 0;
 			}
 
 			$refundStatusArr[] = $v['refundStatus'];
@@ -1913,16 +1919,22 @@ class Orders extends Base{
 		//判定退款状态
 		$refundStatusArr = array_unique($refundStatusArr);
 		if(count($refundStatusArr)>1){
-			$orders['statusSubText'] = '';
-			//若状态不统一  判断商品的退款状态是否有为0的状态  若有为0 则不做处理 , 若没为0  则修改订单状态为-3 退款的状态
-			if (!in_array(0, $refundStatusArr)){
-	
-				if( $refundStatusArr != [5,2] && $refundStatusArr != [2,5]){
-	
-					$orders['orderStatus'] = -3;
+
+			//如果多个商品中有一个商品取消退款或者只有一个商品申请退款  则正常显示
+			$flag = true;
+			foreach ($refundStatusArr  as $vv) {
+				if ($vv==0 || $vv == Refund::REFUND_CANCEL || $vv == Refund::REFUND_DELETE) {
+					$flag = false;
+					break;
 				}
-		
 			}
+			
+			$orders['statusSubText'] = '';
+
+			if($flag){
+				$orders['orderStatus'] = -3;
+			}
+			
 			
 		}else{
 			// 状态统一且不为0 与 5（撤销退款订单） 与 6（删除退款订单）： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
@@ -3028,24 +3040,28 @@ class Orders extends Base{
     /**
      * 完成支付订单--新加--APP支付
      */
-    public function success($obj) {
+    public function success($obj, $isBatchPay = 1) {
         $trade_no = $obj["trade_no"];
         $isBatch = (int)$obj["isBatch"];
         $orderNo = $obj["out_trade_no"];
         $userId = (int)$obj["userId"];
         $payFrom = $obj["payFrom"];
         $payMoney = (float)$obj["total_fee"];
-        if ($payFrom != '') {
-            $cnt = model('orders')
-                ->where(['payFrom' => $payFrom, "userId" => $userId, "tradeNo" => $trade_no])
-                ->count();
-            if ($cnt > 0) {
-                throw new \Exception('订单已支付');
-            }
-        }
+//        if ($payFrom != '') {
+//            $cnt = model('orders')
+//                ->where(['payFrom' => $payFrom, "userId" => $userId, "tradeNo" => $trade_no])
+//                ->count();
+//            if ($cnt > 0) {
+//                throw new \Exception('订单已支付');
+//            }
+//        }
         $where = [["userId", "=", $userId], ["dataFlag", "=", 1], ["orderStatus", "=", -2], ["isPay", "=", 0], ["payType", "=", 1]];
         $where[] = ["needPay", ">", 0];
-        $where[] = ['orderunique', "=", $orderNo];
+        if ($isBatchPay) {
+            $where[] = ['orderunique', "=", $orderNo];
+        } else {
+            $where[] = ['orderNo', "=", $orderNo];
+        }
         $orders = model('orders')->where($where)->field('needPay, orderId, orderType, orderNo, shopId, payFrom, realTotalMoney')->select();
 
         if (count($orders)==0) throw new \Exception('无效的订单信息');
@@ -3062,7 +3078,6 @@ class Orders extends Base{
             $data["needPay"] = 0;
             $data["isPay"] = self::IS_PAY_SUCC;
             $data["orderStatus"] = 0;
-            $data["tradeNo"] = $trade_no;
             $data["payFrom"] = $payFrom;
             $data["payTime"] = date("Y-m-d H:i:s");
             $data["isBatch"] = $isBatch;
@@ -3178,8 +3193,12 @@ class Orders extends Base{
      * @param $failReason
      * @throws \Exception
      */
-    public function failure($tranNo)
+    public function failure($tranNo, $isBatch = 1)
     {
-        self::where(['orderunique' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+        if ($isBatch) {
+            self::where(['orderunique' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+        } else {
+            self::where(['orderNo' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+        }
     }
 }
