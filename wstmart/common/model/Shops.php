@@ -42,7 +42,7 @@ class Shops extends Base{
     	$rs = Db::name('shops')->alias('s')
         ->join('__SHOP_EXTRAS__ ser','ser.shopId=s.shopId','inner')
         ->where(['s.shopId'=>$shopId,'s.shopStatus'=>1,'s.dataFlag'=>1])
-    	->field('s.shopNotice,s.shopId,s.shopImg,s.shopName,s.shopAddress,s.shopQQ,s.shopWangWang,s.shopTel,s.serviceStartTime,s.longitude,s.latitude,s.serviceEndTime,s.shopKeeper,mapLevel,s.areaId,s.isInvoice,s.freight,s.invoiceRemarks,ser.*')
+    	->field('s.shopNotice,s.shopId,s.shopImg,s.shopBackgroudImg,s.shopName,s.shopAddress,s.shopQQ,s.shopWangWang,s.shopTel,s.serviceStartTime,s.longitude,s.latitude,s.serviceEndTime,s.shopKeeper,mapLevel,s.areaId,s.isInvoice,s.freight,s.invoiceRemarks,ser.*')
         ->find();
 
     	if(empty($rs)){
