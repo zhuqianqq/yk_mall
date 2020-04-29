@@ -985,7 +985,8 @@ class Orders extends Base{
                             /* unset($page['data'][$key]);
                              $unsetCount ++;
                              continue;*/
-                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(Refund::REFUND_SUCCESS);//退款完成
+                             $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(6);//退款完成
+                             $page['data'][$key]['orderStatus'] = 6;
                          }
 
                          if ($item[0] != Refund::REFUND_CANCEL && $item[0] != Refund::REFUND_DELETE && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
