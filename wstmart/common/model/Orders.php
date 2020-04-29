@@ -1899,12 +1899,18 @@ class Orders extends Base{
 				}
 				
 			}
-			//如果refundStatus为5  撤销退款状态 ，可以撤销三次 ;  如果refundStatus为6  删除订单状态 也可申请退款
-			if(($v['refundStatus']==5 && $v['refundNum']<3) || ($v['refundStatus']==6 && $v['refundNum']<3)){
+			//如果refundStatus为5  撤销退款状态 ， 可申请退款;  如果refundStatus为6  删除订单状态 也可申请退款
+			if($v['refundStatus']==5 || $v['refundStatus']==6){
 				$orders['goods'][$key]['refundStatus'] = 0;
 				$orders['goods'][$key]['allowRefund'] = 1;
 			}
 
+			//如果任何状态的撤销退款已经撤销三次 ; 不显示任何（包括申请退款按钮与退款详情按钮）按钮
+			if($v['refundNum']>=3){
+				$orders['goods'][$key]['refundStatus'] = 0;
+				$orders['goods'][$key]['allowRefund'] = 0;
+			}
+			
 			$refundStatusArr[] = $v['refundStatus'];
 
 		}
