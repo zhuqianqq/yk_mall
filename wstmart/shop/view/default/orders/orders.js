@@ -214,7 +214,8 @@ function editOrderMoney(id){
                 $('.user_address').empty();
                 $('.user_phone').empty();
                 $.each(json.list, function(idx, obj) {
-                    $('#goods_info').append("<tr><td class='delivery_select'><input class='chk' "+(obj.hasDeliver?'disabled':'')+" type='checkbox' value='"+obj.id+"'/></td><td class='delivery_good'><img src='"+obj.goodsImg+"'/></td><td>"+obj.goodsName+"</td><td>"+obj.goodsNum+"</td><td>"+(obj.hasDeliver?'已发货':'')+"</td></tr>");
+                    $('#goods_info').append("<tr><td class='delivery_select'><input class='chk' "+(obj.hasDeliver?'disabled':'')+" type='checkbox' value='"+obj.id+"'/></td><td class='delivery_good'><img src='"+obj.goodsImg+"'/></td><td>"+obj.goodsName+"</td><td>"+obj.goodsNum+"</td><td>"+(obj.hasDeliver?'已发货':'')+"</td>" +
+						"<td>"+(obj.refundText)+"</td></tr>");
                 });
 				$('.user_name').append(json.userName);
 				$('.user_address').append(json.userAddress);

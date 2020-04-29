@@ -348,7 +348,7 @@ class OrderRefunds extends Base{
         $orderIds = array_unique($orderIds);
         $ids = implode(',', $orderIds);
         $list = Db::name('order_goods')->alias('og')
-            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId  and og.goodsSpecId = orf.goodsSpecId', 'left')
             ->where("og.orderId in (" . $ids . ") and orf.refundStatus in (1,2,3,4,5,7)")
             ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
             ->order('orf.createTime', 'desc')

@@ -791,7 +791,7 @@ class Orders extends Base{
 
         $count = Db::name('orders')->alias('o')
             ->join("__ORDER_GOODS__ og",'o.orderId = og.orderId','left')
-            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId', 'left')
+            ->join("__ORDER_REFUNDS__ orf", 'og.orderId = orf.orderId and og.goodsId = orf.goodsId and og.goodsSpecId = orf.goodsSpecId', 'left')
             ->where("o.userId =  $userId  and orf.refundStatus in (1,2,3,4,5,7)")
             ->field('og.orderId,og.goodsSpecId,og.goodsId,og.goodsNum,og.goodsPrice,og.goodsSpecNames, og.goodsName, og.goodsImg, orf.refundStatus, orf.createTime')
             ->order('orf.createTime', 'desc')
@@ -813,7 +813,6 @@ class Orders extends Base{
         $page_size= input('pagesize/d',1000);
 	
 		$where = ['o.userId' => $userId, 'o.dataFlag' => 1];
-        $where['o.orderStatus'] = ['neq',-7];
 
         $condition = [];
 		if (is_array($orderStatus)) {
@@ -861,9 +860,10 @@ class Orders extends Base{
                  ->select();
 	    	 $goodsMap = [];
 
-             $refundingStatus = [OrderGoods::STATUS_INITION,OrderGoods::STATUS_REFUNDING,OrderGoods::STATUS_REFUND_FAIL,OrderGoods::STATUS_REFUND_RECEIVE];//退款中
-             $refundFinshed = [OrderGoods::STATUS_REFUND_SUCCESS];//退款完成
-            $refundStatusArr = [];
+             //$refundingStatus = [OrderGoods::STATUS_INITION,OrderGoods::STATUS_REFUNDING,OrderGoods::STATUS_REFUND_FAIL,OrderGoods::STATUS_REFUND_RECEIVE,OrderGoods::STATUS_REFUND_RECEIVE];//退款中
+             $refundingStatus = [Refund::REFUND_APPLICATION,Refund::REFUND_FAIL,Refund::REFUND_AGREE,Refund::REFUND_WAIT_RECIVE];//退款中
+             $refundFinshed = [Refund::REFUND_SUCCESS];//退款完成
+             $refundStatusArr = [];
 
 	    	 foreach ($goods as $v) {
                 $v['goodsName'] = WSTStripTags($v['goodsName']);
@@ -958,7 +958,7 @@ class Orders extends Base{
                          //如果多个商品中有一个商品取消退款或者只有一个商品申请退款  则正常显示
                          $flag = true;
                          foreach ($item  as $vv) {
-                             if ($vv=='' || $vv == Refund::REFUND_CANCEL) {
+                             if ($vv=='' || $vv == Refund::REFUND_CANCEL || $vv == Refund::REFUND_DELETE) {
                                  $flag = false;
                                  break;
                              }
@@ -975,14 +975,7 @@ class Orders extends Base{
                              $page['data'][$key]['orderStatus'] = -3;
                          } else
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
-                        /* if ($flag && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
-                             unset($page['data'][$key]);
-                             $unsetCount ++;
-                             break;
-                         }*/
-
                      } else {
-
                          // 状态统一且不为0 ： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
                          if (in_array($item[0], $refundingStatus)) {
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus(-3);//退款中
@@ -994,13 +987,13 @@ class Orders extends Base{
                              continue;
                          }
 
-                         if ($item[0] != Refund::REFUND_CANCEL && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
+                         if ($item[0] != Refund::REFUND_CANCEL && $item[0] != Refund::REFUND_DELETE && in_array($type,['waitPay','waitReceive','waitDeliver'])) {
                              unset($page['data'][$key]);
                              $unsetCount ++;
                              continue;
                          }
 
-                         if ($item[0] == Refund::REFUND_CANCEL) {
+                         if ($item[0] == Refund::REFUND_CANCEL || $item[0] == Refund::REFUND_DELETE) {
                              $page['data'][$key]['orderStatusName'] = WSTLangOrderListStatus($v['orderStatus']);
                          }
 
@@ -2978,6 +2971,24 @@ class Orders extends Base{
         if($goods){
             foreach($goods as $k => $v){
                 $goods[$k]['hasDeliver'] = (in_array($v['id'], $deliveredGoodsIds)) ? true : false;
+                switch ($v['refundStatus']) {
+                    case 1:
+                         // 0初始 1 退款中 2 退款成功 3 退款失败 4删除退款
+                        $refundText = '退款中';
+                         break;
+                    case 2:
+                        $refundText = '已退款';
+                        break;
+                    case 3:
+                        $refundText = '退款失败';
+                        break;
+                    case 4:
+                        $refundText = '删除退款';
+                        break;
+                    default:
+                        $refundText = '';
+                }
+                $goods[$k]['refundText'] = $refundText;
             }
             $data['list'] = $goods;
         }
