@@ -64,6 +64,13 @@ class Orders extends Base{
                     return $this->pay($m,$rs);
                 }
             } else {
+                $oCnt = model('orders')
+                    ->where(["isPay" => 1, "orderunique" => $orderunique])
+                    ->field('orderId')
+                    ->count();
+                if ($oCnt) {
+                    return $this->outJson(100, '请不要重复提交');
+                }
                 $rs['data'] = $orderunique;
                 return $this->pay($m,$rs);
             }
