@@ -14,10 +14,19 @@
 </head>
 
 <body>
-<a href="javascript:void(0);" id="icode" ><img src="https://boardcast-1257835755.cos.ap-shanghai.myqcloud.com/ygzb202004221034555733.jpg" border="0" style="width:100%;" /></a>
+<a href="javascript:void(0);" id="icode" onclick="down()"><img src="https://boardcast-1257835755.cos.ap-shanghai.myqcloud.com/ygzb202004221034555733.jpg" border="0" style="width:100%;" /></a>
 </body>
 </html>
 <script type="text/javascript">
+    function down(){
+        if(isWeiXin()){
+            alert('请用浏览器打开');
+            return false;
+        }
+//		alert(1)
+        //初始化
+        location.href = "http://down.jiyw.com/ts/20200429100.apk";
+    }
     //移动设备
     function isMb(){
         var ua = navigator.userAgent.toLowerCase();
@@ -27,11 +36,13 @@
         }
         return false;
     }
-    //判断ios
-    function isIos(){
-        var ua = navigator.userAgent;
-        var ios = !!ua.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/);
-        if(ios) return true;
-        else return false;
+    //判断是否微信登陆
+    function isWeiXin() {
+        var ua = window.navigator.userAgent.toLowerCase();
+        if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+            return true;
+        } else {
+            return false;
+        }
     }
 </script>
