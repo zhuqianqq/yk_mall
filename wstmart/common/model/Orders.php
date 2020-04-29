@@ -1187,6 +1187,7 @@ class Orders extends Base{
                 $orderExpressResult = Db::name('order_express')->insert($expressData);
             }
             $orderStatus = 0;
+            $finishDeliver = 1; //  目前只要发一件就是发货完成
             if($finishDeliver){
             	$orderStatus = 1;
                 $orderData = ['orderStatus'=>1,'deliveryTime'=>date('Y-m-d H:i:s')];
