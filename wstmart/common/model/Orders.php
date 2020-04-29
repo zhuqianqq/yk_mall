@@ -1918,13 +1918,22 @@ class Orders extends Base{
 		//判定退款状态
 		$refundStatusArr = array_unique($refundStatusArr);
 		if(count($refundStatusArr)>1){
-			$orders['statusSubText'] = '';
-			//若状态不统一  判断商品的退款状态是否有为0或5或2的状态  若有为0、5、2 则不做处理 , 若没  则修改订单状态为-3 退款的状态
-			if (!in_array(0, $refundStatusArr) && !in_array(5, $refundStatusArr) && !in_array(2, $refundStatusArr)){
-				
-				$orders['orderStatus'] = -3;
 
+			//如果多个商品中有一个商品取消退款或者只有一个商品申请退款  则正常显示
+			$flag = true;
+			foreach ($refundStatusArr  as $vv) {
+				if ($vv==0 || $vv == Refund::REFUND_CANCEL || $vv == Refund::REFUND_DELETE) {
+					$flag = false;
+					break;
+				}
 			}
+			
+			$orders['statusSubText'] = '';
+
+			if($flag){
+				$orders['orderStatus'] = -3;
+			}
+			
 			
 		}else{
 			// 状态统一且不为0 与 5（撤销退款订单） 与 6（删除退款订单）： 即该订单商品全部申请了退款 修改订单状态为-3 退款的状态
