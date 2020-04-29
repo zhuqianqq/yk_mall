@@ -147,6 +147,11 @@ class Refund extends Base
                     default:
                         $refundTo = 0;
                 }
+                if ($order['isBatch']) {
+                    $trade_no = $order['orderunique'];
+                } else {
+                    $trade_no = $order['orderNo'];
+                }
                 // 不存在
                 $refund = new \wstmart\common\model\OrderRefunds();
                 $refund->orderId = $orderId;
@@ -165,7 +170,7 @@ class Refund extends Base
                 $refund->lastStatus = $orderStatus;
                 $refund->goodsStatus = $goodsStatus;
                 $refund->refundTo = $refundTo;
-                $refund->trade_no = $order['orderunique'];
+                $refund->trade_no = $trade_no;
                 $refund->save();
             }
             $order->isRefund = 1;

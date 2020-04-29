@@ -266,7 +266,7 @@ class AlipayService
             $payFrom = 'alipays';
             $obj = [];
             $obj["trade_no"] = $order_num;
-            $obj["isBatch"] = $order['isBatch'];
+            $obj["isBatch"] = $isBatch;
             $obj["out_trade_no"] = $order_num;
             $obj["userId"] = (int)$order['userId'];
             $obj["payFrom"] = $payFrom;
