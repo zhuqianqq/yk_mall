@@ -584,8 +584,8 @@ class CronJobs extends Base{
         $autoRefundDaysY = 5; // 已发货 天
         $autoRefundAgreeDays = 10; // 已发货 天
         $autoRefundDaysN = 2; // 未发货 天
-//        $per = 'days';
-        $per = 'minutes';
+        $per = 'days';
+//        $per = 'minutes';
         // 退款
         // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
 
