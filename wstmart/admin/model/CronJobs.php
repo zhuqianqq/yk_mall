@@ -584,8 +584,8 @@ class CronJobs extends Base{
         $autoRefundDaysY = 5; // 已发货 天
         $autoRefundAgreeDays = 10; // 已发货 天
         $autoRefundDaysN = 2; // 未发货 天
-//        $per = 'days';
-        $per = 'minutes';
+        $per = 'days';
+//        $per = 'minutes';
         // 退款
         // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
 
@@ -644,8 +644,8 @@ class CronJobs extends Base{
                     // 如果时间还未到，则不退款
                     continue;
                 }
-                if (1 == $orderStatus) {
-                    // 已发货
+                if (in_array($orderStatus, [1, 2])) {
+                    // 已发货或者是已完成
                     // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
                     // 5天商家自动同意退货退款，5天内用户填写物流信息，若不填写，则自动撤销，填写了，则10天自动退款同意
                     switch ($refundStatus) {
@@ -660,7 +660,7 @@ class CronJobs extends Base{
                         case 4:
                             // 同意退货退款,则判断是否填写物流信息，如果5天没有填写，则撤销退款
                             if (empty($logisticTime)) {
-                                $lastDayTime = strtotime($shopAgreeTime . " + $autoRefundDaysN " . $per);
+                                $lastDayTime = strtotime($shopAgreeTime . " + $autoRefundDaysY " . $per);
                                 if ($nowTime < $lastDayTime) {
                                     // 如果时间还未到，则不撤销
                                     continue;
@@ -701,6 +701,13 @@ class CronJobs extends Base{
                                     Db::rollback();
                                 }
                                 continue;
+                            } else {
+                                // 如果填写了物流，
+                                $lastDayTime = strtotime($logisticTime . " + $autoRefundAgreeDays " . $per);
+                                if ($nowTime < $lastDayTime) {
+                                    // 如果时间还未到，则不退款
+                                    continue;
+                                }
                             }
                             break;
                         case 7:
