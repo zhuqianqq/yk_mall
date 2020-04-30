@@ -580,11 +580,10 @@ class CronJobs extends Base{
     public function autoAgreeRefund()
     {
         $autoRefundDaysY = 5; // 已发货 天
-//        $autoRefundDaysY = 2; // 已发货 分钟
         $autoRefundAgreeDays = 10; // 已发货 天
-//        $autoRefundAgreeDays = 5; // 已发货 分钟
         $autoRefundDaysN = 2; // 未发货 天
-//        $autoRefundDaysN = 2; // 未发货 分钟
+        $per = 'days';
+//        $per = 'minutes';
         // 退款
         // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
 
@@ -618,7 +617,7 @@ class CronJobs extends Base{
                 $shopAgreeTime = $order['shopAgreeTime'];
                 // 1 退货退款 2 仅退款
                 $refundType = $order['refundType'];
-                $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY " . $per);
                 switch ($orderStatus) {
                     // 已完成
                     case 2:
@@ -629,15 +628,15 @@ class CronJobs extends Base{
                         }
                         // 已完成 ,则需要判断是否过了15天
                         // 可退款，则自动退款为5天
-                        $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                        $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY " . $per);
                         break;
                     case 1:
                         // 已发货
-                        $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY days");
+                        $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysY " . $per);
                         break;
                     default:
                         // 未发货
-                        $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysN days");
+                        $lastDayTime = strtotime($refundAddDate . " + $autoRefundDaysN " . $per);
                 }
                 if ($nowTime < $lastDayTime) {
                     // 如果时间还未到，则不退款
@@ -659,7 +658,7 @@ class CronJobs extends Base{
                         case 4:
                             // 同意退货退款,则判断是否填写物流信息，如果5天没有填写，则撤销退款
                             if (empty($logisticTime)) {
-                                $lastDayTime = strtotime($shopAgreeTime . " + $autoRefundDaysN days");
+                                $lastDayTime = strtotime($shopAgreeTime . " + $autoRefundDaysN " . $per);
                                 if ($nowTime < $lastDayTime) {
                                     // 如果时间还未到，则不撤销
                                     continue;
@@ -704,7 +703,7 @@ class CronJobs extends Base{
                             break;
                         case 7:
                             // 7 等待商家收货 10天自动退款 已填写物流
-                            $lastDayTime = strtotime($logisticTime . " + $autoRefundAgreeDays days");
+                            $lastDayTime = strtotime($logisticTime . " + $autoRefundAgreeDays " . $per);
                             if ($nowTime < $lastDayTime) {
                                 // 如果时间还未到，则不退款
                                 continue;
