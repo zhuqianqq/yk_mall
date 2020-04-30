@@ -438,6 +438,8 @@ class OrderRefunds extends Base{
 		->find() ?? [];
 
 		if($orderDetail){
+
+            $orderDetail['goodsSpecNames'] = str_replace('@@_@@','、',$orderDetail['goodsSpecNames']);
 			$orderDetail['refundMoney'] = bcmul($orderDetail['goodsNum'], $orderDetail['goodsPrice'], 2);
 			$orderDetail['refundStatusText'] = WSTLangOrderDetailRefundStatus($orderDetail['refundStatus']);
 			$orderDetail['expressInfo'] = Db::name('express')->where("dataFlag = 1")->select()??[];
