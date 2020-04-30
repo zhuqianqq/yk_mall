@@ -579,9 +579,12 @@ class CronJobs extends Base{
      */
     public function autoAgreeRefund()
     {
-        $autoRefundDaysY = 5; // 已发货
-        $autoRefundAgreeDays = 10; // 已发货
-        $autoRefundDaysN = 2; // 未发货
+        $autoRefundDaysY = 5; // 已发货 天
+//        $autoRefundDaysY = 2; // 已发货 分钟
+        $autoRefundAgreeDays = 10; // 已发货 天
+//        $autoRefundAgreeDays = 5; // 已发货 分钟
+        $autoRefundDaysN = 2; // 未发货 天
+//        $autoRefundDaysN = 2; // 未发货 分钟
         // 退款
         // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
 
@@ -593,6 +596,7 @@ class CronJobs extends Base{
             ->join('__ORDERS__ o', 'orf.orderId = o.orderId','left')
             ->where([['orf.refundStatus', 'in', $refundStatusArr], ['o.orderStatus', 'in', [0, 1, 2]], ['o.dataFlag', '=', 1]])
             ->field("orf.id, orf.createTime, orf.refundStatus, orf.logisticTime, orf.refundNum, orf.refundType, orf.shopAgreeTime, o.orderStatus, o.afterSaleEndTime, o.userId, o.orderId")
+            ->limit(100)
             ->select();
         if (empty($rs)) {
             return WSTReturn('没有数据需要处理',-1);
@@ -710,17 +714,40 @@ class CronJobs extends Base{
                 }
 
                 $m = new \wstmart\common\model\OrderRefunds();
-                $rsStatus =  $m->orderRefund($refundId);
-                if(1 == $rsStatus['status']){
-                    //新增订单日志
-                    $logOrder = [];
-                    $logOrder['orderId'] = $order['orderId'];
-                    $logOrder['orderStatus'] = $orderStatus;
-                    $logOrder['logContent'] = "系统自动退款" ;
-                    $logOrder['logUserId'] = $order->userId;
-                    $logOrder['logType'] = 0;
-                    $logOrder['logTime'] = date('Y-m-d H:i:s');
-                    Db::name('log_orders')->insert($logOrder);
+                $orderRefund = $m->get($refundId);
+                // 1 申请退款 2退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6删除订单 7等待商家收货
+                // // 1 退货退款 2 仅退款
+                if ($orderRefund->refundType == 1) {
+                    if (in_array($orderRefund->refundStatus, [7])) {
+                        $rsStatus =  $m->orderRefund($refundId);
+                        if(1 == $rsStatus['status']){
+                            //新增订单日志
+                            $logOrder = [];
+                            $logOrder['orderId'] = $order['orderId'];
+                            $logOrder['orderStatus'] = $orderStatus;
+                            $logOrder['logContent'] = "系统自动退款" ;
+                            $logOrder['logUserId'] = $order->userId;
+                            $logOrder['logType'] = 0;
+                            $logOrder['logTime'] = date('Y-m-d H:i:s');
+                            Db::name('log_orders')->insert($logOrder);
+                        }
+                    }
+                } else {
+                    // 仅退款
+                    if (in_array($orderRefund->refundStatus, [1])) {
+                        $rsStatus =  $m->orderRefund($refundId);
+                        if(1 == $rsStatus['status']){
+                            //新增订单日志
+                            $logOrder = [];
+                            $logOrder['orderId'] = $order['orderId'];
+                            $logOrder['orderStatus'] = $orderStatus;
+                            $logOrder['logContent'] = "系统自动退款" ;
+                            $logOrder['logUserId'] = $order->userId;
+                            $logOrder['logType'] = 0;
+                            $logOrder['logTime'] = date('Y-m-d H:i:s');
+                            Db::name('log_orders')->insert($logOrder);
+                        }
+                    }
                 }
             }
             Db::commit();
@@ -729,6 +756,5 @@ class CronJobs extends Base{
             Db::rollback();
             return WSTReturn('操作失败',-1);
         }
-        return WSTReturn('操作成功',1);
     }
 }
