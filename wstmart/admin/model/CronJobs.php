@@ -660,7 +660,7 @@ class CronJobs extends Base{
                         case 4:
                             // 同意退货退款,则判断是否填写物流信息，如果5天没有填写，则撤销退款
                             if (empty($logisticTime)) {
-                                $lastDayTime = strtotime($shopAgreeTime . " + $autoRefundDaysN " . $per);
+                                $lastDayTime = strtotime($shopAgreeTime . " + $autoRefundDaysY " . $per);
                                 if ($nowTime < $lastDayTime) {
                                     // 如果时间还未到，则不撤销
                                     continue;
