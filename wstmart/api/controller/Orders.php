@@ -330,8 +330,8 @@ class Orders extends Base{
 				break;
 		}
 		$m = new M();
-		//$rs = $m->userOrdersByPage($status,$flag,$userId);
-		$rs = $m->userOrdersByPage2($status,$flag,$userId);
+		$rs = $m->userOrdersByPage($status,$flag,$userId);
+		//$rs = $m->userOrdersByPage2($status,$flag,$userId);
 
 		foreach ($rs['data'] as $k=>$v) {
 		    if (empty($v['list'])) continue;
