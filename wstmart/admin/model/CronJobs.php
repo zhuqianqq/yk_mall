@@ -229,8 +229,10 @@ class CronJobs extends Base{
 	public function autoReceive(){
 	 	$autoReceiveDays = (int)WSTConf('CONF.autoReceiveDays');
 	 	//$autoReceiveDays = ($autoReceiveDays>0)?$autoReceiveDays:10;//避免有些客户没有设置值
-	 	$autoReceiveDays = 15;//15天自动确认收货
-	 	$lastDay = date("Y-m-d 00:00:00",strtotime("-".$autoReceiveDays." days"));
+	 	//$autoReceiveDays = 15;//15天自动确认收货
+		//$lastDay = date("Y-m-d 00:00:00",strtotime("-".$autoReceiveDays." days"));
+		$autoReceiveDays=1440*15;
+		$lastDay = date("Y-m-d H:i:s",strtotime("-".$autoReceiveDays." minutes"));
 	 	$rs = model('orders')->where([['deliveryTime','<',$lastDay],['orderStatus','=',1],['dataFlag','=',1]])->field("orderId,orderNo,shopId,userId,shopId,orderScore,commissionFee")->select();
 	 	if(!empty($rs)){
 	 		$prefix = config('database.prefix');
