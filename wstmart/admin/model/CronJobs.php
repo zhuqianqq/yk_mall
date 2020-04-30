@@ -644,8 +644,8 @@ class CronJobs extends Base{
                     // 如果时间还未到，则不退款
                     continue;
                 }
-                if (1 == $orderStatus) {
-                    // 已发货
+                if (in_array($orderStatus, [1, 2])) {
+                    // 已发货或者是已完成
                     // 1 申请退款 2 退款成功 3 退款失败 4 退货退款同意 5 撤销退款 6 删除订单 7 等待商家收货
                     // 5天商家自动同意退货退款，5天内用户填写物流信息，若不填写，则自动撤销，填写了，则10天自动退款同意
                     switch ($refundStatus) {
