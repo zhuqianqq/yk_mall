@@ -838,6 +838,7 @@ class Orders extends Base{
 			$condition[] = ['s.shopName','like',"%$shopName%"];
 		}
 
+//        $orderSort = [ 'o.createTime' => 'desc'];
         $orderSort = ['o.orderStatus' => 'asc', 'o.createTime' => 'desc','o.isRefund' => 'asc'];
 		if ($type == 'waitDeliver' || $type == 'waitReceive') {
             $orderSort = ['o.payTime' => 'desc'];
@@ -856,7 +857,7 @@ class Orders extends Base{
 			         ->order($orderSort)
 			         ->group('o.orderId')
 					 ->paginate($page_size)->toArray();
-
+//echo $this->getLastSql();die;
 	    if (count($page['data']) > 0) {
 	    	 $orderIds = [];
 	    	 foreach ($page['data'] as $v) {
@@ -3039,24 +3040,28 @@ class Orders extends Base{
     /**
      * 完成支付订单--新加--APP支付
      */
-    public function success($obj) {
+    public function success($obj, $isBatchPay = 1) {
         $trade_no = $obj["trade_no"];
         $isBatch = (int)$obj["isBatch"];
         $orderNo = $obj["out_trade_no"];
         $userId = (int)$obj["userId"];
         $payFrom = $obj["payFrom"];
         $payMoney = (float)$obj["total_fee"];
-        if ($payFrom != '') {
-            $cnt = model('orders')
-                ->where(['payFrom' => $payFrom, "userId" => $userId, "tradeNo" => $trade_no])
-                ->count();
-            if ($cnt > 0) {
-                throw new \Exception('订单已支付');
-            }
-        }
+//        if ($payFrom != '') {
+//            $cnt = model('orders')
+//                ->where(['payFrom' => $payFrom, "userId" => $userId, "tradeNo" => $trade_no])
+//                ->count();
+//            if ($cnt > 0) {
+//                throw new \Exception('订单已支付');
+//            }
+//        }
         $where = [["userId", "=", $userId], ["dataFlag", "=", 1], ["orderStatus", "=", -2], ["isPay", "=", 0], ["payType", "=", 1]];
         $where[] = ["needPay", ">", 0];
-        $where[] = ['orderunique', "=", $orderNo];
+        if ($isBatchPay) {
+            $where[] = ['orderunique', "=", $orderNo];
+        } else {
+            $where[] = ['orderNo', "=", $orderNo];
+        }
         $orders = model('orders')->where($where)->field('needPay, orderId, orderType, orderNo, shopId, payFrom, realTotalMoney')->select();
 
         if (count($orders)==0) throw new \Exception('无效的订单信息');
@@ -3073,7 +3078,6 @@ class Orders extends Base{
             $data["needPay"] = 0;
             $data["isPay"] = self::IS_PAY_SUCC;
             $data["orderStatus"] = 0;
-            $data["tradeNo"] = $trade_no;
             $data["payFrom"] = $payFrom;
             $data["payTime"] = date("Y-m-d H:i:s");
             $data["isBatch"] = $isBatch;
@@ -3189,8 +3193,12 @@ class Orders extends Base{
      * @param $failReason
      * @throws \Exception
      */
-    public function failure($tranNo)
+    public function failure($tranNo, $isBatch = 1)
     {
-        self::where(['orderunique' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+        if ($isBatch) {
+            self::where(['orderunique' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+        } else {
+            self::where(['orderNo' => $tranNo])->update(['isPay' => self::IS_PAY_FAIL]);
+        }
     }
 }
