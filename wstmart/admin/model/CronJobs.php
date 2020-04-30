@@ -701,6 +701,13 @@ class CronJobs extends Base{
                                     Db::rollback();
                                 }
                                 continue;
+                            } else {
+                                // 如果填写了物流，
+                                $lastDayTime = strtotime($logisticTime . " + $autoRefundAgreeDays " . $per);
+                                if ($nowTime < $lastDayTime) {
+                                    // 如果时间还未到，则不退款
+                                    continue;
+                                }
                             }
                             break;
                         case 7:
